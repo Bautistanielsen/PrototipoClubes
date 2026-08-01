@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  background: #f5f7fb;
+  -webkit-tap-highlight-color: transparent;
+}
+* {
+  box-sizing: border-box;
+}
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+::placeholder {
+  color: #9aa2b1;
+}
+a {
+  color: #1b3a8a;
+}
+a:hover {
+  color: #14285e;
+}
