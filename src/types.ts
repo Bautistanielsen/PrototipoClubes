@@ -120,6 +120,31 @@ export interface Jugador {
   foto?: string;
 }
 
+export type SistemaFormacion =
+  | '4-4-2' | '4-3-3' | '4-2-3-1' | '4-1-4-1' | '4-3-1-2' | '4-1-2-1-2'
+  | '4-2-2-2' | '4-5-1' | '3-5-2' | '3-4-3' | '3-4-2-1' | '3-4-1-2'
+  | '3-2-4-1' | '5-3-2' | '5-4-1';
+
+export type RolFormacion = 'capitan' | 'penales' | 'tiros_libres' | 'corner_izquierdo' | 'corner_derecho';
+
+export interface JugadorFormacion {
+  jugadorId: number;
+  zona: 'titular' | 'suplente';
+  x: number;
+  y: number;
+  dorsal: string;
+}
+
+export interface Formacion {
+  id: number;
+  equipoId: number;
+  nombre: string;
+  sistema: SistemaFormacion;
+  jugadores: JugadorFormacion[];
+  roles: Partial<Record<RolFormacion, number>>;
+  camiseta: { estilo: 'lisa' | 'franja' | 'rayas'; principal: string; secundaria: string; texto: string };
+}
+
 export type EstadoFilter = 'todos' | EstadoSocio;
 
 export type AdminScreen =
@@ -135,7 +160,7 @@ export type AdminScreen =
   | 'comunicados'
   | 'config';
 
-export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'calendario';
+export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'formaciones' | 'calendario';
 export type PortalScreen = 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_mas' | 'portal_novedades' | 'portal_perfil';
 export type Screen = AdminScreen | DeportivoScreen | PortalScreen;
 

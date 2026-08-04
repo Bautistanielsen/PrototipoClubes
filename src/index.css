@@ -146,6 +146,34 @@ a:hover {
 .player-list-actions button { color: #4b5468; }
 .player-list-actions .delete { color: #b32b3d; }
 .print-roster { display: none; }
+.formation-screen { animation: fadeIn .3s ease; color: #16203a; }
+.formation-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.formation-eyebrow { color: #087f75; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.formation-header h1 { margin: 5px 0 0; font-size: 25px; }
+.formation-header p { color: #6b7488; font-size: 14px; margin: 5px 0 0; }
+.formation-team label, .formation-settings label, .formation-board-tools label { color: #687287; font-size: 11px; font-weight: 800; display: flex; flex-direction: column; gap: 6px; }
+.formation-team select, .formation-settings select, .formation-board-tools select, .formation-board-tools input { height: 38px; min-width: 130px; border: 1px solid #d7dce6; border-radius: 8px; background: #fff; color: #16203a; padding: 0 9px; font-size: 13px; }
+.formation-tabs { display: flex; gap: 7px; align-items: center; overflow-x: auto; padding-bottom: 12px; }
+.formation-tabs button { border: 1px solid #d7dce6; border-radius: 8px; background: #fff; color: #4b5468; font-size: 12px; font-weight: 800; padding: 9px 12px; white-space: nowrap; cursor: pointer; }
+.formation-tabs button.active { background: #087f75; border-color: #087f75; color: #fff; }
+.formation-tabs button.new { color: #087f75; border-color: #b7d9d4; }
+.formation-tabs select { height: 35px; border: 1px solid #d7dce6; border-radius: 8px; background: #fff; padding: 0 7px; color: #4b5468; }
+.formation-empty { background: #fff; border: 1px dashed #b7d9d4; border-radius: 16px; text-align: center; padding: 58px 20px; }
+.formation-empty h2 { margin: 0; font-size: 20px; }.formation-empty p { color: #6b7488; }.formation-empty button, .export-button { border: none; border-radius: 9px; background: #087f75; color: #fff; padding: 11px 16px; cursor: pointer; font-weight: 800; }
+.formation-layout { display: grid; grid-template-columns: minmax(275px, .9fr) minmax(440px, 1.7fr) minmax(190px, .65fr); gap: 15px; align-items: start; }
+.formation-panel, .formation-board { background: #fff; border: 1px solid #e3e7ef; border-radius: 14px; padding: 14px; }
+.panel-title { display: flex; justify-content: space-between; color: #16203a; font-size: 14px; font-weight: 800; margin-bottom: 12px; }.panel-title small { color: #8790a2; font-size: 10px; }
+.player-zone-title { color: #8b93a5; font-size: 10px; font-weight: 800; letter-spacing: .06em; margin: 16px 0 7px; }
+.formation-player { width: 100%; border: none; border-bottom: 1px solid #edf0f5; background: transparent; padding: 8px 1px; display: flex; align-items: center; gap: 7px; cursor: pointer; text-align: left; color: #16203a; }.formation-player-avatar { width: 27px; height: 27px; border-radius: 50%; overflow: hidden; background: #d9ecea; color: #087f75; display: grid; place-items: center; font-size: 10px; font-weight: 800; flex: 0 0 27px; }.formation-player-avatar img { width: 100%; height: 100%; object-fit: cover; }.formation-player b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }.formation-player i { color: #087f75; margin-left: auto; font-style: normal; font-size: 10px; white-space: nowrap; }.formation-player em { color: #c1293c; font-size: 9px; font-style: normal; }.formation-player.injured { opacity: .72; }
+.bench-player { border-bottom: 1px solid #edf0f5; padding: 8px 0; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; }.bench-player > span:not(.formation-player-avatar) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.bench-player .formation-player-avatar { width: 27px; height: 27px; flex-basis: 27px; }.bench-player input { width: 31px; height: 24px; border: 1px solid #d7dce6; border-radius: 5px; text-align: center; padding: 2px; color: #4b5468; }.bench-player button { border: none; background: #e0f3f0; color: #087f75; border-radius: 5px; font-size: 10px; font-weight: 800; padding: 4px 5px; cursor: pointer; }
+.formation-board-tools { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; margin-bottom: 13px; }.formation-board-tools input { flex: 1; min-width: 130px; font-weight: 800; }.formation-board-tools button { height: 38px; border: 1px solid #d7dce6; border-radius: 8px; background: #fff; color: #4b5468; font-size: 11px; font-weight: 800; cursor: pointer; padding: 0 9px; }.formation-board-tools .danger { color: #c1293c; }
+.pitch { position: relative; width: 100%; aspect-ratio: .69; min-height: 475px; overflow: hidden; border-radius: 12px; background: repeating-linear-gradient(0deg, #14894d 0, #14894d 10%, #107c45 10%, #107c45 20%); }
+.pitch-markings { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+.pitch-lines { fill: none; stroke: rgba(230,255,236,.88); stroke-width: .65; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.pitch-lines .pitch-spot { fill: #e6ffec; stroke: none; }
+.pitch-lines .pitch-goal { stroke-width: .9; }
+.player-marker { position: absolute; z-index: 2; width: 144px; height: 132px; transform: translate(-50%, -24%); overflow: visible; border: none; padding: 0; cursor: grab; touch-action: none; background: transparent; color: var(--marker-text); }.player-marker:active { cursor: grabbing; }.player-marker-disc { position: absolute; top: 0; left: 50%; width: 58px; height: 58px; transform: translateX(-50%); display: grid; place-items: center; box-sizing: border-box; border: 6px solid var(--marker-border); border-radius: 50%; background: var(--marker-main); box-shadow: 0 2px 3px rgba(0,0,0,.28); }.player-marker-number { color: var(--marker-text); font-size: 17px; font-weight: 900; line-height: 1; }.player-marker-name { position: absolute; z-index: 3; top: 66px; left: 50%; width: 142px; min-height: 30px; transform: translateX(-50%); box-sizing: border-box; padding: 3px 7px; background: transparent; color: #fff; font-size: 12px; font-weight: 900; line-height: 1.15; text-align: center; white-space: normal; overflow-wrap: anywhere; box-shadow: none; pointer-events: none; }.player-marker-captain { position: absolute; z-index: 4; top: -10px; left: calc(50% + 20px); width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; color: #087f75; background: #fff; font-size: 11px; box-shadow: 0 1px 3px #0005; pointer-events: none; }.export-button { margin-top: 13px; width: 100%; }
+.formation-settings label { margin-bottom: 12px; }.formation-settings input[type="color"] { height: 32px; width: 100%; padding: 2px; border: 1px solid #d7dce6; border-radius: 7px; background: #fff; }.roles-title { margin-top: 21px; border-top: 1px solid #edf0f5; padding-top: 15px; }
 @media (max-width: 360px) {
   .roster-grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -156,6 +184,12 @@ a:hover {
   .player-identity .player-compact-details { display: block; }
   .player-list-actions { grid-column: 1 / -1; justify-content: stretch; }
   .player-list-actions a, .player-list-actions button { flex: 1; text-align: center; }
+}
+@media (max-width: 1180px) {
+  .formation-layout { grid-template-columns: 1fr; }
+  .formation-board { order: 1; }
+  .formation-panel { order: 2; }
+  .formation-settings { order: 3; }
 }
 @media (max-width: 760px) {
   .module-grid { grid-template-columns: 1fr; }
@@ -180,6 +214,10 @@ a:hover {
   .calendar-cell { padding: 6px !important; }
   .calendar-day { font-size: 20px !important; }
   .calendar-crest { width: 24px !important; height: 27px !important; }
+  .formation-header { align-items: flex-start; flex-direction: column; }
+  .formation-team { width: 100%; }.formation-team select { width: 100%; }
+  .pitch { min-height: 390px; }.formation-board-tools { display: grid; grid-template-columns: 1fr 1fr; }.formation-board-tools input { grid-column: 1 / -1; width: 100%; }.formation-board-tools label { min-width: 0; }.formation-board-tools button { min-width: 0; }
+  .formation-player { padding: 10px 2px; }
 }
 @media print {
   body { background: #fff; }

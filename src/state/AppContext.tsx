@@ -23,6 +23,9 @@ import type {
   EquipoDeportivo,
   Jugador,
   EstadoJugador,
+  Formacion,
+  SistemaFormacion,
+  JugadorFormacion,
 } from '../types';
 import {
   seedSocios,
@@ -48,6 +51,57 @@ function fechaLocalISO(fecha = new Date()) {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
   const dia = String(fecha.getDate()).padStart(2, '0');
   return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+function posicionesIniciales(sistema: SistemaFormacion) {
+  const lineas = sistema.split('-').map(Number);
+  const posiciones = [{ x: 50, y: 91 }];
+  lineas.forEach((cantidad, indice) => {
+    const y = 75 - indice * (57 / Math.max(lineas.length - 1, 1));
+    for (let i = 0; i < cantidad; i++) posiciones.push({ x: ((i + 1) * 100) / (cantidad + 1), y });
+  });
+  return posiciones;
+}
+
+function siguienteNombreFormacion(formaciones: Formacion[], equipoId: number) {
+  const nombres = new Set(formaciones.filter((item) => item.equipoId === equipoId).map((item) => item.nombre.trim().toLocaleLowerCase('es-AR')));
+  let numero = 1;
+  while (nombres.has(`formación ${numero}`)) numero++;
+  return `Formación ${numero}`;
+}
+
+function recuperarFormaciones() {
+  const vacio = { formaciones: [] as Formacion[], selectedFormacionId: null as number | null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores };
+  if (typeof window === 'undefined') return vacio;
+  try {
+    const guardado = window.localStorage.getItem('club-formaciones-v1');
+    if (!guardado) return vacio;
+    const datos: unknown = JSON.parse(guardado);
+    if (!datos || typeof datos !== 'object') return vacio;
+    const valor = datos as Record<string, unknown>;
+    const equiposCandidatos = Array.isArray(valor.equiposDeportivos)
+      ? valor.equiposDeportivos.filter((item): item is EquipoDeportivo => !!item && typeof item === 'object' && typeof (item as EquipoDeportivo).id === 'number' && typeof (item as EquipoDeportivo).nombre === 'string')
+      : seedEquiposDeportivos;
+    const equipos = equiposCandidatos.length ? equiposCandidatos : seedEquiposDeportivos;
+    const equipoIds = new Set(equipos.map((equipo) => equipo.id));
+    const jugadores = Array.isArray(valor.jugadores)
+      ? valor.jugadores.filter((item): item is Jugador => !!item && typeof item === 'object' && typeof (item as Jugador).id === 'number' && typeof (item as Jugador).equipoId === 'number' && equipoIds.has((item as Jugador).equipoId) && typeof (item as Jugador).nombre === 'string' && typeof (item as Jugador).apellido === 'string' && ((item as Jugador).estado === 'disponible' || (item as Jugador).estado === 'lesionado'))
+      : seedJugadores;
+    const jugadoresPorId = new Map(jugadores.map((jugador) => [jugador.id, jugador]));
+    const formaciones = !Array.isArray(valor.formaciones) ? [] : valor.formaciones.flatMap((item): Formacion[] => {
+      if (!item || typeof item !== 'object') return [];
+      const formacion = item as Partial<Formacion>;
+      if (typeof formacion.id !== 'number' || typeof formacion.equipoId !== 'number' || !equipoIds.has(formacion.equipoId) || typeof formacion.nombre !== 'string' || typeof formacion.sistema !== 'string' || !Array.isArray(formacion.jugadores) || !formacion.camiseta || typeof formacion.camiseta !== 'object') return [];
+      const camiseta = formacion.camiseta as Formacion['camiseta'];
+      if (!['lisa', 'franja', 'rayas'].includes(camiseta.estilo) || typeof camiseta.principal !== 'string' || typeof camiseta.secundaria !== 'string' || typeof camiseta.texto !== 'string') return [];
+      const miembros = formacion.jugadores.filter((jugador): jugador is JugadorFormacion => !!jugador && typeof jugador === 'object' && typeof (jugador as JugadorFormacion).jugadorId === 'number' && ((jugador as JugadorFormacion).zona === 'titular' || (jugador as JugadorFormacion).zona === 'suplente') && typeof (jugador as JugadorFormacion).x === 'number' && typeof (jugador as JugadorFormacion).y === 'number' && typeof (jugador as JugadorFormacion).dorsal === 'string' && jugadoresPorId.get((jugador as JugadorFormacion).jugadorId)?.equipoId === formacion.equipoId);
+      const miembroIds = new Set(miembros.map((jugador) => jugador.jugadorId));
+      const roles = Object.fromEntries(Object.entries(formacion.roles || {}).filter(([, jugadorId]) => typeof jugadorId === 'number' && miembroIds.has(jugadorId))) as Formacion['roles'];
+      return [{ id: formacion.id, equipoId: formacion.equipoId, nombre: formacion.nombre, sistema: formacion.sistema as SistemaFormacion, jugadores: miembros, roles, camiseta }];
+    });
+    const selectedFormacionId = typeof valor.selectedFormacionId === 'number' && formaciones.some((formacion) => formacion.id === valor.selectedFormacionId) ? valor.selectedFormacionId : null;
+    return { formaciones, selectedFormacionId, equiposDeportivos: equipos, jugadores };
+  } catch { return vacio; }
 }
 
 export interface AppState {
@@ -122,6 +176,8 @@ export interface AppState {
   nuevoJugadorFoto: string;
   showEquipoDeportivoModal: boolean;
   nuevoEquipoDeportivoNombre: string;
+  formaciones: Formacion[];
+  selectedFormacionId: number | null;
 }
 
 const initialState: AppState = {
@@ -196,6 +252,8 @@ const initialState: AppState = {
   nuevoJugadorFoto: '',
   showEquipoDeportivoModal: false,
   nuevoEquipoDeportivoNombre: '',
+  formaciones: [],
+  selectedFormacionId: null,
 };
 
 export interface AppActions {
@@ -280,6 +338,16 @@ export interface AppActions {
   closeEquipoDeportivoModal: () => void;
   setNuevoEquipoDeportivoNombre: (v: string) => void;
   agregarEquipoDeportivo: () => void;
+  crearFormacion: (sistema: SistemaFormacion) => void;
+  seleccionarFormacion: (id: number) => void;
+  actualizarFormacion: (id: number, patch: Partial<Omit<Formacion, 'id' | 'equipoId'>>) => void;
+  cambiarSistemaFormacion: (id: number, sistema: SistemaFormacion) => void;
+  moverJugadorFormacion: (id: number, jugadorId: number, zona: JugadorFormacion['zona'], x?: number, y?: number) => void;
+  quitarJugadorFormacion: (id: number, jugadorId: number) => void;
+  duplicarFormacion: (id: number) => void;
+  eliminarFormacion: (id: number) => void;
+  normalizarNombreFormacion: (id: number) => void;
+  mostrarToast: (mensaje: string) => void;
 }
 
 interface AppContextValue {
@@ -290,7 +358,7 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState>(initialState);
+  const [state, setState] = useState<AppState>(() => ({ ...initialState, ...recuperarFormaciones() }));
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const update = useCallback((patch: Partial<AppState> | ((s: AppState) => Partial<AppState>)) => {
@@ -302,6 +370,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [update]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try { window.localStorage.setItem('club-formaciones-v1', JSON.stringify({ version: 2, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores })); } catch { /* almacenamiento no disponible */ }
+  }, [state.formaciones, state.selectedFormacionId, state.equiposDeportivos, state.jugadores]);
 
   const showToast = useCallback((msg: string) => {
     update({ toast: msg });
@@ -674,7 +747,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       showToast(editando ? 'Jugador actualizado' : 'Jugador agregado al plantel');
     },
     eliminarJugador: (id) => {
-      update((s) => ({ jugadores: s.jugadores.filter((item) => item.id !== id) }));
+      update((s) => ({
+        jugadores: s.jugadores.filter((item) => item.id !== id),
+        formaciones: s.formaciones.map((formacion) => ({
+          ...formacion,
+          jugadores: formacion.jugadores.filter((jugador) => jugador.jugadorId !== id),
+          roles: Object.fromEntries(Object.entries(formacion.roles).filter(([, jugadorId]) => jugadorId !== id)),
+        })),
+      }));
       showToast('Jugador eliminado del plantel');
     },
     openAgregarEquipoDeportivo: () => update({ showEquipoDeportivoModal: true, nuevoEquipoDeportivoNombre: '' }),
@@ -700,6 +780,76 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }));
       showToast('Plantel creado');
     },
+    crearFormacion: (sistema) => {
+      setState((prev) => {
+        const equipoId = prev.selectedEquipoDeportivoId;
+        const disponibles = prev.jugadores.filter((jugador) => jugador.equipoId === equipoId && jugador.estado === 'disponible').slice(0, 11);
+        const posiciones = posicionesIniciales(sistema);
+        const id = Date.now();
+        const formacion: Formacion = {
+          id,
+          equipoId,
+          nombre: siguienteNombreFormacion(prev.formaciones, equipoId),
+          sistema,
+          jugadores: disponibles.map((jugador, index) => ({ jugadorId: jugador.id, zona: 'titular', ...posiciones[index], dorsal: String(index + 1) })),
+          roles: {},
+          camiseta: { estilo: 'lisa', principal: '#087f75', secundaria: '#ffffff', texto: '#ffffff' },
+        };
+        return { ...prev, formaciones: [...prev.formaciones, formacion], selectedFormacionId: id };
+      });
+      showToast('Formación creada');
+    },
+    seleccionarFormacion: (id) => update({ selectedFormacionId: id }),
+    actualizarFormacion: (id, patch) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, ...patch } : item) })),
+    cambiarSistemaFormacion: (id, sistema) => update((s) => ({
+      formaciones: s.formaciones.map((item) => {
+        if (item.id !== id) return item;
+        const posiciones = posicionesIniciales(sistema);
+        let indice = 0;
+        return { ...item, sistema, jugadores: item.jugadores.map((jugador) => jugador.zona === 'titular' ? { ...jugador, ...posiciones[indice++] } : jugador) };
+      }),
+    })),
+    moverJugadorFormacion: (id, jugadorId, zona, x, y) => {
+      const actual = state.formaciones.find((item) => item.id === id);
+      const existente = actual?.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
+      if (zona === 'titular' && existente?.zona !== 'titular' && (actual?.jugadores.filter((jugador) => jugador.zona === 'titular').length || 0) >= 11) {
+        showToast('La formación ya tiene 11 titulares');
+        return;
+      }
+      update((s) => ({
+      formaciones: s.formaciones.map((item) => {
+        if (item.id !== id) return item;
+        const jugadorExistente = item.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
+        return {
+          ...item,
+          jugadores: jugadorExistente
+            ? item.jugadores.map((jugador) => jugador.jugadorId === jugadorId ? { ...jugador, zona, ...(x === undefined ? {} : { x }), ...(y === undefined ? {} : { y }) } : jugador)
+            : [...item.jugadores, { jugadorId, zona, x: x ?? 50, y: y ?? 50, dorsal: String(item.jugadores.length + 1) }],
+        };
+      }),
+      }));
+    },
+    quitarJugadorFormacion: (id, jugadorId) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, jugadores: item.jugadores.filter((jugador) => jugador.jugadorId !== jugadorId), roles: Object.fromEntries(Object.entries(item.roles).filter(([, rolJugadorId]) => rolJugadorId !== jugadorId)) } : item) })),
+    duplicarFormacion: (id) => setState((prev) => {
+      const original = prev.formaciones.find((item) => item.id === id);
+      if (!original) return prev;
+      const nuevoId = Date.now();
+      const copia = { ...original, id: nuevoId, nombre: siguienteNombreFormacion(prev.formaciones, original.equipoId), jugadores: original.jugadores.map((jugador) => ({ ...jugador })), roles: { ...original.roles }, camiseta: { ...original.camiseta } };
+      showToast('Formación duplicada');
+      return { ...prev, formaciones: [...prev.formaciones, copia], selectedFormacionId: nuevoId };
+    }),
+    eliminarFormacion: (id) => setState((prev) => {
+      const restantes = prev.formaciones.filter((item) => item.id !== id);
+      showToast('Formación eliminada');
+      return { ...prev, formaciones: restantes, selectedFormacionId: prev.selectedFormacionId === id ? (restantes.find((item) => item.equipoId === prev.selectedEquipoDeportivoId)?.id ?? null) : prev.selectedFormacionId };
+    }),
+    normalizarNombreFormacion: (id) => update((s) => {
+      const actual = s.formaciones.find((item) => item.id === id);
+      if (!actual) return {};
+      const nombre = actual.nombre.trim() || siguienteNombreFormacion(s.formaciones.filter((item) => item.id !== id), actual.equipoId);
+      return { formaciones: s.formaciones.map((item) => item.id === id ? { ...item, nombre } : item) };
+    }),
+    mostrarToast: showToast,
   };
 
   return <AppContext.Provider value={{ state, actions }}>{children}</AppContext.Provider>;
