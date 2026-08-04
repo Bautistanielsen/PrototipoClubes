@@ -20,6 +20,9 @@ import type {
   EstadoFilter,
   EstadoRecordatorio,
   Modulo,
+  EquipoDeportivo,
+  Jugador,
+  EstadoJugador,
 } from '../types';
 import {
   seedSocios,
@@ -35,9 +38,17 @@ import {
   seedEgresos,
   seedComunicados,
   seedCategorias,
+  seedEquiposDeportivos,
+  seedJugadores,
   HOY_ISO,
 } from '../data/seed';
 import { CUOTA } from '../lib/derive';
+
+function fechaLocalISO(fecha = new Date()) {
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
 
 export interface AppState {
   isMobile: boolean;
@@ -98,6 +109,19 @@ export interface AppState {
   diaVencimiento: string;
   debitoAutomaticoHabilitado: boolean;
   categorias: Categoria[];
+  equiposDeportivos: EquipoDeportivo[];
+  jugadores: Jugador[];
+  selectedEquipoDeportivoId: number;
+  showJugadorModal: boolean;
+  jugadorEditandoId: number | null;
+  nuevoJugadorNombre: string;
+  nuevoJugadorApellido: string;
+  nuevoJugadorFechaNacimiento: string;
+  nuevoJugadorTelefono: string;
+  nuevoJugadorEstado: EstadoJugador;
+  nuevoJugadorFoto: string;
+  showEquipoDeportivoModal: boolean;
+  nuevoEquipoDeportivoNombre: string;
 }
 
 const initialState: AppState = {
@@ -159,6 +183,19 @@ const initialState: AppState = {
   diaVencimiento: '5',
   debitoAutomaticoHabilitado: true,
   categorias: seedCategorias,
+  equiposDeportivos: seedEquiposDeportivos,
+  jugadores: seedJugadores,
+  selectedEquipoDeportivoId: 1,
+  showJugadorModal: false,
+  jugadorEditandoId: null,
+  nuevoJugadorNombre: '',
+  nuevoJugadorApellido: '',
+  nuevoJugadorFechaNacimiento: '',
+  nuevoJugadorTelefono: '',
+  nuevoJugadorEstado: 'disponible',
+  nuevoJugadorFoto: '',
+  showEquipoDeportivoModal: false,
+  nuevoEquipoDeportivoNombre: '',
 };
 
 export interface AppActions {
@@ -227,6 +264,22 @@ export interface AppActions {
   toggleDebitoAutomatico: () => void;
   guardarConfig: () => void;
   setCategoriaMonto: (id: number, monto: number) => void;
+  selectEquipoDeportivo: (id: number) => void;
+  openAgregarJugador: () => void;
+  openEditarJugador: (id: number) => void;
+  closeJugadorModal: () => void;
+  setNuevoJugadorNombre: (v: string) => void;
+  setNuevoJugadorApellido: (v: string) => void;
+  setNuevoJugadorFechaNacimiento: (v: string) => void;
+  setNuevoJugadorTelefono: (v: string) => void;
+  setNuevoJugadorEstado: (v: EstadoJugador) => void;
+  setNuevoJugadorFoto: (v: string) => void;
+  guardarJugador: () => void;
+  eliminarJugador: (id: number) => void;
+  openAgregarEquipoDeportivo: () => void;
+  closeEquipoDeportivoModal: () => void;
+  setNuevoEquipoDeportivoNombre: (v: string) => void;
+  agregarEquipoDeportivo: () => void;
 }
 
 interface AppContextValue {
@@ -558,6 +611,95 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleDebitoAutomatico: () => update((s) => ({ debitoAutomaticoHabilitado: !s.debitoAutomaticoHabilitado })),
     guardarConfig: () => showToast('Cambios guardados'),
     setCategoriaMonto: (id, monto) => update((s) => ({ categorias: s.categorias.map((c) => (c.id === id ? { ...c, monto } : c)) })),
+    selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
+    openAgregarJugador: () => update({
+      showJugadorModal: true,
+      jugadorEditandoId: null,
+      nuevoJugadorNombre: '',
+      nuevoJugadorApellido: '',
+      nuevoJugadorFechaNacimiento: '',
+      nuevoJugadorTelefono: '',
+      nuevoJugadorEstado: 'disponible',
+      nuevoJugadorFoto: '',
+    }),
+    openEditarJugador: (id) => {
+      const jugador = state.jugadores.find((item) => item.id === id);
+      if (!jugador) return;
+      update({
+        showJugadorModal: true,
+        jugadorEditandoId: jugador.id,
+        nuevoJugadorNombre: jugador.nombre,
+        nuevoJugadorApellido: jugador.apellido,
+        nuevoJugadorFechaNacimiento: jugador.fechaNacimiento,
+        nuevoJugadorTelefono: jugador.telefono,
+        nuevoJugadorEstado: jugador.estado,
+        nuevoJugadorFoto: jugador.foto || '',
+      });
+    },
+    closeJugadorModal: () => update({ showJugadorModal: false, jugadorEditandoId: null }),
+    setNuevoJugadorNombre: (v) => update({ nuevoJugadorNombre: v }),
+    setNuevoJugadorApellido: (v) => update({ nuevoJugadorApellido: v }),
+    setNuevoJugadorFechaNacimiento: (v) => update({ nuevoJugadorFechaNacimiento: v }),
+    setNuevoJugadorTelefono: (v) => update({ nuevoJugadorTelefono: v }),
+    setNuevoJugadorEstado: (v) => update({ nuevoJugadorEstado: v }),
+    setNuevoJugadorFoto: (v) => update({ nuevoJugadorFoto: v }),
+    guardarJugador: () => {
+      const nombre = state.nuevoJugadorNombre.trim();
+      const apellido = state.nuevoJugadorApellido.trim();
+      if (!nombre || !apellido || !state.nuevoJugadorFechaNacimiento || !state.nuevoJugadorTelefono.trim()) {
+        showToast('Completá nombre, apellido, nacimiento y teléfono');
+        return;
+      }
+      if (state.nuevoJugadorFechaNacimiento > fechaLocalISO()) {
+        showToast('La fecha de nacimiento no puede ser futura');
+        return;
+      }
+      const jugador = {
+        equipoId: state.selectedEquipoDeportivoId,
+        nombre,
+        apellido,
+        fechaNacimiento: state.nuevoJugadorFechaNacimiento,
+        telefono: state.nuevoJugadorTelefono.trim(),
+        estado: state.nuevoJugadorEstado,
+        ...(state.nuevoJugadorFoto ? { foto: state.nuevoJugadorFoto } : {}),
+      };
+      const editando = state.jugadorEditandoId;
+      update((prev) => ({
+        jugadores: editando
+          ? prev.jugadores.map((item) => (item.id === editando ? { ...item, ...jugador } : item))
+          : [...prev.jugadores, { id: Date.now(), ...jugador }],
+        showJugadorModal: false,
+        jugadorEditandoId: null,
+      }));
+      showToast(editando ? 'Jugador actualizado' : 'Jugador agregado al plantel');
+    },
+    eliminarJugador: (id) => {
+      update((s) => ({ jugadores: s.jugadores.filter((item) => item.id !== id) }));
+      showToast('Jugador eliminado del plantel');
+    },
+    openAgregarEquipoDeportivo: () => update({ showEquipoDeportivoModal: true, nuevoEquipoDeportivoNombre: '' }),
+    closeEquipoDeportivoModal: () => update({ showEquipoDeportivoModal: false, nuevoEquipoDeportivoNombre: '' }),
+    setNuevoEquipoDeportivoNombre: (v) => update({ nuevoEquipoDeportivoNombre: v }),
+    agregarEquipoDeportivo: () => {
+      const nombre = state.nuevoEquipoDeportivoNombre.trim();
+      if (!nombre) {
+        showToast('Ingresá el nombre del plantel');
+        return;
+      }
+      const normalizar = (valor: string) => valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-AR').trim();
+      if (state.equiposDeportivos.some((equipo) => normalizar(equipo.nombre) === normalizar(nombre))) {
+        showToast('Ya existe un plantel con ese nombre');
+        return;
+      }
+      const nuevoEquipo = { id: Date.now(), nombre };
+      update((prev) => ({
+        equiposDeportivos: [...prev.equiposDeportivos, nuevoEquipo],
+        selectedEquipoDeportivoId: nuevoEquipo.id,
+        showEquipoDeportivoModal: false,
+        nuevoEquipoDeportivoNombre: '',
+      }));
+      showToast('Plantel creado');
+    },
   };
 
   return <AppContext.Provider value={{ state, actions }}>{children}</AppContext.Provider>;

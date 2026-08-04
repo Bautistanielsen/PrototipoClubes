@@ -102,6 +102,24 @@ export interface Categoria {
   monto: number;
 }
 
+export type EstadoJugador = 'disponible' | 'lesionado';
+
+export interface EquipoDeportivo {
+  id: number;
+  nombre: string;
+}
+
+export interface Jugador {
+  id: number;
+  equipoId: number;
+  nombre: string;
+  apellido: string;
+  fechaNacimiento: string;
+  telefono: string;
+  estado: EstadoJugador;
+  foto?: string;
+}
+
 export type EstadoFilter = 'todos' | EstadoSocio;
 
 export type AdminScreen =

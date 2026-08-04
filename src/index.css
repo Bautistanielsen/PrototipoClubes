@@ -111,6 +111,52 @@ a:hover {
 .deportivo-mobile-nav button { border: none; border-radius: 9px; padding: 10px 12px; white-space: nowrap; background: transparent; color: #4b5468; font-weight: 700; }
 .deportivo-mobile-nav button.active { background: #e0f3f0; color: #087f75; }
 .deportivo-main { flex: 1; min-width: 0; max-width: 1180px; padding: 32px; margin: 0 auto; }
+.roster-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.player-card { background: #fff; border: 1px solid #e3e7ef; border-radius: 14px; padding: 16px; }
+.player-photo, .player-avatar { width: 52px; height: 52px; border-radius: 50%; flex: 0 0 52px; }
+.player-photo { object-fit: cover; border: 2px solid #e0f3f0; }
+.player-avatar { display: grid; place-items: center; background: #d9ecea; color: #087f75; font-weight: 800; font-size: 15px; }
+.roster-search { width: 100%; max-width: 380px; height: 42px; padding: 0 12px; margin: 0 0 16px; border: 1px solid #d7dce6; border-radius: 9px; background: #fff; color: #16203a; font-size: 14px; }
+.roster-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.roster-controls .roster-search { margin: 0; }
+.roster-actions, .view-toggle { display: flex; align-items: center; gap: 6px; }
+.view-toggle { padding: 3px; border: 1px solid #d7dce6; border-radius: 9px; background: #fff; }
+.view-toggle button, .roster-utility { border: none; border-radius: 6px; padding: 8px 10px; background: transparent; color: #4b5468; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.view-toggle button.active { background: #e0f3f0; color: #087f75; }
+.roster-utility { border: 1px solid #d7dce6; border-radius: 8px; color: #087f75; background: #fff; }
+.roster-utility:disabled { cursor: not-allowed; opacity: .45; }
+.player-list { border: 1px solid #e3e7ef; border-radius: 14px; background: #fff; overflow: hidden; }
+.player-list-head, .player-list-row { display: grid; grid-template-columns: minmax(220px, 1.25fr) 90px minmax(150px, .9fr) 110px minmax(230px, 1.15fr); align-items: center; gap: 18px; padding: 12px 16px; }
+.player-list-head { background: #f8fafc; border-bottom: 1px solid #e3e7ef; color: #596276; font-size: 12px; font-weight: 800; letter-spacing: .035em; }
+.player-list-row + .player-list-row { border-top: 1px solid #edf0f5; }
+.player-identity { display: flex; align-items: center; gap: 11px; min-width: 0; color: #16203a; font-size: 14px; }
+.player-identity strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-identity small { display: block; margin-top: 3px; color: #8b93a5; font-size: 11px; }
+.player-identity .player-compact-details { display: none; }
+.player-list-photo, .player-list-avatar { width: 38px; height: 38px; border-radius: 50%; flex: 0 0 38px; }
+.player-list-photo { object-fit: cover; border: 1px solid #e0f3f0; }
+.player-list-avatar { display: grid; place-items: center; background: #d9ecea; color: #087f75; font-size: 11px; font-weight: 800; }
+.player-list-age, .player-list-phone { color: #4b5468; font-size: 13px; white-space: nowrap; }
+.player-status { justify-self: start; border-radius: 99px; padding: 5px 8px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+.player-status.available { background: #e5f6ea; color: #1a7d43; }
+.player-status.injured { background: #fbe6e9; color: #c1293c; }
+.player-list-actions { display: flex; justify-content: flex-start; gap: 6px; }
+.player-list-actions a, .player-list-actions button { border: 1px solid #e3e7ef; border-radius: 7px; padding: 7px 8px; background: #fff; color: #087f75; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; white-space: nowrap; }
+.player-list-actions button { color: #4b5468; }
+.player-list-actions .delete { color: #b32b3d; }
+.print-roster { display: none; }
+@media (max-width: 360px) {
+  .roster-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1200px) {
+  .player-list-head { display: none; }
+  .player-list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px; }
+  .player-list-age, .player-list-phone { display: none; }
+  .player-identity .player-compact-details { display: block; }
+  .player-list-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .player-list-actions a, .player-list-actions button { flex: 1; text-align: center; }
+}
 @media (max-width: 760px) {
   .module-grid { grid-template-columns: 1fr; }
   .portal-stage { padding: 0; display: block; }
@@ -119,10 +165,31 @@ a:hover {
   .portal-device-top { display: none; }
   .portal-content { padding-top: 56px; }
   .deportivo-main { padding: 20px 16px; }
+  .roster-header { align-items: flex-start; flex-direction: column; }
+  .roster-header button { width: 100%; }
+  .roster-search { max-width: none; }
+  .roster-controls { align-items: stretch; flex-direction: column; }
+  .roster-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .view-toggle { grid-column: 1 / -1; }
+  .roster-utility { min-width: 0; padding: 9px 7px; }
+  .view-toggle { justify-content: center; }
+  .view-toggle button { flex: 1; }
   .calendar-card { padding: 16px 10px !important; overflow-x: auto; }
   .calendar-grid { min-width: 560px; gap: 6px !important; }
   .calendar-weekdays { margin-bottom: 6px !important; }
   .calendar-cell { padding: 6px !important; }
   .calendar-day { font-size: 20px !important; }
   .calendar-crest { width: 24px !important; height: 27px !important; }
+}
+@media print {
+  body { background: #fff; }
+  .deportivo-sidebar, .deportivo-mobile-nav, .module-switcher, .no-print, .roster-screen > :not(.print-roster) { display: none !important; }
+  .deportivo-main { max-width: none; margin: 0; padding: 0; }
+  .print-roster { display: block; color: #16203a; font-family: Arial, sans-serif; }
+  .print-roster h1 { margin: 0 0 6px; font-size: 22px; }
+  .print-roster p { margin: 0 0 5px; color: #4b5468; font-size: 12px; }
+  .print-roster .print-date { margin-bottom: 18px; }
+  .print-roster table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .print-roster th, .print-roster td { padding: 8px; border: 1px solid #cbd3df; text-align: left; }
+  .print-roster th { background: #e0f3f0; color: #075e57; }
 }

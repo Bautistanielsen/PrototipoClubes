@@ -10,7 +10,8 @@ export default function DeportivoInicio() {
       <div style={{ marginBottom: 22 }}><div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Inicio deportivo</div><div style={{ color: '#6b7488', fontSize: 14, marginTop: 3 }}>Organizá la actividad deportiva del club.</div></div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <div style={card}><div style={label}>PARTIDOS PROGRAMADOS</div><div style={number}>{state.partidos.length}</div><button onClick={() => actions.navigate('calendario')} style={link}>Ver agenda deportiva</button></div>
-        <div style={card}><div style={label}>CATEGORÍAS ACTIVAS</div><div style={number}>{state.categorias.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Ver equipos</button></div>
+        <div style={card}><div style={label}>EQUIPOS ACTIVOS</div><div style={number}>{state.equiposDeportivos.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Ver planteles</button></div>
+        <div style={card}><div style={label}>JUGADORES REGISTRADOS</div><div style={number}>{state.jugadores.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Gestionar planteles</button></div>
         <div style={{ ...card, flex: 2 }}><div style={label}>PRÓXIMO PARTIDO</div><div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginTop: 12 }}>{nextMatch ? `${nextMatch.condicion} vs. ${nextMatch.rival}` : 'Sin partidos programados'}</div>{nextMatch && <div style={{ color: '#6b7488', marginTop: 5, fontSize: 14 }}>{nextMatch.fecha} · {nextMatch.hora} · {nextMatch.tipo}</div>}</div>
       </div>
     </div>

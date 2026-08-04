@@ -11,7 +11,33 @@ import type {
   Egreso,
   Comunicado,
   Categoria,
+  EquipoDeportivo,
+  Jugador,
 } from '../types';
+import brunoFernandez from '../assets/players/bruno-fernandez.jpg';
+import facundoHerrera from '../assets/players/facundo-herrera.jpg';
+import joaquinLopez from '../assets/players/joaquin-lopez.jpg';
+import lucasDominguez from '../assets/players/lucas-dominguez.jpg';
+import mateoBenitez from '../assets/players/mateo-benitez.jpg';
+import nicolasCabrera from '../assets/players/nicolas-cabrera.jpg';
+import santiagoGimenez from '../assets/players/santiago-gimenez.jpg';
+import tomasAcosta from '../assets/players/tomas-acosta.jpg';
+import valentinIbarra from '../assets/players/valentin-ibarra.jpg';
+import martinSosa from '../assets/players/martin-sosa.jpg';
+import emilianoRivero from '../assets/players/emiliano-rivero.jpg';
+import agustinPereyra from '../assets/players/agustin-pereyra.jpg';
+import ramiroVega from '../assets/players/ramiro-vega.jpg';
+import lautaroNavarro from '../assets/players/lautaro-navarro.jpg';
+import federicoRios from '../assets/players/federico-rios.jpg';
+import alanMedina from '../assets/players/alan-medina.jpg';
+import ignacioFarias from '../assets/players/ignacio-farias.jpg';
+
+export const fotosJugadoresDemo = [
+  brunoFernandez, facundoHerrera, joaquinLopez, lucasDominguez, mateoBenitez,
+  nicolasCabrera, santiagoGimenez, tomasAcosta, valentinIbarra, martinSosa,
+  emilianoRivero, agustinPereyra, ramiroVega, lautaroNavarro, federicoRios,
+  alanMedina, ignacioFarias,
+];
 
 export const CUOTA = 12000;
 export const PRECIO_TURNO = 8000;
@@ -131,4 +157,29 @@ export const seedCategorias: Categoria[] = [
   { id: 1, nombre: 'Socio activo', monto: 12000 },
   { id: 2, nombre: 'Socio jubilado', monto: 6000 },
   { id: 3, nombre: 'Socio infantil', monto: 8000 },
+];
+
+export const seedEquiposDeportivos: EquipoDeportivo[] = [
+  { id: 1, nombre: 'Primera división' },
+  { id: 2, nombre: 'Sub 17' },
+];
+
+export const seedJugadores: Jugador[] = [
+  { id: 1, equipoId: 1, nombre: 'Bruno', apellido: 'Fernández', fechaNacimiento: '2001-04-18', telefono: '223 555 0141', estado: 'disponible', foto: brunoFernandez },
+  { id: 2, equipoId: 1, nombre: 'Facundo', apellido: 'Herrera', fechaNacimiento: '1999-11-03', telefono: '223 555 0182', estado: 'disponible', foto: facundoHerrera },
+  { id: 3, equipoId: 1, nombre: 'Joaquín', apellido: 'López', fechaNacimiento: '2002-07-21', telefono: '223 555 0115', estado: 'lesionado', foto: joaquinLopez },
+  { id: 4, equipoId: 1, nombre: 'Lucas', apellido: 'Domínguez', fechaNacimiento: '1998-01-30', telefono: '223 555 0167', estado: 'disponible', foto: lucasDominguez },
+  { id: 5, equipoId: 1, nombre: 'Mateo', apellido: 'Benítez', fechaNacimiento: '2000-09-12', telefono: '223 555 0109', estado: 'disponible', foto: mateoBenitez },
+  { id: 6, equipoId: 1, nombre: 'Nicolás', apellido: 'Cabrera', fechaNacimiento: '1997-06-25', telefono: '223 555 0134', estado: 'disponible', foto: nicolasCabrera },
+  { id: 7, equipoId: 1, nombre: 'Santiago', apellido: 'Giménez', fechaNacimiento: '2003-02-14', telefono: '223 555 0176', estado: 'disponible', foto: santiagoGimenez },
+  { id: 8, equipoId: 2, nombre: 'Tomás', apellido: 'Acosta', fechaNacimiento: '2009-08-09', telefono: '223 555 0123', estado: 'disponible', foto: tomasAcosta },
+  { id: 9, equipoId: 2, nombre: 'Valentín', apellido: 'Ibarra', fechaNacimiento: '2008-12-02', telefono: '223 555 0194', estado: 'disponible', foto: valentinIbarra },
+  { id: 10, equipoId: 1, nombre: 'Martín', apellido: 'Sosa', fechaNacimiento: '1999-03-16', telefono: '223 555 0158', estado: 'disponible', foto: martinSosa },
+  { id: 11, equipoId: 1, nombre: 'Emiliano', apellido: 'Rivero', fechaNacimiento: '2001-10-27', telefono: '223 555 0121', estado: 'disponible', foto: emilianoRivero },
+  { id: 12, equipoId: 1, nombre: 'Agustín', apellido: 'Pereyra', fechaNacimiento: '1998-05-08', telefono: '223 555 0172', estado: 'disponible', foto: agustinPereyra },
+  { id: 13, equipoId: 1, nombre: 'Ramiro', apellido: 'Vega', fechaNacimiento: '2002-01-19', telefono: '223 555 0148', estado: 'disponible', foto: ramiroVega },
+  { id: 14, equipoId: 1, nombre: 'Lautaro', apellido: 'Navarro', fechaNacimiento: '2000-07-03', telefono: '223 555 0191', estado: 'disponible', foto: lautaroNavarro },
+  { id: 15, equipoId: 1, nombre: 'Federico', apellido: 'Ríos', fechaNacimiento: '1997-12-11', telefono: '223 555 0163', estado: 'disponible', foto: federicoRios },
+  { id: 16, equipoId: 1, nombre: 'Alan', apellido: 'Medina', fechaNacimiento: '2003-04-24', telefono: '223 555 0118', estado: 'disponible', foto: alanMedina },
+  { id: 17, equipoId: 1, nombre: 'Ignacio', apellido: 'Farías', fechaNacimiento: '2001-08-30', telefono: '223 555 0139', estado: 'lesionado', foto: ignacioFarias },
 ];

@@ -11,6 +11,8 @@ import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import VerPartidoModal from './components/modals/VerPartidoModal';
 import AgregarPartidoModal from './components/modals/AgregarPartidoModal';
 import ReservaModal from './components/modals/ReservaModal';
+import JugadorModal from './components/modals/JugadorModal';
+import EquipoDeportivoModal from './components/modals/EquipoDeportivoModal';
 import Dashboard from './screens/Dashboard';
 import Socios from './screens/Socios';
 import Cobranza from './screens/Cobranza';
@@ -73,7 +75,7 @@ function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'c
 
 function DeportivoLayout() {
   const { state, actions } = useApp();
-  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Equipos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }];
+  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }];
   return <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f7fb' }}>
     {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand"><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}</div><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
     <div style={{ flex: 1, minWidth: 0 }}>
@@ -81,7 +83,7 @@ function DeportivoLayout() {
       {state.isMobile && <nav className="deportivo-mobile-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}>{item.label}</button>)}</nav>}
       <main className="deportivo-main"><ScreenContent /></main>
     </div>
-    <VerPartidoModal /><AgregarPartidoModal /><Toast />
+    <VerPartidoModal /><AgregarPartidoModal /><JugadorModal /><EquipoDeportivoModal /><Toast />
   </div>;
 }
 

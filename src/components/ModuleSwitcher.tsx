@@ -10,7 +10,7 @@ const labels: Record<Modulo, string> = {
 export default function ModuleSwitcher({ color = '#172a54' }: { color?: string }) {
   const { state, actions } = useApp();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 18px', background: color, color: '#fff' }}>
+    <div className="module-switcher" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 18px', background: color, color: '#fff' }}>
       <div>
         <div style={{ fontWeight: 800, fontSize: 15 }}>Club Atlético Modelo</div>
         <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,.72)', marginTop: 2 }}>{state.activeModule ? labels[state.activeModule] : ''}</div>

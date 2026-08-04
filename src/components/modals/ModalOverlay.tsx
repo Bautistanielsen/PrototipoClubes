@@ -5,9 +5,10 @@ interface ModalOverlayProps {
   maxWidth: number;
   children: ReactNode;
   cardStyle?: CSSProperties;
+  ariaLabel?: string;
 }
 
-export default function ModalOverlay({ onClose, maxWidth, children, cardStyle }: ModalOverlayProps) {
+export default function ModalOverlay({ onClose, maxWidth, children, cardStyle, ariaLabel }: ModalOverlayProps) {
   const stop = (e: MouseEvent) => e.stopPropagation();
   return (
     <div
@@ -25,6 +26,9 @@ export default function ModalOverlay({ onClose, maxWidth, children, cardStyle }:
     >
       <div
         onClick={stop}
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel || 'Ventana de diálogo'}
         style={{
           width: '100%',
           maxWidth,
