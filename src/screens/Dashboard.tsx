@@ -3,13 +3,6 @@ import { useApp } from '../state/AppContext';
 import { cuotasResumen, balanceMes, ingresosPorFuente } from '../lib/derive';
 import { formatMoney } from '../lib/format';
 
-const shimmerStyle = {
-  background: 'linear-gradient(90deg,#eef0f5 0%,#f7f8fb 50%,#eef0f5 100%)',
-  backgroundSize: '800px 100%',
-  animation: 'shimmer 1.3s infinite linear',
-  borderRadius: 14,
-};
-
 const statCard = { flex: 1, minWidth: 150, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px' };
 const bigCardDark = { flex: 1, minWidth: 160, background: '#172a54', borderRadius: 14, padding: '18px 20px' };
 const bigCardLight = { flex: 1, minWidth: 160, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px' };
@@ -47,17 +40,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {state.loading ? (
-        <>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-            <div style={{ ...shimmerStyle, flex: 1, minWidth: 200, height: 96 }} />
-            <div style={{ ...shimmerStyle, flex: 1, minWidth: 200, height: 96 }} />
-            <div style={{ ...shimmerStyle, flex: 1, minWidth: 200, height: 96 }} />
-          </div>
-          <div style={{ ...shimmerStyle, height: 160 }} />
-        </>
-      ) : (
-        <div>
+      <div>
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
             <div style={statCard}>
               <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Socios totales</div>
@@ -135,8 +118,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -40,3 +40,89 @@ a {
 a:hover {
   color: #14285e;
 }
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.portal-stage {
+  min-height: 100vh;
+  padding: 24px 88px;
+  background: radial-gradient(circle at 50% 18%, #f8fbff 0, #eaf1f9 48%, #dce7f3 100%);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.portal-module-switch {
+  position: fixed;
+  top: 22px;
+  right: 24px;
+  z-index: 30;
+  border: 1px solid #bdd0e2;
+  border-radius: 10px;
+  background: #fff;
+  color: #2774b8;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 750;
+  box-shadow: 0 6px 18px rgba(26, 55, 91, .1);
+  cursor: pointer;
+}
+.portal-frame {
+  width: 100%;
+  max-width: 430px;
+  height: min(844px, calc(100vh - 48px));
+  min-height: 620px;
+  background: #f5f7fb;
+  border: 9px solid #17191d;
+  border-radius: 48px;
+  box-shadow: 0 0 0 1px #45484e, 0 28px 64px rgba(15, 30, 65, .24);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.portal-device-top { height: 38px; flex-shrink: 0; display: grid; place-items: center; background: #f5f7fb; }
+.portal-device-top span { width: 118px; height: 28px; border-radius: 18px; background: #090a0c; box-shadow: inset 0 0 0 1px #27292d; }
+.portal-content { padding: 24px 20px 20px; flex: 1; }
+.portal-content h1 { color: #16203a; font-size: 25px; letter-spacing: -.03em; margin: 8px 0 20px; }
+.portal-card { background: #fff; border: 1px solid #e3e7ef; border-radius: 14px; padding: 17px; margin-bottom: 12px; color: #16203a; }
+.portal-card strong { display: block; font-size: 17px; margin: 6px 0; }
+.portal-card p { margin: 6px 0; color: #6b7488; font-size: 13.5px; line-height: 1.45; }
+.portal-card small { color: #8b93a5; font-size: 12px; }
+.portal-card-primary { background: #2774b8; border-color: #2774b8; color: #fff; }
+.portal-card-primary p { color: #d8ebff; }
+.portal-card button { border: none; border-radius: 8px; padding: 9px 12px; background: #172a54; color: #fff; margin-top: 10px; font-weight: 700; cursor: pointer; }
+.portal-card-primary button { background: #fff; color: #2774b8; }
+.portal-menu-card { width: 100%; text-align: left; cursor: pointer; font-family: inherit; }
+.portal-menu-card:hover { border-color: #a9c8e5; }
+.portal-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: #fff; border-top: 1px solid #e3e7ef; padding: 13px 6px calc(13px + env(safe-area-inset-bottom)); position: sticky; bottom: 0; }
+.portal-text-button { color: #2774b8; border: none; background: transparent; padding: 0; font-weight: 700; cursor: pointer; font-size: 12px; }
+.deportivo-sidebar { width: 264px; flex-shrink: 0; min-height: 100vh; position: sticky; top: 0; height: 100vh; padding: 20px 16px; background: #087f75; display: flex; flex-direction: column; }
+.deportivo-brand { padding: 0 8px 20px; border-bottom: 1px solid rgba(255,255,255,.18); }
+.deportivo-brand strong { display: block; color: #fff; font-size: 18px; }
+.deportivo-brand span { display: block; color: #bce2dd; font-size: 12px; margin-top: 3px; }
+.deportivo-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-top: 16px; }
+.deportivo-nav button { display: flex; align-items: center; gap: 12px; border: none; border-radius: 9px; padding: 12px; color: #d7eeeb; background: transparent; text-align: left; font-size: 14px; font-weight: 700; cursor: pointer; }
+.deportivo-nav button.active { color: #087f75; background: #fff; }
+.deportivo-nav button svg { flex-shrink: 0; }
+.deportivo-switch { border: 1px solid rgba(255,255,255,.3); background: transparent; color: #e2f4f1; border-radius: 9px; padding: 10px; cursor: pointer; font-weight: 700; font-size: 12px; }
+.deportivo-mobile-nav { display: flex; gap: 5px; overflow-x: auto; padding: 10px; background: #fff; border-bottom: 1px solid #e3e7ef; }
+.deportivo-mobile-nav button { border: none; border-radius: 9px; padding: 10px 12px; white-space: nowrap; background: transparent; color: #4b5468; font-weight: 700; }
+.deportivo-mobile-nav button.active { background: #e0f3f0; color: #087f75; }
+.deportivo-main { flex: 1; min-width: 0; max-width: 1180px; padding: 32px; margin: 0 auto; }
+@media (max-width: 760px) {
+  .module-grid { grid-template-columns: 1fr; }
+  .portal-stage { padding: 0; display: block; }
+  .portal-module-switch { position: absolute; top: 10px; right: 12px; padding: 7px 9px; box-shadow: none; }
+  .portal-frame { max-width: none; height: 100vh; min-height: 100vh; border: none; border-radius: 0; box-shadow: none; }
+  .portal-device-top { display: none; }
+  .portal-content { padding-top: 56px; }
+  .deportivo-main { padding: 20px 16px; }
+  .calendar-card { padding: 16px 10px !important; overflow-x: auto; }
+  .calendar-grid { min-width: 560px; gap: 6px !important; }
+  .calendar-weekdays { margin-bottom: 6px !important; }
+  .calendar-cell { padding: 6px !important; }
+  .calendar-day { font-size: 20px !important; }
+  .calendar-crest { width: 24px !important; height: 27px !important; }
+}

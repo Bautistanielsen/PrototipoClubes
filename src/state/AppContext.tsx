@@ -19,6 +19,7 @@ import type {
   TipoCliente,
   EstadoFilter,
   EstadoRecordatorio,
+  Modulo,
 } from '../types';
 import {
   seedSocios,
@@ -39,12 +40,9 @@ import {
 import { CUOTA } from '../lib/derive';
 
 export interface AppState {
-  loggedIn: boolean;
-  loginEmail: string;
-  loginPass: string;
-  loading: boolean;
   isMobile: boolean;
   screen: Screen;
+  activeModule: Modulo | null;
   moreOpen: boolean;
   showMediosPago: boolean;
   showInfoCanchas: boolean;
@@ -103,12 +101,9 @@ export interface AppState {
 }
 
 const initialState: AppState = {
-  loggedIn: false,
-  loginEmail: '',
-  loginPass: '',
-  loading: false,
   isMobile: typeof window !== 'undefined' ? window.innerWidth < 900 : false,
   screen: 'dashboard',
+  activeModule: null,
   moreOpen: false,
   showMediosPago: false,
   showInfoCanchas: false,
@@ -167,10 +162,8 @@ const initialState: AppState = {
 };
 
 export interface AppActions {
-  onLogin: (e: React.FormEvent) => void;
-  setLoginEmail: (v: string) => void;
-  setLoginPass: (v: string) => void;
-  onLogout: () => void;
+  selectModule: (module: Modulo) => void;
+  showModuleSelector: () => void;
   navigate: (screen: Screen) => void;
   toggleIngresosMenu: (e: React.MouseEvent) => void;
   toggleMore: () => void;
@@ -264,14 +257,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const actions: AppActions = {
-    onLogin: (e) => {
-      e.preventDefault();
-      update({ loggedIn: true, loading: true });
-      setTimeout(() => update({ loading: false }), 550);
+    selectModule: (module) => {
+      const screen: Screen = module === 'administrativo' ? 'dashboard' : module === 'deportivo' ? 'deportivo_inicio' : 'portal_inicio';
+      update({ activeModule: module, screen, moreOpen: false });
     },
-    setLoginEmail: (v) => update({ loginEmail: v }),
-    setLoginPass: (v) => update({ loginPass: v }),
-    onLogout: () => update({ loggedIn: false, screen: 'dashboard', moreOpen: false }),
+    showModuleSelector: () => update({ activeModule: null, moreOpen: false }),
 
     navigate: (screen) => {
       const opensIngresos = screen === 'ventas' || screen === 'buffet' || screen === 'canchas';

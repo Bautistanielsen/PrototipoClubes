@@ -104,7 +104,7 @@ export interface Categoria {
 
 export type EstadoFilter = 'todos' | EstadoSocio;
 
-export type Screen =
+export type AdminScreen =
   | 'dashboard'
   | 'socios'
   | 'cobranza'
@@ -116,5 +116,11 @@ export type Screen =
   | 'egresos'
   | 'comunicados'
   | 'config';
+
+export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'calendario';
+export type PortalScreen = 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_mas' | 'portal_novedades' | 'portal_perfil';
+export type Screen = AdminScreen | DeportivoScreen | PortalScreen;
+
+export type Modulo = 'administrativo' | 'deportivo' | 'socio';
 
 export type EstadoRecordatorio = 'enviado' | 'pendiente';

@@ -23,7 +23,7 @@ export default function Calendario() {
         </button>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '22px 24px' }}>
+      <div className="calendar-card" style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '22px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <button
             onClick={actions.prevMonth}
@@ -40,7 +40,7 @@ export default function Calendario() {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, marginBottom: 10 }}>
+        <div className="calendar-grid calendar-weekdays" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, marginBottom: 10 }}>
           {CALENDAR_WEEK_DAYS.map((wd, i) => (
             <div key={i} style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 700, color: '#8b93a5', padding: '4px 0' }}>
               {wd}
@@ -48,7 +48,7 @@ export default function Calendario() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, marginBottom: 22 }}>
+        <div className="calendar-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10, marginBottom: 22 }}>
           {cells.map((cell, i) => {
             if (cell.blank) return <div key={i} style={{ aspectRatio: '1' }} />;
             const meta = cell.match ? tipoPartidoMeta[cell.match.tipo] : null;
@@ -56,6 +56,7 @@ export default function Calendario() {
             return (
               <div
                 key={i}
+                className="calendar-cell"
                 onClick={() => (cell.match ? actions.openVerPartido(cell.match.id) : actions.openAgregarPartido(cell.iso))}
                 style={{
                   aspectRatio: '1',
@@ -70,11 +71,11 @@ export default function Calendario() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
-                  <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em', color: cell.match ? meta!.color : '#16203a' }}>
+                  <div className="calendar-day" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1, letterSpacing: '-0.02em', color: cell.match ? meta!.color : '#16203a' }}>
                     {cell.day}
                   </div>
                   {cell.match && crest && (
-                    <div style={{ position: 'relative', width: 30, height: 33, flexShrink: 0 }}>
+                    <div className="calendar-crest" style={{ position: 'relative', width: 30, height: 33, flexShrink: 0 }}>
                       <div
                         style={{
                           position: 'absolute',
