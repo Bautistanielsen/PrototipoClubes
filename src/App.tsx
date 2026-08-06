@@ -13,6 +13,9 @@ import AgregarPartidoModal from './components/modals/AgregarPartidoModal';
 import ReservaModal from './components/modals/ReservaModal';
 import JugadorModal from './components/modals/JugadorModal';
 import EquipoDeportivoModal from './components/modals/EquipoDeportivoModal';
+import ReponerStockBuffetModal from './components/modals/ReponerStockBuffetModal';
+import ReponerStockShopModal from './components/modals/ReponerStockShopModal';
+import DifundirTorneoModal from './components/modals/DifundirTorneoModal';
 import Dashboard from './screens/Dashboard';
 import Socios from './screens/Socios';
 import Cobranza from './screens/Cobranza';
@@ -40,6 +43,7 @@ function ScreenContent() {
     case 'buffet': return <Buffet />;
     case 'canchas': return <Canchas />;
     case 'calendario': return <Calendario />;
+    case 'torneos': return <Torneos />;
     case 'reportes': return <Reportes />;
     case 'egresos': return <Egresos />;
     case 'comunicados': return <Comunicados />;
@@ -98,7 +102,7 @@ function PortalLayout() {
   return <div className="portal-stage"><button className="portal-module-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button><ScreenContent /><Toast /></div>;
 }
 
-function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><ReservaModal /><MediosPagoModal /></>; }
+function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><ReservaModal /><MediosPagoModal /><ReponerStockBuffetModal /><ReponerStockShopModal /><DifundirTorneoModal /></>; }
 
 function Shell() {
   const { state } = useApp();

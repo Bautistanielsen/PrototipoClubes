@@ -13,6 +13,9 @@ import type {
   Categoria,
   EquipoDeportivo,
   Jugador,
+  Torneo,
+  EquipoTorneo,
+  PartidoTorneo,
 } from '../types';
 import brunoFernandez from '../assets/players/bruno-fernandez.jpg';
 import facundoHerrera from '../assets/players/facundo-herrera.jpg';
@@ -203,4 +206,23 @@ export const seedJugadores: Jugador[] = [
   { id: 15, equipoId: 1, nombre: 'Federico', apellido: 'Ríos', fechaNacimiento: '1997-12-11', telefono: '223 555 0163', estado: 'disponible', foto: federicoRios },
   { id: 16, equipoId: 1, nombre: 'Alan', apellido: 'Medina', fechaNacimiento: '2003-04-24', telefono: '223 555 0118', estado: 'disponible', foto: alanMedina },
   { id: 17, equipoId: 1, nombre: 'Ignacio', apellido: 'Farías', fechaNacimiento: '2001-08-30', telefono: '223 555 0139', estado: 'lesionado', foto: ignacioFarias },
+];
+
+export const seedTorneos: Torneo[] = [
+  { id: 1, nombre: 'Copa de Tenis Interna', deporte: 'Tenis', fechaInicio: '2026-07-10', fechaFin: '2026-07-20', lugar: 'Cancha de Tenis', cupo: 8, valorInscripcion: 5000, descripcion: 'Torneo finalizado, formato eliminación directa.' },
+  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.' },
+  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.' },
+];
+
+export const seedEquiposTorneo: EquipoTorneo[] = [
+  { id: 1, torneoId: 2, nombre: 'Los Halcones' },
+  { id: 2, torneoId: 2, nombre: 'Dupla Norte' },
+  { id: 3, torneoId: 2, nombre: 'Set Point' },
+  { id: 4, torneoId: 2, nombre: 'Los Zurdos' },
+];
+
+export const seedPartidosTorneo: PartidoTorneo[] = [
+  { id: 1, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 2, golesLocal: 6, golesVisitante: 3 },
+  { id: 2, torneoId: 2, equipoLocalId: 3, equipoVisitanteId: 4, golesLocal: 4, golesVisitante: 4 },
+  { id: 3, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 3, golesLocal: null, golesVisitante: null },
 ];

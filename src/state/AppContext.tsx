@@ -27,6 +27,9 @@ import type {
   Formacion,
   SistemaFormacion,
   JugadorFormacion,
+  Torneo,
+  EquipoTorneo,
+  PartidoTorneo,
 } from '../types';
 import {
   seedSocios,
@@ -44,6 +47,9 @@ import {
   seedCategorias,
   seedEquiposDeportivos,
   seedJugadores,
+  seedTorneos,
+  seedEquiposTorneo,
+  seedPartidosTorneo,
   HOY_ISO,
 } from '../data/seed';
 import { CUOTA } from '../lib/derive';
@@ -170,6 +176,24 @@ export interface AppState {
   diaVencimiento: string;
   debitoAutomaticoHabilitado: boolean;
   categorias: Categoria[];
+  torneos: Torneo[];
+  nuevoTorneoNombre: string;
+  nuevoTorneoDeporte: string;
+  nuevoTorneoFechaInicio: string;
+  nuevoTorneoFechaFin: string;
+  nuevoTorneoLugar: string;
+  nuevoTorneoCupo: string;
+  nuevoTorneoValorInscripcion: string;
+  nuevoTorneoDescripcion: string;
+  showDifundirTorneo: boolean;
+  difundirTorneoId: number | null;
+  mensajeDifusionTorneo: string;
+  equiposTorneo: EquipoTorneo[];
+  partidosTorneo: PartidoTorneo[];
+  torneoExpandidoId: number | null;
+  nuevoEquipoNombre: string;
+  nuevoPartidoEquipoLocalId: string;
+  nuevoPartidoEquipoVisitanteId: string;
   equiposDeportivos: EquipoDeportivo[];
   jugadores: Jugador[];
   selectedEquipoDeportivoId: number;
@@ -251,6 +275,24 @@ const initialState: AppState = {
   diaVencimiento: '5',
   debitoAutomaticoHabilitado: true,
   categorias: seedCategorias,
+  torneos: seedTorneos,
+  nuevoTorneoNombre: '',
+  nuevoTorneoDeporte: '',
+  nuevoTorneoFechaInicio: '2026-08-01',
+  nuevoTorneoFechaFin: '2026-08-02',
+  nuevoTorneoLugar: '',
+  nuevoTorneoCupo: '',
+  nuevoTorneoValorInscripcion: '',
+  nuevoTorneoDescripcion: '',
+  showDifundirTorneo: false,
+  difundirTorneoId: null,
+  mensajeDifusionTorneo: '',
+  equiposTorneo: seedEquiposTorneo,
+  partidosTorneo: seedPartidosTorneo,
+  torneoExpandidoId: null,
+  nuevoEquipoNombre: '',
+  nuevoPartidoEquipoLocalId: '',
+  nuevoPartidoEquipoVisitanteId: '',
   equiposDeportivos: seedEquiposDeportivos,
   jugadores: seedJugadores,
   selectedEquipoDeportivoId: 1,
@@ -342,6 +384,30 @@ export interface AppActions {
   toggleDebitoAutomatico: () => void;
   guardarConfig: () => void;
   setCategoriaMonto: (id: number, monto: number) => void;
+  setNuevoTorneoNombre: (v: string) => void;
+  setNuevoTorneoDeporte: (v: string) => void;
+  setNuevoTorneoFechaInicio: (v: string) => void;
+  setNuevoTorneoFechaFin: (v: string) => void;
+  setNuevoTorneoLugar: (v: string) => void;
+  setNuevoTorneoCupo: (v: string) => void;
+  setNuevoTorneoValorInscripcion: (v: string) => void;
+  setNuevoTorneoDescripcion: (v: string) => void;
+  crearTorneo: () => void;
+  quitarTorneo: (id: number) => void;
+  openDifundirTorneo: (id: number) => void;
+  closeDifundirTorneo: () => void;
+  setMensajeDifusionTorneo: (v: string) => void;
+  enviarWhatsappTorneo: () => void;
+  copiarMensajeTorneo: () => void;
+  toggleTorneoFixture: (id: number) => void;
+  setNuevoEquipoNombre: (v: string) => void;
+  agregarEquipoTorneo: (torneoId: number) => void;
+  quitarEquipoTorneo: (id: number) => void;
+  setNuevoPartidoEquipoLocalId: (v: string) => void;
+  setNuevoPartidoEquipoVisitanteId: (v: string) => void;
+  agregarPartidoTorneo: (torneoId: number) => void;
+  quitarPartidoTorneo: (id: number) => void;
+  setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
   selectEquipoDeportivo: (id: number) => void;
   openAgregarJugador: () => void;
   openEditarJugador: (id: number) => void;
@@ -779,6 +845,155 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleDebitoAutomatico: () => update((s) => ({ debitoAutomaticoHabilitado: !s.debitoAutomaticoHabilitado })),
     guardarConfig: () => showToast('Cambios guardados'),
     setCategoriaMonto: (id, monto) => update((s) => ({ categorias: s.categorias.map((c) => (c.id === id ? { ...c, monto } : c)) })),
+
+    setNuevoTorneoNombre: (v) => update({ nuevoTorneoNombre: v }),
+    setNuevoTorneoDeporte: (v) => update({ nuevoTorneoDeporte: v }),
+    setNuevoTorneoFechaInicio: (v) => update({ nuevoTorneoFechaInicio: v }),
+    setNuevoTorneoFechaFin: (v) => update({ nuevoTorneoFechaFin: v }),
+    setNuevoTorneoLugar: (v) => update({ nuevoTorneoLugar: v }),
+    setNuevoTorneoCupo: (v) => update({ nuevoTorneoCupo: v }),
+    setNuevoTorneoValorInscripcion: (v) => update({ nuevoTorneoValorInscripcion: v }),
+    setNuevoTorneoDescripcion: (v) => update({ nuevoTorneoDescripcion: v }),
+    crearTorneo: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoTorneoNombre.trim();
+        const deporte = prev.nuevoTorneoDeporte.trim();
+        const lugar = prev.nuevoTorneoLugar.trim();
+        const cupo = parseInt(prev.nuevoTorneoCupo, 10);
+        const valorInscripcion = parseInt(prev.nuevoTorneoValorInscripcion, 10);
+        if (
+          !nombre ||
+          !deporte ||
+          !lugar ||
+          !prev.nuevoTorneoFechaInicio ||
+          !prev.nuevoTorneoFechaFin ||
+          !cupo ||
+          cupo <= 0 ||
+          !valorInscripcion ||
+          valorInscripcion <= 0
+        ) {
+          showToast('Completá nombre, deporte, lugar, fechas, cupo y valor de inscripción');
+          return prev;
+        }
+        if (prev.nuevoTorneoFechaFin < prev.nuevoTorneoFechaInicio) {
+          showToast('La fecha de fin no puede ser anterior a la de inicio');
+          return prev;
+        }
+        showToast('Torneo creado');
+        return {
+          ...prev,
+          torneos: [
+            ...prev.torneos,
+            {
+              id: Date.now(),
+              nombre,
+              deporte,
+              fechaInicio: prev.nuevoTorneoFechaInicio,
+              fechaFin: prev.nuevoTorneoFechaFin,
+              lugar,
+              cupo,
+              valorInscripcion,
+              descripcion: prev.nuevoTorneoDescripcion.trim(),
+            },
+          ],
+          nuevoTorneoNombre: '',
+          nuevoTorneoDeporte: '',
+          nuevoTorneoLugar: '',
+          nuevoTorneoCupo: '',
+          nuevoTorneoValorInscripcion: '',
+          nuevoTorneoDescripcion: '',
+        };
+      });
+    },
+    quitarTorneo: (id) => {
+      update((s) => ({
+        torneos: s.torneos.filter((t) => t.id !== id),
+        equiposTorneo: s.equiposTorneo.filter((e) => e.torneoId !== id),
+        partidosTorneo: s.partidosTorneo.filter((p) => p.torneoId !== id),
+        torneoExpandidoId: s.torneoExpandidoId === id ? null : s.torneoExpandidoId,
+      }));
+      showToast('Torneo eliminado');
+    },
+    openDifundirTorneo: (id) => {
+      const t = state.torneos.find((x) => x.id === id);
+      if (!t) return;
+      const mensaje =
+        '🏆 ' + t.nombre + '\n' +
+        'Deporte: ' + t.deporte + '\n' +
+        'Fechas: ' + formatFechaCorta(t.fechaInicio) + ' al ' + formatFechaCorta(t.fechaFin) + '\n' +
+        'Lugar: ' + t.lugar + '\n' +
+        'Valor de inscripción: ' + formatMoney(t.valorInscripcion) + '\n' +
+        (t.descripcion ? t.descripcion + '\n' : '') +
+        '¡Los esperamos a todos los socios!';
+      update({ showDifundirTorneo: true, difundirTorneoId: id, mensajeDifusionTorneo: mensaje });
+    },
+    closeDifundirTorneo: () => update({ showDifundirTorneo: false, difundirTorneoId: null, mensajeDifusionTorneo: '' }),
+    setMensajeDifusionTorneo: (v) => update({ mensajeDifusionTorneo: v }),
+    enviarWhatsappTorneo: () => {
+      window.open('https://wa.me/?text=' + encodeURIComponent(state.mensajeDifusionTorneo), '_blank');
+      showToast('Abriendo WhatsApp...');
+    },
+    copiarMensajeTorneo: () => {
+      navigator.clipboard
+        .writeText(state.mensajeDifusionTorneo)
+        .then(() => showToast('Mensaje copiado'))
+        .catch(() => showToast('No se pudo copiar el mensaje'));
+    },
+    toggleTorneoFixture: (id) => update((s) => ({ torneoExpandidoId: s.torneoExpandidoId === id ? null : id })),
+    setNuevoEquipoNombre: (v) => update({ nuevoEquipoNombre: v }),
+    agregarEquipoTorneo: (torneoId) => {
+      setState((prev) => {
+        const nombre = prev.nuevoEquipoNombre.trim();
+        if (!nombre) {
+          showToast('Ingresá el nombre del equipo');
+          return prev;
+        }
+        return {
+          ...prev,
+          equiposTorneo: [...prev.equiposTorneo, { id: Date.now(), torneoId, nombre }],
+          nuevoEquipoNombre: '',
+        };
+      });
+    },
+    quitarEquipoTorneo: (id) => {
+      update((s) => ({
+        equiposTorneo: s.equiposTorneo.filter((e) => e.id !== id),
+        partidosTorneo: s.partidosTorneo.filter((p) => p.equipoLocalId !== id && p.equipoVisitanteId !== id),
+      }));
+    },
+    setNuevoPartidoEquipoLocalId: (v) => update({ nuevoPartidoEquipoLocalId: v }),
+    setNuevoPartidoEquipoVisitanteId: (v) => update({ nuevoPartidoEquipoVisitanteId: v }),
+    agregarPartidoTorneo: (torneoId) => {
+      setState((prev) => {
+        const localId = parseInt(prev.nuevoPartidoEquipoLocalId, 10);
+        const visitanteId = parseInt(prev.nuevoPartidoEquipoVisitanteId, 10);
+        if (!localId || !visitanteId) {
+          showToast('Elegí los dos equipos');
+          return prev;
+        }
+        if (localId === visitanteId) {
+          showToast('Los equipos tienen que ser distintos');
+          return prev;
+        }
+        return {
+          ...prev,
+          partidosTorneo: [
+            ...prev.partidosTorneo,
+            { id: Date.now(), torneoId, equipoLocalId: localId, equipoVisitanteId: visitanteId, golesLocal: null, golesVisitante: null },
+          ],
+          nuevoPartidoEquipoLocalId: '',
+          nuevoPartidoEquipoVisitanteId: '',
+        };
+      });
+    },
+    quitarPartidoTorneo: (id) => update((s) => ({ partidosTorneo: s.partidosTorneo.filter((p) => p.id !== id) })),
+    setResultadoPartido: (id, campo, valor) => {
+      const num = valor === '' ? null : parseInt(valor, 10);
+      update((s) => ({
+        partidosTorneo: s.partidosTorneo.map((p) => (p.id === id ? { ...p, [campo]: Number.isNaN(num as number) ? null : num } : p)),
+      }));
+    },
+
     selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
     openAgregarJugador: () => update({
       showJugadorModal: true,
