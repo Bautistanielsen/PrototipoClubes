@@ -20,9 +20,13 @@ import type {
   TipoCliente,
   EstadoFilter,
   EstadoRecordatorio,
-  Torneo,
-  EquipoTorneo,
-  PartidoTorneo,
+  Modulo,
+  EquipoDeportivo,
+  Jugador,
+  EstadoJugador,
+  Formacion,
+  SistemaFormacion,
+  JugadorFormacion,
 } from '../types';
 import {
   seedSocios,
@@ -38,21 +42,74 @@ import {
   seedEgresos,
   seedComunicados,
   seedCategorias,
-  seedTorneos,
-  seedEquiposTorneo,
-  seedPartidosTorneo,
+  seedEquiposDeportivos,
+  seedJugadores,
   HOY_ISO,
 } from '../data/seed';
 import { CUOTA } from '../lib/derive';
 import { formatFechaCorta, formatMoney } from '../lib/format';
 
+function fechaLocalISO(fecha = new Date()) {
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+function posicionesIniciales(sistema: SistemaFormacion) {
+  const lineas = sistema.split('-').map(Number);
+  const posiciones = [{ x: 50, y: 91 }];
+  lineas.forEach((cantidad, indice) => {
+    const y = 75 - indice * (57 / Math.max(lineas.length - 1, 1));
+    for (let i = 0; i < cantidad; i++) posiciones.push({ x: ((i + 1) * 100) / (cantidad + 1), y });
+  });
+  return posiciones;
+}
+
+function siguienteNombreFormacion(formaciones: Formacion[], equipoId: number) {
+  const nombres = new Set(formaciones.filter((item) => item.equipoId === equipoId).map((item) => item.nombre.trim().toLocaleLowerCase('es-AR')));
+  let numero = 1;
+  while (nombres.has(`formación ${numero}`)) numero++;
+  return `Formación ${numero}`;
+}
+
+function recuperarFormaciones() {
+  const vacio = { formaciones: [] as Formacion[], selectedFormacionId: null as number | null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores };
+  if (typeof window === 'undefined') return vacio;
+  try {
+    const guardado = window.localStorage.getItem('club-formaciones-v1');
+    if (!guardado) return vacio;
+    const datos: unknown = JSON.parse(guardado);
+    if (!datos || typeof datos !== 'object') return vacio;
+    const valor = datos as Record<string, unknown>;
+    const equiposCandidatos = Array.isArray(valor.equiposDeportivos)
+      ? valor.equiposDeportivos.filter((item): item is EquipoDeportivo => !!item && typeof item === 'object' && typeof (item as EquipoDeportivo).id === 'number' && typeof (item as EquipoDeportivo).nombre === 'string')
+      : seedEquiposDeportivos;
+    const equipos = equiposCandidatos.length ? equiposCandidatos : seedEquiposDeportivos;
+    const equipoIds = new Set(equipos.map((equipo) => equipo.id));
+    const jugadores = Array.isArray(valor.jugadores)
+      ? valor.jugadores.filter((item): item is Jugador => !!item && typeof item === 'object' && typeof (item as Jugador).id === 'number' && typeof (item as Jugador).equipoId === 'number' && equipoIds.has((item as Jugador).equipoId) && typeof (item as Jugador).nombre === 'string' && typeof (item as Jugador).apellido === 'string' && ((item as Jugador).estado === 'disponible' || (item as Jugador).estado === 'lesionado'))
+      : seedJugadores;
+    const jugadoresPorId = new Map(jugadores.map((jugador) => [jugador.id, jugador]));
+    const formaciones = !Array.isArray(valor.formaciones) ? [] : valor.formaciones.flatMap((item): Formacion[] => {
+      if (!item || typeof item !== 'object') return [];
+      const formacion = item as Partial<Formacion>;
+      if (typeof formacion.id !== 'number' || typeof formacion.equipoId !== 'number' || !equipoIds.has(formacion.equipoId) || typeof formacion.nombre !== 'string' || typeof formacion.sistema !== 'string' || !Array.isArray(formacion.jugadores) || !formacion.camiseta || typeof formacion.camiseta !== 'object') return [];
+      const camiseta = formacion.camiseta as Formacion['camiseta'];
+      if (!['lisa', 'franja', 'rayas'].includes(camiseta.estilo) || typeof camiseta.principal !== 'string' || typeof camiseta.secundaria !== 'string' || typeof camiseta.texto !== 'string') return [];
+      const miembros = formacion.jugadores.filter((jugador): jugador is JugadorFormacion => !!jugador && typeof jugador === 'object' && typeof (jugador as JugadorFormacion).jugadorId === 'number' && ((jugador as JugadorFormacion).zona === 'titular' || (jugador as JugadorFormacion).zona === 'suplente') && typeof (jugador as JugadorFormacion).x === 'number' && typeof (jugador as JugadorFormacion).y === 'number' && typeof (jugador as JugadorFormacion).dorsal === 'string' && jugadoresPorId.get((jugador as JugadorFormacion).jugadorId)?.equipoId === formacion.equipoId);
+      const miembroIds = new Set(miembros.map((jugador) => jugador.jugadorId));
+      const roles = Object.fromEntries(Object.entries(formacion.roles || {}).filter(([, jugadorId]) => typeof jugadorId === 'number' && miembroIds.has(jugadorId))) as Formacion['roles'];
+      return [{ id: formacion.id, equipoId: formacion.equipoId, nombre: formacion.nombre, sistema: formacion.sistema as SistemaFormacion, jugadores: miembros, roles, camiseta }];
+    });
+    const selectedFormacionId = typeof valor.selectedFormacionId === 'number' && formaciones.some((formacion) => formacion.id === valor.selectedFormacionId) ? valor.selectedFormacionId : null;
+    return { formaciones, selectedFormacionId, equiposDeportivos: equipos, jugadores };
+  } catch { return vacio; }
+}
+
 export interface AppState {
-  loggedIn: boolean;
-  loginEmail: string;
-  loginPass: string;
-  loading: boolean;
   isMobile: boolean;
   screen: Screen;
+  activeModule: Modulo | null;
   moreOpen: boolean;
   showMediosPago: boolean;
   showInfoCanchas: boolean;
@@ -113,33 +170,27 @@ export interface AppState {
   diaVencimiento: string;
   debitoAutomaticoHabilitado: boolean;
   categorias: Categoria[];
-  torneos: Torneo[];
-  nuevoTorneoNombre: string;
-  nuevoTorneoDeporte: string;
-  nuevoTorneoFechaInicio: string;
-  nuevoTorneoFechaFin: string;
-  nuevoTorneoLugar: string;
-  nuevoTorneoCupo: string;
-  nuevoTorneoValorInscripcion: string;
-  nuevoTorneoDescripcion: string;
-  showDifundirTorneo: boolean;
-  difundirTorneoId: number | null;
-  mensajeDifusionTorneo: string;
-  equiposTorneo: EquipoTorneo[];
-  partidosTorneo: PartidoTorneo[];
-  torneoExpandidoId: number | null;
-  nuevoEquipoNombre: string;
-  nuevoPartidoEquipoLocalId: string;
-  nuevoPartidoEquipoVisitanteId: string;
+  equiposDeportivos: EquipoDeportivo[];
+  jugadores: Jugador[];
+  selectedEquipoDeportivoId: number;
+  showJugadorModal: boolean;
+  jugadorEditandoId: number | null;
+  nuevoJugadorNombre: string;
+  nuevoJugadorApellido: string;
+  nuevoJugadorFechaNacimiento: string;
+  nuevoJugadorTelefono: string;
+  nuevoJugadorEstado: EstadoJugador;
+  nuevoJugadorFoto: string;
+  showEquipoDeportivoModal: boolean;
+  nuevoEquipoDeportivoNombre: string;
+  formaciones: Formacion[];
+  selectedFormacionId: number | null;
 }
 
 const initialState: AppState = {
-  loggedIn: false,
-  loginEmail: '',
-  loginPass: '',
-  loading: false,
   isMobile: typeof window !== 'undefined' ? window.innerWidth < 900 : false,
   screen: 'dashboard',
+  activeModule: null,
   moreOpen: false,
   showMediosPago: false,
   showInfoCanchas: false,
@@ -200,31 +251,26 @@ const initialState: AppState = {
   diaVencimiento: '5',
   debitoAutomaticoHabilitado: true,
   categorias: seedCategorias,
-  torneos: seedTorneos,
-  nuevoTorneoNombre: '',
-  nuevoTorneoDeporte: '',
-  nuevoTorneoFechaInicio: '2026-08-01',
-  nuevoTorneoFechaFin: '2026-08-02',
-  nuevoTorneoLugar: '',
-  nuevoTorneoCupo: '',
-  nuevoTorneoValorInscripcion: '',
-  nuevoTorneoDescripcion: '',
-  showDifundirTorneo: false,
-  difundirTorneoId: null,
-  mensajeDifusionTorneo: '',
-  equiposTorneo: seedEquiposTorneo,
-  partidosTorneo: seedPartidosTorneo,
-  torneoExpandidoId: null,
-  nuevoEquipoNombre: '',
-  nuevoPartidoEquipoLocalId: '',
-  nuevoPartidoEquipoVisitanteId: '',
+  equiposDeportivos: seedEquiposDeportivos,
+  jugadores: seedJugadores,
+  selectedEquipoDeportivoId: 1,
+  showJugadorModal: false,
+  jugadorEditandoId: null,
+  nuevoJugadorNombre: '',
+  nuevoJugadorApellido: '',
+  nuevoJugadorFechaNacimiento: '',
+  nuevoJugadorTelefono: '',
+  nuevoJugadorEstado: 'disponible',
+  nuevoJugadorFoto: '',
+  showEquipoDeportivoModal: false,
+  nuevoEquipoDeportivoNombre: '',
+  formaciones: [],
+  selectedFormacionId: null,
 };
 
 export interface AppActions {
-  onLogin: (e: React.FormEvent) => void;
-  setLoginEmail: (v: string) => void;
-  setLoginPass: (v: string) => void;
-  onLogout: () => void;
+  selectModule: (module: Modulo) => void;
+  showModuleSelector: () => void;
   navigate: (screen: Screen) => void;
   toggleIngresosMenu: (e: React.MouseEvent) => void;
   toggleMore: () => void;
@@ -296,30 +342,32 @@ export interface AppActions {
   toggleDebitoAutomatico: () => void;
   guardarConfig: () => void;
   setCategoriaMonto: (id: number, monto: number) => void;
-  setNuevoTorneoNombre: (v: string) => void;
-  setNuevoTorneoDeporte: (v: string) => void;
-  setNuevoTorneoFechaInicio: (v: string) => void;
-  setNuevoTorneoFechaFin: (v: string) => void;
-  setNuevoTorneoLugar: (v: string) => void;
-  setNuevoTorneoCupo: (v: string) => void;
-  setNuevoTorneoValorInscripcion: (v: string) => void;
-  setNuevoTorneoDescripcion: (v: string) => void;
-  crearTorneo: () => void;
-  quitarTorneo: (id: number) => void;
-  openDifundirTorneo: (id: number) => void;
-  closeDifundirTorneo: () => void;
-  setMensajeDifusionTorneo: (v: string) => void;
-  enviarWhatsappTorneo: () => void;
-  copiarMensajeTorneo: () => void;
-  toggleTorneoFixture: (id: number) => void;
-  setNuevoEquipoNombre: (v: string) => void;
-  agregarEquipoTorneo: (torneoId: number) => void;
-  quitarEquipoTorneo: (id: number) => void;
-  setNuevoPartidoEquipoLocalId: (v: string) => void;
-  setNuevoPartidoEquipoVisitanteId: (v: string) => void;
-  agregarPartidoTorneo: (torneoId: number) => void;
-  quitarPartidoTorneo: (id: number) => void;
-  setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
+  selectEquipoDeportivo: (id: number) => void;
+  openAgregarJugador: () => void;
+  openEditarJugador: (id: number) => void;
+  closeJugadorModal: () => void;
+  setNuevoJugadorNombre: (v: string) => void;
+  setNuevoJugadorApellido: (v: string) => void;
+  setNuevoJugadorFechaNacimiento: (v: string) => void;
+  setNuevoJugadorTelefono: (v: string) => void;
+  setNuevoJugadorEstado: (v: EstadoJugador) => void;
+  setNuevoJugadorFoto: (v: string) => void;
+  guardarJugador: () => void;
+  eliminarJugador: (id: number) => void;
+  openAgregarEquipoDeportivo: () => void;
+  closeEquipoDeportivoModal: () => void;
+  setNuevoEquipoDeportivoNombre: (v: string) => void;
+  agregarEquipoDeportivo: () => void;
+  crearFormacion: (sistema: SistemaFormacion) => void;
+  seleccionarFormacion: (id: number) => void;
+  actualizarFormacion: (id: number, patch: Partial<Omit<Formacion, 'id' | 'equipoId'>>) => void;
+  cambiarSistemaFormacion: (id: number, sistema: SistemaFormacion) => void;
+  moverJugadorFormacion: (id: number, jugadorId: number, zona: JugadorFormacion['zona'], x?: number, y?: number) => void;
+  quitarJugadorFormacion: (id: number, jugadorId: number) => void;
+  duplicarFormacion: (id: number) => void;
+  eliminarFormacion: (id: number) => void;
+  normalizarNombreFormacion: (id: number) => void;
+  mostrarToast: (mensaje: string) => void;
 }
 
 interface AppContextValue {
@@ -330,7 +378,7 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AppState>(initialState);
+  const [state, setState] = useState<AppState>(() => ({ ...initialState, ...recuperarFormaciones() }));
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const update = useCallback((patch: Partial<AppState> | ((s: AppState) => Partial<AppState>)) => {
@@ -343,6 +391,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', onResize);
   }, [update]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try { window.localStorage.setItem('club-formaciones-v1', JSON.stringify({ version: 2, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores })); } catch { /* almacenamiento no disponible */ }
+  }, [state.formaciones, state.selectedFormacionId, state.equiposDeportivos, state.jugadores]);
+
   const showToast = useCallback((msg: string) => {
     update({ toast: msg });
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -350,14 +403,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   const actions: AppActions = {
-    onLogin: (e) => {
-      e.preventDefault();
-      update({ loggedIn: true, loading: true });
-      setTimeout(() => update({ loading: false }), 550);
+    selectModule: (module) => {
+      const screen: Screen = module === 'administrativo' ? 'dashboard' : module === 'deportivo' ? 'deportivo_inicio' : 'portal_inicio';
+      update({ activeModule: module, screen, moreOpen: false });
     },
-    setLoginEmail: (v) => update({ loginEmail: v }),
-    setLoginPass: (v) => update({ loginPass: v }),
-    onLogout: () => update({ loggedIn: false, screen: 'dashboard', moreOpen: false }),
+    showModuleSelector: () => update({ activeModule: null, moreOpen: false }),
 
     navigate: (screen) => {
       const opensIngresos = screen === 'ventas' || screen === 'buffet' || screen === 'canchas' || screen === 'torneos';
@@ -729,155 +779,172 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleDebitoAutomatico: () => update((s) => ({ debitoAutomaticoHabilitado: !s.debitoAutomaticoHabilitado })),
     guardarConfig: () => showToast('Cambios guardados'),
     setCategoriaMonto: (id, monto) => update((s) => ({ categorias: s.categorias.map((c) => (c.id === id ? { ...c, monto } : c)) })),
-
-    setNuevoTorneoNombre: (v) => update({ nuevoTorneoNombre: v }),
-    setNuevoTorneoDeporte: (v) => update({ nuevoTorneoDeporte: v }),
-    setNuevoTorneoFechaInicio: (v) => update({ nuevoTorneoFechaInicio: v }),
-    setNuevoTorneoFechaFin: (v) => update({ nuevoTorneoFechaFin: v }),
-    setNuevoTorneoLugar: (v) => update({ nuevoTorneoLugar: v }),
-    setNuevoTorneoCupo: (v) => update({ nuevoTorneoCupo: v }),
-    setNuevoTorneoValorInscripcion: (v) => update({ nuevoTorneoValorInscripcion: v }),
-    setNuevoTorneoDescripcion: (v) => update({ nuevoTorneoDescripcion: v }),
-    crearTorneo: () => {
-      setState((prev) => {
-        const nombre = prev.nuevoTorneoNombre.trim();
-        const deporte = prev.nuevoTorneoDeporte.trim();
-        const lugar = prev.nuevoTorneoLugar.trim();
-        const cupo = parseInt(prev.nuevoTorneoCupo, 10);
-        const valorInscripcion = parseInt(prev.nuevoTorneoValorInscripcion, 10);
-        if (
-          !nombre ||
-          !deporte ||
-          !lugar ||
-          !prev.nuevoTorneoFechaInicio ||
-          !prev.nuevoTorneoFechaFin ||
-          !cupo ||
-          cupo <= 0 ||
-          !valorInscripcion ||
-          valorInscripcion <= 0
-        ) {
-          showToast('Completá nombre, deporte, lugar, fechas, cupo y valor de inscripción');
-          return prev;
-        }
-        if (prev.nuevoTorneoFechaFin < prev.nuevoTorneoFechaInicio) {
-          showToast('La fecha de fin no puede ser anterior a la de inicio');
-          return prev;
-        }
-        showToast('Torneo creado');
-        return {
-          ...prev,
-          torneos: [
-            ...prev.torneos,
-            {
-              id: Date.now(),
-              nombre,
-              deporte,
-              fechaInicio: prev.nuevoTorneoFechaInicio,
-              fechaFin: prev.nuevoTorneoFechaFin,
-              lugar,
-              cupo,
-              valorInscripcion,
-              descripcion: prev.nuevoTorneoDescripcion.trim(),
-            },
-          ],
-          nuevoTorneoNombre: '',
-          nuevoTorneoDeporte: '',
-          nuevoTorneoLugar: '',
-          nuevoTorneoCupo: '',
-          nuevoTorneoValorInscripcion: '',
-          nuevoTorneoDescripcion: '',
-        };
+    selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
+    openAgregarJugador: () => update({
+      showJugadorModal: true,
+      jugadorEditandoId: null,
+      nuevoJugadorNombre: '',
+      nuevoJugadorApellido: '',
+      nuevoJugadorFechaNacimiento: '',
+      nuevoJugadorTelefono: '',
+      nuevoJugadorEstado: 'disponible',
+      nuevoJugadorFoto: '',
+    }),
+    openEditarJugador: (id) => {
+      const jugador = state.jugadores.find((item) => item.id === id);
+      if (!jugador) return;
+      update({
+        showJugadorModal: true,
+        jugadorEditandoId: jugador.id,
+        nuevoJugadorNombre: jugador.nombre,
+        nuevoJugadorApellido: jugador.apellido,
+        nuevoJugadorFechaNacimiento: jugador.fechaNacimiento,
+        nuevoJugadorTelefono: jugador.telefono,
+        nuevoJugadorEstado: jugador.estado,
+        nuevoJugadorFoto: jugador.foto || '',
       });
     },
-    quitarTorneo: (id) => {
-      update((s) => ({
-        torneos: s.torneos.filter((t) => t.id !== id),
-        equiposTorneo: s.equiposTorneo.filter((e) => e.torneoId !== id),
-        partidosTorneo: s.partidosTorneo.filter((p) => p.torneoId !== id),
-        torneoExpandidoId: s.torneoExpandidoId === id ? null : s.torneoExpandidoId,
+    closeJugadorModal: () => update({ showJugadorModal: false, jugadorEditandoId: null }),
+    setNuevoJugadorNombre: (v) => update({ nuevoJugadorNombre: v }),
+    setNuevoJugadorApellido: (v) => update({ nuevoJugadorApellido: v }),
+    setNuevoJugadorFechaNacimiento: (v) => update({ nuevoJugadorFechaNacimiento: v }),
+    setNuevoJugadorTelefono: (v) => update({ nuevoJugadorTelefono: v }),
+    setNuevoJugadorEstado: (v) => update({ nuevoJugadorEstado: v }),
+    setNuevoJugadorFoto: (v) => update({ nuevoJugadorFoto: v }),
+    guardarJugador: () => {
+      const nombre = state.nuevoJugadorNombre.trim();
+      const apellido = state.nuevoJugadorApellido.trim();
+      if (!nombre || !apellido || !state.nuevoJugadorFechaNacimiento || !state.nuevoJugadorTelefono.trim()) {
+        showToast('Completá nombre, apellido, nacimiento y teléfono');
+        return;
+      }
+      if (state.nuevoJugadorFechaNacimiento > fechaLocalISO()) {
+        showToast('La fecha de nacimiento no puede ser futura');
+        return;
+      }
+      const jugador = {
+        equipoId: state.selectedEquipoDeportivoId,
+        nombre,
+        apellido,
+        fechaNacimiento: state.nuevoJugadorFechaNacimiento,
+        telefono: state.nuevoJugadorTelefono.trim(),
+        estado: state.nuevoJugadorEstado,
+        ...(state.nuevoJugadorFoto ? { foto: state.nuevoJugadorFoto } : {}),
+      };
+      const editando = state.jugadorEditandoId;
+      update((prev) => ({
+        jugadores: editando
+          ? prev.jugadores.map((item) => (item.id === editando ? { ...item, ...jugador } : item))
+          : [...prev.jugadores, { id: Date.now(), ...jugador }],
+        showJugadorModal: false,
+        jugadorEditandoId: null,
       }));
-      showToast('Torneo eliminado');
+      showToast(editando ? 'Jugador actualizado' : 'Jugador agregado al plantel');
     },
-    openDifundirTorneo: (id) => {
-      const t = state.torneos.find((x) => x.id === id);
-      if (!t) return;
-      const mensaje =
-        '🏆 ' + t.nombre + '\n' +
-        'Deporte: ' + t.deporte + '\n' +
-        'Fechas: ' + formatFechaCorta(t.fechaInicio) + ' al ' + formatFechaCorta(t.fechaFin) + '\n' +
-        'Lugar: ' + t.lugar + '\n' +
-        'Valor de inscripción: ' + formatMoney(t.valorInscripcion) + '\n' +
-        (t.descripcion ? t.descripcion + '\n' : '') +
-        '¡Los esperamos a todos los socios!';
-      update({ showDifundirTorneo: true, difundirTorneoId: id, mensajeDifusionTorneo: mensaje });
+    eliminarJugador: (id) => {
+      update((s) => ({
+        jugadores: s.jugadores.filter((item) => item.id !== id),
+        formaciones: s.formaciones.map((formacion) => ({
+          ...formacion,
+          jugadores: formacion.jugadores.filter((jugador) => jugador.jugadorId !== id),
+          roles: Object.fromEntries(Object.entries(formacion.roles).filter(([, jugadorId]) => jugadorId !== id)),
+        })),
+      }));
+      showToast('Jugador eliminado del plantel');
     },
-    closeDifundirTorneo: () => update({ showDifundirTorneo: false, difundirTorneoId: null, mensajeDifusionTorneo: '' }),
-    setMensajeDifusionTorneo: (v) => update({ mensajeDifusionTorneo: v }),
-    enviarWhatsappTorneo: () => {
-      window.open('https://wa.me/?text=' + encodeURIComponent(state.mensajeDifusionTorneo), '_blank');
-      showToast('Abriendo WhatsApp...');
+    openAgregarEquipoDeportivo: () => update({ showEquipoDeportivoModal: true, nuevoEquipoDeportivoNombre: '' }),
+    closeEquipoDeportivoModal: () => update({ showEquipoDeportivoModal: false, nuevoEquipoDeportivoNombre: '' }),
+    setNuevoEquipoDeportivoNombre: (v) => update({ nuevoEquipoDeportivoNombre: v }),
+    agregarEquipoDeportivo: () => {
+      const nombre = state.nuevoEquipoDeportivoNombre.trim();
+      if (!nombre) {
+        showToast('Ingresá el nombre del plantel');
+        return;
+      }
+      const normalizar = (valor: string) => valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-AR').trim();
+      if (state.equiposDeportivos.some((equipo) => normalizar(equipo.nombre) === normalizar(nombre))) {
+        showToast('Ya existe un plantel con ese nombre');
+        return;
+      }
+      const nuevoEquipo = { id: Date.now(), nombre };
+      update((prev) => ({
+        equiposDeportivos: [...prev.equiposDeportivos, nuevoEquipo],
+        selectedEquipoDeportivoId: nuevoEquipo.id,
+        showEquipoDeportivoModal: false,
+        nuevoEquipoDeportivoNombre: '',
+      }));
+      showToast('Plantel creado');
     },
-    copiarMensajeTorneo: () => {
-      navigator.clipboard
-        .writeText(state.mensajeDifusionTorneo)
-        .then(() => showToast('Mensaje copiado'))
-        .catch(() => showToast('No se pudo copiar el mensaje'));
-    },
-
-    toggleTorneoFixture: (id) => update((s) => ({ torneoExpandidoId: s.torneoExpandidoId === id ? null : id })),
-    setNuevoEquipoNombre: (v) => update({ nuevoEquipoNombre: v }),
-    agregarEquipoTorneo: (torneoId) => {
+    crearFormacion: (sistema) => {
       setState((prev) => {
-        const nombre = prev.nuevoEquipoNombre.trim();
-        if (!nombre) {
-          showToast('Ingresá el nombre del equipo');
-          return prev;
-        }
-        return {
-          ...prev,
-          equiposTorneo: [...prev.equiposTorneo, { id: Date.now(), torneoId, nombre }],
-          nuevoEquipoNombre: '',
+        const equipoId = prev.selectedEquipoDeportivoId;
+        const disponibles = prev.jugadores.filter((jugador) => jugador.equipoId === equipoId && jugador.estado === 'disponible').slice(0, 11);
+        const posiciones = posicionesIniciales(sistema);
+        const id = Date.now();
+        const formacion: Formacion = {
+          id,
+          equipoId,
+          nombre: siguienteNombreFormacion(prev.formaciones, equipoId),
+          sistema,
+          jugadores: disponibles.map((jugador, index) => ({ jugadorId: jugador.id, zona: 'titular', ...posiciones[index], dorsal: String(index + 1) })),
+          roles: {},
+          camiseta: { estilo: 'lisa', principal: '#087f75', secundaria: '#ffffff', texto: '#ffffff' },
         };
+        return { ...prev, formaciones: [...prev.formaciones, formacion], selectedFormacionId: id };
       });
+      showToast('Formación creada');
     },
-    quitarEquipoTorneo: (id) => {
+    seleccionarFormacion: (id) => update({ selectedFormacionId: id }),
+    actualizarFormacion: (id, patch) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, ...patch } : item) })),
+    cambiarSistemaFormacion: (id, sistema) => update((s) => ({
+      formaciones: s.formaciones.map((item) => {
+        if (item.id !== id) return item;
+        const posiciones = posicionesIniciales(sistema);
+        let indice = 0;
+        return { ...item, sistema, jugadores: item.jugadores.map((jugador) => jugador.zona === 'titular' ? { ...jugador, ...posiciones[indice++] } : jugador) };
+      }),
+    })),
+    moverJugadorFormacion: (id, jugadorId, zona, x, y) => {
+      const actual = state.formaciones.find((item) => item.id === id);
+      const existente = actual?.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
+      if (zona === 'titular' && existente?.zona !== 'titular' && (actual?.jugadores.filter((jugador) => jugador.zona === 'titular').length || 0) >= 11) {
+        showToast('La formación ya tiene 11 titulares');
+        return;
+      }
       update((s) => ({
-        equiposTorneo: s.equiposTorneo.filter((e) => e.id !== id),
-        partidosTorneo: s.partidosTorneo.filter((p) => p.equipoLocalId !== id && p.equipoVisitanteId !== id),
+      formaciones: s.formaciones.map((item) => {
+        if (item.id !== id) return item;
+        const jugadorExistente = item.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
+        return {
+          ...item,
+          jugadores: jugadorExistente
+            ? item.jugadores.map((jugador) => jugador.jugadorId === jugadorId ? { ...jugador, zona, ...(x === undefined ? {} : { x }), ...(y === undefined ? {} : { y }) } : jugador)
+            : [...item.jugadores, { jugadorId, zona, x: x ?? 50, y: y ?? 50, dorsal: String(item.jugadores.length + 1) }],
+        };
+      }),
       }));
     },
-    setNuevoPartidoEquipoLocalId: (v) => update({ nuevoPartidoEquipoLocalId: v }),
-    setNuevoPartidoEquipoVisitanteId: (v) => update({ nuevoPartidoEquipoVisitanteId: v }),
-    agregarPartidoTorneo: (torneoId) => {
-      setState((prev) => {
-        const localId = parseInt(prev.nuevoPartidoEquipoLocalId, 10);
-        const visitanteId = parseInt(prev.nuevoPartidoEquipoVisitanteId, 10);
-        if (!localId || !visitanteId) {
-          showToast('Elegí los dos equipos');
-          return prev;
-        }
-        if (localId === visitanteId) {
-          showToast('Los equipos tienen que ser distintos');
-          return prev;
-        }
-        return {
-          ...prev,
-          partidosTorneo: [
-            ...prev.partidosTorneo,
-            { id: Date.now(), torneoId, equipoLocalId: localId, equipoVisitanteId: visitanteId, golesLocal: null, golesVisitante: null },
-          ],
-          nuevoPartidoEquipoLocalId: '',
-          nuevoPartidoEquipoVisitanteId: '',
-        };
-      });
-    },
-    quitarPartidoTorneo: (id) => update((s) => ({ partidosTorneo: s.partidosTorneo.filter((p) => p.id !== id) })),
-    setResultadoPartido: (id, campo, valor) => {
-      const num = valor === '' ? null : parseInt(valor, 10);
-      update((s) => ({
-        partidosTorneo: s.partidosTorneo.map((p) => (p.id === id ? { ...p, [campo]: Number.isNaN(num as number) ? null : num } : p)),
-      }));
-    },
+    quitarJugadorFormacion: (id, jugadorId) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, jugadores: item.jugadores.filter((jugador) => jugador.jugadorId !== jugadorId), roles: Object.fromEntries(Object.entries(item.roles).filter(([, rolJugadorId]) => rolJugadorId !== jugadorId)) } : item) })),
+    duplicarFormacion: (id) => setState((prev) => {
+      const original = prev.formaciones.find((item) => item.id === id);
+      if (!original) return prev;
+      const nuevoId = Date.now();
+      const copia = { ...original, id: nuevoId, nombre: siguienteNombreFormacion(prev.formaciones, original.equipoId), jugadores: original.jugadores.map((jugador) => ({ ...jugador })), roles: { ...original.roles }, camiseta: { ...original.camiseta } };
+      showToast('Formación duplicada');
+      return { ...prev, formaciones: [...prev.formaciones, copia], selectedFormacionId: nuevoId };
+    }),
+    eliminarFormacion: (id) => setState((prev) => {
+      const restantes = prev.formaciones.filter((item) => item.id !== id);
+      showToast('Formación eliminada');
+      return { ...prev, formaciones: restantes, selectedFormacionId: prev.selectedFormacionId === id ? (restantes.find((item) => item.equipoId === prev.selectedEquipoDeportivoId)?.id ?? null) : prev.selectedFormacionId };
+    }),
+    normalizarNombreFormacion: (id) => update((s) => {
+      const actual = s.formaciones.find((item) => item.id === id);
+      if (!actual) return {};
+      const nombre = actual.nombre.trim() || siguienteNombreFormacion(s.formaciones.filter((item) => item.id !== id), actual.equipoId);
+      return { formaciones: s.formaciones.map((item) => item.id === id ? { ...item, nombre } : item) };
+    }),
+    mostrarToast: showToast,
   };
 
   return <AppContext.Provider value={{ state, actions }}>{children}</AppContext.Provider>;
