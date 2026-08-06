@@ -10,6 +10,9 @@ import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import VerPartidoModal from './components/modals/VerPartidoModal';
 import AgregarPartidoModal from './components/modals/AgregarPartidoModal';
 import ReservaModal from './components/modals/ReservaModal';
+import ReponerStockBuffetModal from './components/modals/ReponerStockBuffetModal';
+import ReponerStockShopModal from './components/modals/ReponerStockShopModal';
+import DifundirTorneoModal from './components/modals/DifundirTorneoModal';
 import Dashboard from './screens/Dashboard';
 import Socios from './screens/Socios';
 import Cobranza from './screens/Cobranza';
@@ -17,6 +20,7 @@ import Ventas from './screens/Ventas';
 import Buffet from './screens/Buffet';
 import Canchas from './screens/Canchas';
 import Calendario from './screens/Calendario';
+import Torneos from './screens/Torneos';
 import Reportes from './screens/Reportes';
 import Egresos from './screens/Egresos';
 import Comunicados from './screens/Comunicados';
@@ -39,6 +43,8 @@ function ScreenContent() {
       return <Canchas />;
     case 'calendario':
       return <Calendario />;
+    case 'torneos':
+      return <Torneos />;
     case 'reportes':
       return <Reportes />;
     case 'egresos':
@@ -82,7 +88,10 @@ function MainLayout() {
       <AgregarPartidoModal />
       <InfoCanchasModal />
       <ReservaModal />
+      <DifundirTorneoModal />
       <MediosPagoModal />
+      <ReponerStockBuffetModal />
+      <ReponerStockShopModal />
       <Toast />
     </div>
   );

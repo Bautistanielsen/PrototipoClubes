@@ -10,6 +10,7 @@ import type {
   Pago,
   VentaShop,
   ProductoShop,
+  VarianteShop,
   ProductoBuffet,
   VentaBuffet,
   Egreso,
@@ -19,6 +20,9 @@ import type {
   TipoCliente,
   EstadoFilter,
   EstadoRecordatorio,
+  Torneo,
+  EquipoTorneo,
+  PartidoTorneo,
 } from '../types';
 import {
   seedSocios,
@@ -34,9 +38,13 @@ import {
   seedEgresos,
   seedComunicados,
   seedCategorias,
+  seedTorneos,
+  seedEquiposTorneo,
+  seedPartidosTorneo,
   HOY_ISO,
 } from '../data/seed';
 import { CUOTA } from '../lib/derive';
+import { formatFechaCorta, formatMoney } from '../lib/format';
 
 export interface AppState {
   loggedIn: boolean;
@@ -49,6 +57,8 @@ export interface AppState {
   showMediosPago: boolean;
   showInfoCanchas: boolean;
   showAgregarPartido: boolean;
+  showReponerStockBuffet: boolean;
+  showReponerStockShop: boolean;
   showVerPartido: boolean;
   verPartidoId: number | null;
   toast: string | null;
@@ -78,9 +88,12 @@ export interface AppState {
   ventasShop: VentaShop[];
   productosShop: ProductoShop[];
   nuevaVentaProductoId: string;
+  nuevaVentaVarianteId: string;
   nuevaVentaMedio: MedioPago;
   nuevoStockShopProductoId: string;
   nuevoStockShopCantidad: string;
+  nuevoStockShopTalle: string;
+  nuevoStockShopColor: string;
   productosBuffet: ProductoBuffet[];
   ventasBuffet: VentaBuffet[];
   nuevaVentaBuffetProductoId: string;
@@ -100,6 +113,24 @@ export interface AppState {
   diaVencimiento: string;
   debitoAutomaticoHabilitado: boolean;
   categorias: Categoria[];
+  torneos: Torneo[];
+  nuevoTorneoNombre: string;
+  nuevoTorneoDeporte: string;
+  nuevoTorneoFechaInicio: string;
+  nuevoTorneoFechaFin: string;
+  nuevoTorneoLugar: string;
+  nuevoTorneoCupo: string;
+  nuevoTorneoValorInscripcion: string;
+  nuevoTorneoDescripcion: string;
+  showDifundirTorneo: boolean;
+  difundirTorneoId: number | null;
+  mensajeDifusionTorneo: string;
+  equiposTorneo: EquipoTorneo[];
+  partidosTorneo: PartidoTorneo[];
+  torneoExpandidoId: number | null;
+  nuevoEquipoNombre: string;
+  nuevoPartidoEquipoLocalId: string;
+  nuevoPartidoEquipoVisitanteId: string;
 }
 
 const initialState: AppState = {
@@ -113,6 +144,8 @@ const initialState: AppState = {
   showMediosPago: false,
   showInfoCanchas: false,
   showAgregarPartido: false,
+  showReponerStockBuffet: false,
+  showReponerStockShop: false,
   showVerPartido: false,
   verPartidoId: null,
   toast: null,
@@ -142,9 +175,12 @@ const initialState: AppState = {
   ventasShop: seedVentasShop,
   productosShop: seedProductosShop,
   nuevaVentaProductoId: '',
+  nuevaVentaVarianteId: '',
   nuevaVentaMedio: 'Efectivo',
   nuevoStockShopProductoId: '',
   nuevoStockShopCantidad: '',
+  nuevoStockShopTalle: '',
+  nuevoStockShopColor: '',
   productosBuffet: seedProductosBuffet,
   ventasBuffet: seedVentasBuffet,
   nuevaVentaBuffetProductoId: '',
@@ -164,6 +200,24 @@ const initialState: AppState = {
   diaVencimiento: '5',
   debitoAutomaticoHabilitado: true,
   categorias: seedCategorias,
+  torneos: seedTorneos,
+  nuevoTorneoNombre: '',
+  nuevoTorneoDeporte: '',
+  nuevoTorneoFechaInicio: '2026-08-01',
+  nuevoTorneoFechaFin: '2026-08-02',
+  nuevoTorneoLugar: '',
+  nuevoTorneoCupo: '',
+  nuevoTorneoValorInscripcion: '',
+  nuevoTorneoDescripcion: '',
+  showDifundirTorneo: false,
+  difundirTorneoId: null,
+  mensajeDifusionTorneo: '',
+  equiposTorneo: seedEquiposTorneo,
+  partidosTorneo: seedPartidosTorneo,
+  torneoExpandidoId: null,
+  nuevoEquipoNombre: '',
+  nuevoPartidoEquipoLocalId: '',
+  nuevoPartidoEquipoVisitanteId: '',
 };
 
 export interface AppActions {
@@ -189,6 +243,10 @@ export interface AppActions {
   liberarReserva: (id: number) => void;
   openAgregarPartido: (fecha?: string) => void;
   closeAgregarPartido: () => void;
+  openReponerStockBuffet: () => void;
+  closeReponerStockBuffet: () => void;
+  openReponerStockShop: () => void;
+  closeReponerStockShop: () => void;
   setNuevoPartidoFecha: (v: string) => void;
   setNuevoPartidoHora: (v: string) => void;
   setNuevoPartidoTipo: (v: TipoPartido) => void;
@@ -203,15 +261,19 @@ export interface AppActions {
   setFilter: (f: EstadoFilter) => void;
   setSearchQuery: (v: string) => void;
   toggleRecordatorio: (id: number) => void;
+  enviarRecordatorioWhatsapp: (id: number) => void;
   cobrarMoroso: (id: number) => void;
   setNuevoPagoSocioId: (v: string) => void;
   setNuevoPagoMedio: (v: MedioPago) => void;
   registrarPago: () => void;
   setNuevaVentaProductoId: (v: string) => void;
+  setNuevaVentaVarianteId: (v: string) => void;
   setNuevaVentaMedio: (v: MedioPago) => void;
   registrarVentaShop: () => void;
   setNuevoStockShopProductoId: (v: string) => void;
   setNuevoStockShopCantidad: (v: string) => void;
+  setNuevoStockShopTalle: (v: string) => void;
+  setNuevoStockShopColor: (v: string) => void;
   reponerStockShop: () => void;
   setNuevaVentaBuffetProductoId: (v: string) => void;
   setNuevaVentaBuffetTipo: (v: TipoCliente) => void;
@@ -234,6 +296,30 @@ export interface AppActions {
   toggleDebitoAutomatico: () => void;
   guardarConfig: () => void;
   setCategoriaMonto: (id: number, monto: number) => void;
+  setNuevoTorneoNombre: (v: string) => void;
+  setNuevoTorneoDeporte: (v: string) => void;
+  setNuevoTorneoFechaInicio: (v: string) => void;
+  setNuevoTorneoFechaFin: (v: string) => void;
+  setNuevoTorneoLugar: (v: string) => void;
+  setNuevoTorneoCupo: (v: string) => void;
+  setNuevoTorneoValorInscripcion: (v: string) => void;
+  setNuevoTorneoDescripcion: (v: string) => void;
+  crearTorneo: () => void;
+  quitarTorneo: (id: number) => void;
+  openDifundirTorneo: (id: number) => void;
+  closeDifundirTorneo: () => void;
+  setMensajeDifusionTorneo: (v: string) => void;
+  enviarWhatsappTorneo: () => void;
+  copiarMensajeTorneo: () => void;
+  toggleTorneoFixture: (id: number) => void;
+  setNuevoEquipoNombre: (v: string) => void;
+  agregarEquipoTorneo: (torneoId: number) => void;
+  quitarEquipoTorneo: (id: number) => void;
+  setNuevoPartidoEquipoLocalId: (v: string) => void;
+  setNuevoPartidoEquipoVisitanteId: (v: string) => void;
+  agregarPartidoTorneo: (torneoId: number) => void;
+  quitarPartidoTorneo: (id: number) => void;
+  setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
 }
 
 interface AppContextValue {
@@ -274,7 +360,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     onLogout: () => update({ loggedIn: false, screen: 'dashboard', moreOpen: false }),
 
     navigate: (screen) => {
-      const opensIngresos = screen === 'ventas' || screen === 'buffet' || screen === 'canchas';
+      const opensIngresos = screen === 'ventas' || screen === 'buffet' || screen === 'canchas' || screen === 'torneos';
       update((s) => ({ screen, moreOpen: false, ingresosMenuOpen: opensIngresos ? true : s.ingresosMenuOpen }));
     },
     toggleIngresosMenu: (e) => {
@@ -352,6 +438,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       });
     },
+    openReponerStockBuffet: () => update({ showReponerStockBuffet: true }),
+    closeReponerStockBuffet: () => update({ showReponerStockBuffet: false, nuevoStockBuffetProductoId: '', nuevoStockBuffetCantidad: '' }),
+    openReponerStockShop: () => update({ showReponerStockShop: true }),
+    closeReponerStockShop: () => update({ showReponerStockShop: false, nuevoStockShopProductoId: '', nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
+
     openVerPartido: (id) => update({ showVerPartido: true, verPartidoId: id }),
     closeVerPartido: () => update({ showVerPartido: false, verPartidoId: null }),
     quitarVerPartido: () => {
@@ -392,6 +483,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       showToast('Estado del recordatorio actualizado');
     },
 
+    enviarRecordatorioWhatsapp: (id) => {
+      const s = state.socios.find((x) => x.id === id);
+      if (!s) return;
+      const mensaje = 'Hola ' + s.nombre + ', te recordamos que tenés una cuota pendiente de ' + formatMoney(s.deuda) + ' en ' + state.clubNombre + '. ¡Gracias!';
+      const numero = s.telefono.replace(/\D/g, '');
+      window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensaje), '_blank');
+      update((prev) => ({ recordatorios: { ...prev.recordatorios, [id]: 'enviado' } }));
+      showToast('Abriendo WhatsApp para ' + s.nombre);
+    },
+
     cobrarMoroso: (id) => {
       setState((prev) => {
         const s = prev.socios.find((x) => x.id === id);
@@ -425,7 +526,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
 
-    setNuevaVentaProductoId: (v) => update({ nuevaVentaProductoId: v }),
+    setNuevaVentaProductoId: (v) => update({ nuevaVentaProductoId: v, nuevaVentaVarianteId: '' }),
+    setNuevaVentaVarianteId: (v) => update({ nuevaVentaVarianteId: v }),
     setNuevaVentaMedio: (v) => update({ nuevaVentaMedio: v }),
     registrarVentaShop: () => {
       setState((prev) => {
@@ -433,6 +535,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!p) {
           showToast('Elegí un producto');
           return prev;
+        }
+        if (p.categoria === 'Indumentaria') {
+          const variante = (p.variantes || []).find((v) => String(v.id) === String(prev.nuevaVentaVarianteId));
+          if (!variante) {
+            showToast('Elegí talle y color');
+            return prev;
+          }
+          if (variante.stock <= 0) {
+            showToast('Sin stock disponible de ' + p.nombre + ' en esa variante');
+            return prev;
+          }
+          showToast('Venta registrada');
+          return {
+            ...prev,
+            ventasShop: [
+              { id: Date.now(), producto: p.nombre + ' (Talle ' + variante.talle + ' · ' + variante.color + ')', precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' },
+              ...prev.ventasShop,
+            ],
+            productosShop: prev.productosShop.map((x) =>
+              x.id === p.id
+                ? {
+                    ...x,
+                    stock: x.stock - 1,
+                    variantes: (x.variantes || []).map((v) => (v.id === variante.id ? { ...v, stock: v.stock - 1 } : v)),
+                  }
+                : x
+            ),
+            nuevaVentaProductoId: '',
+            nuevaVentaVarianteId: '',
+          };
         }
         if (p.stock <= 0) {
           showToast('Sin stock disponible de ' + p.nombre);
@@ -450,6 +582,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setNuevoStockShopProductoId: (v) => update({ nuevoStockShopProductoId: v }),
     setNuevoStockShopCantidad: (v) => update({ nuevoStockShopCantidad: v }),
+    setNuevoStockShopTalle: (v) => update({ nuevoStockShopTalle: v }),
+    setNuevoStockShopColor: (v) => update({ nuevoStockShopColor: v }),
     reponerStockShop: () => {
       setState((prev) => {
         const p = prev.productosShop.find((x) => String(x.id) === String(prev.nuevoStockShopProductoId));
@@ -458,12 +592,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           showToast('Elegí un producto y una cantidad válida');
           return prev;
         }
+        if (p.categoria === 'Indumentaria') {
+          const talle = prev.nuevoStockShopTalle.trim();
+          const color = prev.nuevoStockShopColor.trim();
+          if (!talle || !color) {
+            showToast('Completá talle y color');
+            return prev;
+          }
+          const variantes = p.variantes || [];
+          const existente = variantes.find((v) => v.talle === talle && v.color.toLowerCase() === color.toLowerCase());
+          const nuevasVariantes: VarianteShop[] = existente
+            ? variantes.map((v) => (v.id === existente.id ? { ...v, stock: v.stock + cantidad } : v))
+            : [...variantes, { id: Date.now(), talle, color, stock: cantidad }];
+          showToast('Stock actualizado — ' + p.nombre);
+          return {
+            ...prev,
+            productosShop: prev.productosShop.map((x) =>
+              x.id === p.id ? { ...x, stock: x.stock + cantidad, variantes: nuevasVariantes } : x
+            ),
+            nuevoStockShopProductoId: '',
+            nuevoStockShopCantidad: '',
+            nuevoStockShopTalle: '',
+            nuevoStockShopColor: '',
+            showReponerStockShop: false,
+          };
+        }
         showToast('Stock actualizado — ' + p.nombre);
         return {
           ...prev,
           productosShop: prev.productosShop.map((x) => (x.id === p.id ? { ...x, stock: x.stock + cantidad } : x)),
           nuevoStockShopProductoId: '',
           nuevoStockShopCantidad: '',
+          showReponerStockShop: false,
         };
       });
     },
@@ -512,6 +672,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           productosBuffet: prev.productosBuffet.map((x) => (x.id === p.id ? { ...x, stock: x.stock + cantidad } : x)),
           nuevoStockBuffetProductoId: '',
           nuevoStockBuffetCantidad: '',
+          showReponerStockBuffet: false,
         };
       });
     },
@@ -568,6 +729,155 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleDebitoAutomatico: () => update((s) => ({ debitoAutomaticoHabilitado: !s.debitoAutomaticoHabilitado })),
     guardarConfig: () => showToast('Cambios guardados'),
     setCategoriaMonto: (id, monto) => update((s) => ({ categorias: s.categorias.map((c) => (c.id === id ? { ...c, monto } : c)) })),
+
+    setNuevoTorneoNombre: (v) => update({ nuevoTorneoNombre: v }),
+    setNuevoTorneoDeporte: (v) => update({ nuevoTorneoDeporte: v }),
+    setNuevoTorneoFechaInicio: (v) => update({ nuevoTorneoFechaInicio: v }),
+    setNuevoTorneoFechaFin: (v) => update({ nuevoTorneoFechaFin: v }),
+    setNuevoTorneoLugar: (v) => update({ nuevoTorneoLugar: v }),
+    setNuevoTorneoCupo: (v) => update({ nuevoTorneoCupo: v }),
+    setNuevoTorneoValorInscripcion: (v) => update({ nuevoTorneoValorInscripcion: v }),
+    setNuevoTorneoDescripcion: (v) => update({ nuevoTorneoDescripcion: v }),
+    crearTorneo: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoTorneoNombre.trim();
+        const deporte = prev.nuevoTorneoDeporte.trim();
+        const lugar = prev.nuevoTorneoLugar.trim();
+        const cupo = parseInt(prev.nuevoTorneoCupo, 10);
+        const valorInscripcion = parseInt(prev.nuevoTorneoValorInscripcion, 10);
+        if (
+          !nombre ||
+          !deporte ||
+          !lugar ||
+          !prev.nuevoTorneoFechaInicio ||
+          !prev.nuevoTorneoFechaFin ||
+          !cupo ||
+          cupo <= 0 ||
+          !valorInscripcion ||
+          valorInscripcion <= 0
+        ) {
+          showToast('Completá nombre, deporte, lugar, fechas, cupo y valor de inscripción');
+          return prev;
+        }
+        if (prev.nuevoTorneoFechaFin < prev.nuevoTorneoFechaInicio) {
+          showToast('La fecha de fin no puede ser anterior a la de inicio');
+          return prev;
+        }
+        showToast('Torneo creado');
+        return {
+          ...prev,
+          torneos: [
+            ...prev.torneos,
+            {
+              id: Date.now(),
+              nombre,
+              deporte,
+              fechaInicio: prev.nuevoTorneoFechaInicio,
+              fechaFin: prev.nuevoTorneoFechaFin,
+              lugar,
+              cupo,
+              valorInscripcion,
+              descripcion: prev.nuevoTorneoDescripcion.trim(),
+            },
+          ],
+          nuevoTorneoNombre: '',
+          nuevoTorneoDeporte: '',
+          nuevoTorneoLugar: '',
+          nuevoTorneoCupo: '',
+          nuevoTorneoValorInscripcion: '',
+          nuevoTorneoDescripcion: '',
+        };
+      });
+    },
+    quitarTorneo: (id) => {
+      update((s) => ({
+        torneos: s.torneos.filter((t) => t.id !== id),
+        equiposTorneo: s.equiposTorneo.filter((e) => e.torneoId !== id),
+        partidosTorneo: s.partidosTorneo.filter((p) => p.torneoId !== id),
+        torneoExpandidoId: s.torneoExpandidoId === id ? null : s.torneoExpandidoId,
+      }));
+      showToast('Torneo eliminado');
+    },
+    openDifundirTorneo: (id) => {
+      const t = state.torneos.find((x) => x.id === id);
+      if (!t) return;
+      const mensaje =
+        '🏆 ' + t.nombre + '\n' +
+        'Deporte: ' + t.deporte + '\n' +
+        'Fechas: ' + formatFechaCorta(t.fechaInicio) + ' al ' + formatFechaCorta(t.fechaFin) + '\n' +
+        'Lugar: ' + t.lugar + '\n' +
+        'Valor de inscripción: ' + formatMoney(t.valorInscripcion) + '\n' +
+        (t.descripcion ? t.descripcion + '\n' : '') +
+        '¡Los esperamos a todos los socios!';
+      update({ showDifundirTorneo: true, difundirTorneoId: id, mensajeDifusionTorneo: mensaje });
+    },
+    closeDifundirTorneo: () => update({ showDifundirTorneo: false, difundirTorneoId: null, mensajeDifusionTorneo: '' }),
+    setMensajeDifusionTorneo: (v) => update({ mensajeDifusionTorneo: v }),
+    enviarWhatsappTorneo: () => {
+      window.open('https://wa.me/?text=' + encodeURIComponent(state.mensajeDifusionTorneo), '_blank');
+      showToast('Abriendo WhatsApp...');
+    },
+    copiarMensajeTorneo: () => {
+      navigator.clipboard
+        .writeText(state.mensajeDifusionTorneo)
+        .then(() => showToast('Mensaje copiado'))
+        .catch(() => showToast('No se pudo copiar el mensaje'));
+    },
+
+    toggleTorneoFixture: (id) => update((s) => ({ torneoExpandidoId: s.torneoExpandidoId === id ? null : id })),
+    setNuevoEquipoNombre: (v) => update({ nuevoEquipoNombre: v }),
+    agregarEquipoTorneo: (torneoId) => {
+      setState((prev) => {
+        const nombre = prev.nuevoEquipoNombre.trim();
+        if (!nombre) {
+          showToast('Ingresá el nombre del equipo');
+          return prev;
+        }
+        return {
+          ...prev,
+          equiposTorneo: [...prev.equiposTorneo, { id: Date.now(), torneoId, nombre }],
+          nuevoEquipoNombre: '',
+        };
+      });
+    },
+    quitarEquipoTorneo: (id) => {
+      update((s) => ({
+        equiposTorneo: s.equiposTorneo.filter((e) => e.id !== id),
+        partidosTorneo: s.partidosTorneo.filter((p) => p.equipoLocalId !== id && p.equipoVisitanteId !== id),
+      }));
+    },
+    setNuevoPartidoEquipoLocalId: (v) => update({ nuevoPartidoEquipoLocalId: v }),
+    setNuevoPartidoEquipoVisitanteId: (v) => update({ nuevoPartidoEquipoVisitanteId: v }),
+    agregarPartidoTorneo: (torneoId) => {
+      setState((prev) => {
+        const localId = parseInt(prev.nuevoPartidoEquipoLocalId, 10);
+        const visitanteId = parseInt(prev.nuevoPartidoEquipoVisitanteId, 10);
+        if (!localId || !visitanteId) {
+          showToast('Elegí los dos equipos');
+          return prev;
+        }
+        if (localId === visitanteId) {
+          showToast('Los equipos tienen que ser distintos');
+          return prev;
+        }
+        return {
+          ...prev,
+          partidosTorneo: [
+            ...prev.partidosTorneo,
+            { id: Date.now(), torneoId, equipoLocalId: localId, equipoVisitanteId: visitanteId, golesLocal: null, golesVisitante: null },
+          ],
+          nuevoPartidoEquipoLocalId: '',
+          nuevoPartidoEquipoVisitanteId: '',
+        };
+      });
+    },
+    quitarPartidoTorneo: (id) => update((s) => ({ partidosTorneo: s.partidosTorneo.filter((p) => p.id !== id) })),
+    setResultadoPartido: (id, campo, valor) => {
+      const num = valor === '' ? null : parseInt(valor, 10);
+      update((s) => ({
+        partidosTorneo: s.partidosTorneo.map((p) => (p.id === id ? { ...p, [campo]: Number.isNaN(num as number) ? null : num } : p)),
+      }));
+    },
   };
 
   return <AppContext.Provider value={{ state, actions }}>{children}</AppContext.Provider>;

@@ -11,6 +11,7 @@ export interface Socio {
   deuda: number;
   ultimoPago: string;
   debitoAutomatico: boolean;
+  telefono: string;
 }
 
 export interface Pago {
@@ -29,11 +30,20 @@ export interface VentaShop {
   hora: string;
 }
 
+export interface VarianteShop {
+  id: number;
+  talle: string;
+  color: string;
+  stock: number;
+}
+
 export interface ProductoShop {
   id: number;
   nombre: string;
   precio: number;
+  categoria: 'Indumentaria' | 'Accesorio';
   stock: number;
+  variantes?: VarianteShop[];
 }
 
 export interface ProductoBuffet {
@@ -112,9 +122,39 @@ export type Screen =
   | 'buffet'
   | 'canchas'
   | 'calendario'
+  | 'torneos'
   | 'reportes'
   | 'egresos'
   | 'comunicados'
   | 'config';
 
 export type EstadoRecordatorio = 'enviado' | 'pendiente';
+
+export type EstadoTorneo = 'Próximo' | 'En curso' | 'Finalizado';
+
+export interface Torneo {
+  id: number;
+  nombre: string;
+  deporte: string;
+  fechaInicio: string;
+  fechaFin: string;
+  lugar: string;
+  cupo: number;
+  valorInscripcion: number;
+  descripcion: string;
+}
+
+export interface EquipoTorneo {
+  id: number;
+  torneoId: number;
+  nombre: string;
+}
+
+export interface PartidoTorneo {
+  id: number;
+  torneoId: number;
+  equipoLocalId: number;
+  equipoVisitanteId: number;
+  golesLocal: number | null;
+  golesVisitante: number | null;
+}

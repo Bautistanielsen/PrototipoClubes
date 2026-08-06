@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { estadoMeta } from '../lib/derive';
 import { formatMoney } from '../lib/format';
+import { exportToCSV } from '../lib/export';
 import type { EstadoFilter } from '../types';
 
 const filterBtnStyle = (active: boolean) => ({
@@ -33,6 +34,14 @@ export default function Socios() {
     { key: 'moroso', label: 'Moroso' },
   ];
 
+  const exportarPadron = () => {
+    exportToCSV(
+      'padron-socios.csv',
+      ['Número', 'Nombre', 'Apellido', 'Teléfono', 'Estado', 'Deuda', 'Último pago'],
+      filteredSocios.map((s) => [s.numero, s.nombre, s.apellido, s.telefono, estadoMeta[s.estado].label, s.deuda, s.ultimoPago])
+    );
+  };
+
   return (
     <div style={{ animation: 'fadeIn .3s ease' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -42,6 +51,12 @@ export default function Socios() {
             {filteredSocios.length} de {state.socios.length} socios
           </div>
         </div>
+        <button
+          onClick={exportarPadron}
+          style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          Exportar CSV
+        </button>
       </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -81,7 +96,7 @@ export default function Socios() {
                       <div style={{ fontSize: 14.5, fontWeight: 600, color: '#16203a' }}>
                         {s.nombre} {s.apellido}
                       </div>
-                      <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 1 }}>Último pago: {s.ultimoPago}</div>
+                      <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 1 }}>Último pago: {s.ultimoPago} · {s.telefono}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -115,6 +130,12 @@ export default function Socios() {
                       style={{ height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
                     >
                       {rec === 'enviado' ? 'Marcar pendiente' : 'Marcar enviado'}
+                    </button>
+                    <button
+                      onClick={() => actions.enviarRecordatorioWhatsapp(s.id)}
+                      style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Enviar por WhatsApp
                     </button>
                     <button
                       onClick={() => actions.cobrarMoroso(s.id)}

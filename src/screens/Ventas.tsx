@@ -7,6 +7,7 @@ const selectStyle = { height: 46, border: '1px solid #e3e7ef', borderRadius: 9, 
 export default function Ventas() {
   const { state, actions } = useApp();
   const totalVentasShop = useMemo(() => state.ventasShop.reduce((a, v) => a + v.precio, 0), [state.ventasShop]);
+  const productoSeleccionado = state.productosShop.find((p) => String(p.id) === state.nuevaVentaProductoId);
 
   return (
     <div style={{ animation: 'fadeIn .3s ease' }}>
@@ -41,6 +42,20 @@ export default function Ventas() {
               </option>
             ))}
           </select>
+          {productoSeleccionado?.categoria === 'Indumentaria' && (
+            <select
+              value={state.nuevaVentaVarianteId}
+              onChange={(e) => actions.setNuevaVentaVarianteId(e.target.value)}
+              style={{ ...selectStyle, flex: 2, minWidth: 200 }}
+            >
+              <option value="">Seleccionar talle y color...</option>
+              {(productoSeleccionado.variantes || []).map((v) => (
+                <option key={v.id} value={v.id}>
+                  Talle {v.talle} · {v.color} — {v.stock} en stock
+                </option>
+              ))}
+            </select>
+          )}
           <select value={state.nuevaVentaMedio} onChange={(e) => actions.setNuevaVentaMedio(e.target.value as any)} style={{ ...selectStyle, flex: 1, minWidth: 150 }}>
             <option value="Efectivo">Efectivo</option>
             <option value="Transferencia">Transferencia</option>
@@ -54,61 +69,48 @@ export default function Ventas() {
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px', marginBottom: 16 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 14 }}>Reponer stock</div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <select
-            value={state.nuevoStockShopProductoId}
-            onChange={(e) => actions.setNuevoStockShopProductoId(e.target.value)}
-            style={{ ...selectStyle, flex: 2, minWidth: 200 }}
-          >
-            <option value="">Seleccionar producto...</option>
-            {state.productosShop.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre} — {p.stock} en stock
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min="1"
-            placeholder="Cantidad"
-            value={state.nuevoStockShopCantidad}
-            onChange={(e) => actions.setNuevoStockShopCantidad(e.target.value)}
-            style={{ ...selectStyle, flex: 1, minWidth: 140 }}
-          />
-          <button
-            onClick={actions.reponerStockShop}
-            style={{ minWidth: 150, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-          >
-            Reponer stock
-          </button>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
+        <button
+          onClick={actions.openReponerStockShop}
+          style={{ height: 42, padding: '0 20px', border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', boxShadow: '0 2px 8px rgba(23,42,84,0.25)' }}
+        >
+          + Reponer stock
+        </button>
       </div>
-
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosShop.map((p) => {
           const bajo = p.stock <= 3;
           return (
-            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ fontSize: 12.5, color: '#6b7488' }}>{formatMoney(p.precio)}</div>
-                <div
-                  style={{
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    padding: '5px 12px',
-                    borderRadius: 20,
-                    background: bajo ? '#fbe6e9' : '#eef1f7',
-                    color: bajo ? '#c1293c' : '#16203a',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {p.stock} en stock
+            <div key={p.id} style={{ padding: '12px 20px', borderBottom: '1px solid #f0f1f5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ fontSize: 12.5, color: '#6b7488' }}>{formatMoney(p.precio)}</div>
+                  <div
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      padding: '5px 12px',
+                      borderRadius: 20,
+                      background: bajo ? '#fbe6e9' : '#eef1f7',
+                      color: bajo ? '#c1293c' : '#16203a',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {p.stock} en stock
+                  </div>
                 </div>
               </div>
+              {p.variantes && p.variantes.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                  {p.variantes.map((v) => (
+                    <div key={v.id} style={{ fontSize: 11.5, fontWeight: 600, padding: '3px 10px', borderRadius: 10, background: '#f5f7fb', color: '#6b7488' }}>
+                      {v.talle} · {v.color}: {v.stock}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

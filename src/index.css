@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 body {
   margin: 0;
   font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -39,4 +41,9 @@ a {
 }
 a:hover {
   color: #14285e;
+}
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

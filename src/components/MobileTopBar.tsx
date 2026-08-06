@@ -1,6 +1,7 @@
 export default function MobileTopBar() {
   return (
     <div
+      className="no-print"
       style={{
         position: 'sticky',
         top: 0,

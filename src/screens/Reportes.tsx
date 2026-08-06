@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { cuotasResumen, balanceMes, ingresosPorFuente, egresosOrdenadosPorMonto, totalEgresos as sumEgresos, TENDENCIA_BASE, TENDENCIA_MAX } from '../lib/derive';
 import { formatMoney } from '../lib/format';
+import { exportToCSV } from '../lib/export';
 
 export default function Reportes() {
   const { state } = useApp();
@@ -28,11 +29,39 @@ export default function Reportes() {
     }));
   }, [balance]);
 
+  const exportarEgresos = () => {
+    exportToCSV(
+      'egresos.csv',
+      ['Categoría', 'Monto'],
+      egresosOrdenados.map((eg) => [eg.categoria, eg.monto])
+    );
+  };
+
+  const exportarIngresos = () => {
+    exportToCSV(
+      'ingresos-por-fuente.csv',
+      ['Fuente', 'Monto', '% del total'],
+      [
+        ['Cuotas de socios', fuentes.ingresoSocios, fuentes.pctIngresoSocios],
+        ['Reserva de canchas', fuentes.ingresoCanchas, fuentes.pctIngresoCanchas],
+        ['Ventas del shop', fuentes.ingresoVentas, fuentes.pctIngresoVentas],
+      ]
+    );
+  };
+
   return (
     <div style={{ animation: 'fadeIn .3s ease' }}>
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Reportes financieros</div>
-        <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Últimos 6 meses</div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Reportes financieros</div>
+          <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Últimos 6 meses</div>
+        </div>
+        <button
+          onClick={() => window.print()}
+          style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          Imprimir / Exportar PDF
+        </button>
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 22, marginBottom: 16 }}>
@@ -69,7 +98,15 @@ export default function Reportes() {
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 22, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Ingresos por fuente — Julio 2026</div>
-          <div style={{ fontSize: 13, color: '#6b7488' }}>Total {formatMoney(fuentes.totalIngresos)}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 13, color: '#6b7488' }}>Total {formatMoney(fuentes.totalIngresos)}</div>
+            <button
+              onClick={exportarIngresos}
+              style={{ height: 32, padding: '0 12px', fontSize: 12, border: '1px solid #d7dce6', borderRadius: 7, background: '#fff', color: '#16203a', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Exportar CSV
+            </button>
+          </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -114,7 +151,15 @@ export default function Reportes() {
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 22, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Egresos del club — Julio 2026</div>
-          <div style={{ fontSize: 13, color: '#6b7488' }}>Total {formatMoney(egresosTotal)}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 13, color: '#6b7488' }}>Total {formatMoney(egresosTotal)}</div>
+            <button
+              onClick={exportarEgresos}
+              style={{ height: 32, padding: '0 12px', fontSize: 12, border: '1px solid #d7dce6', borderRadius: 7, background: '#fff', color: '#16203a', fontWeight: 600, cursor: 'pointer' }}
+            >
+              Exportar CSV
+            </button>
+          </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {egresosOrdenados.map((eg) => (

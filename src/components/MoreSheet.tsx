@@ -44,6 +44,7 @@ export default function MoreSheet() {
         <div style={itemStyle} onClick={go('ventas')}>Ventas del shop</div>
         <div style={itemStyle} onClick={go('buffet')}>Buffet</div>
         <div style={itemStyle} onClick={go('canchas')}>Reserva de canchas</div>
+        <div style={itemStyle} onClick={go('torneos')}>Torneos</div>
         <div style={itemStyle} onClick={go('calendario')}>Calendario deportivo</div>
         <div style={itemStyle} onClick={go('config')}>Configuración del club</div>
         <div style={{ padding: '14px 10px', fontSize: 15, fontWeight: 600, color: '#c1293c' }} onClick={actions.onLogout}>

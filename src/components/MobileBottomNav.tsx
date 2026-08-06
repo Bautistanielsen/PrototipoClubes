@@ -27,6 +27,7 @@ export default function MobileBottomNav() {
 
   return (
     <div
+      className="no-print"
       style={{
         position: 'sticky',
         bottom: 0,

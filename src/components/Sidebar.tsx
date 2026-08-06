@@ -16,6 +16,7 @@ export default function Sidebar() {
 
   return (
     <div
+      className="no-print"
       style={{
         width: 264,
         flexShrink: 0,
@@ -158,6 +159,22 @@ export default function Sidebar() {
                 </svg>
               }
               label="Canchas"
+            />
+            <SidebarItem
+              sub
+              active={is('torneos')}
+              onClick={() => actions.navigate('torneos')}
+              icon={
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path>
+                  <path d="M8 5H5a3 3 0 0 0 3 5"></path>
+                  <path d="M16 5h3a3 3 0 0 1-3 5"></path>
+                  <line x1="12" y1="13" x2="12" y2="17"></line>
+                  <line x1="9" y1="20" x2="15" y2="20"></line>
+                  <line x1="12" y1="17" x2="12" y2="20"></line>
+                </svg>
+              }
+              label="Torneos"
             />
           </>
         )}

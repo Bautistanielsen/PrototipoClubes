@@ -11,6 +11,9 @@ import type {
   Egreso,
   Comunicado,
   Categoria,
+  Torneo,
+  EquipoTorneo,
+  PartidoTorneo,
 } from '../types';
 
 export const CUOTA = 12000;
@@ -18,24 +21,24 @@ export const PRECIO_TURNO = 8000;
 export const HOY_ISO = '2026-07-29';
 
 export const seedSocios: Socio[] = [
-  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true },
-  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true },
-  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true },
-  { id: 4, numero: 104, nombre: 'Mateo', apellido: 'Álvarez', estado: 'al_dia', deuda: 0, ultimoPago: '02/07/2026', debitoAutomatico: false },
-  { id: 5, numero: 105, nombre: 'Valentina', apellido: 'Torres', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false },
-  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true },
-  { id: 7, numero: 107, nombre: 'Catalina', apellido: 'Romero', estado: 'al_dia', deuda: 0, ultimoPago: '08/07/2026', debitoAutomatico: false },
-  { id: 8, numero: 108, nombre: 'Thiago', apellido: 'Díaz', estado: 'moroso', deuda: 24000, ultimoPago: '12/05/2026', debitoAutomatico: false },
-  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true },
-  { id: 10, numero: 110, nombre: 'Joaquín', apellido: 'Medina', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false },
-  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true },
-  { id: 12, numero: 112, nombre: 'Santino', apellido: 'Molina', estado: 'moroso', deuda: 36000, ultimoPago: '20/04/2026', debitoAutomatico: false },
-  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true },
-  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true },
-  { id: 15, numero: 115, nombre: 'Delfina', apellido: 'Núñez', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false },
-  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true },
-  { id: 17, numero: 117, nombre: 'Pilar', apellido: 'Vega', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: false },
-  { id: 18, numero: 118, nombre: 'Agustín', apellido: 'Paz', estado: 'moroso', deuda: 12000, ultimoPago: '15/06/2026', debitoAutomatico: false },
+  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1201' },
+  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1202' },
+  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1203' },
+  { id: 4, numero: 104, nombre: 'Mateo', apellido: 'Álvarez', estado: 'al_dia', deuda: 0, ultimoPago: '02/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1204' },
+  { id: 5, numero: 105, nombre: 'Valentina', apellido: 'Torres', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1205' },
+  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1206' },
+  { id: 7, numero: 107, nombre: 'Catalina', apellido: 'Romero', estado: 'al_dia', deuda: 0, ultimoPago: '08/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1207' },
+  { id: 8, numero: 108, nombre: 'Thiago', apellido: 'Díaz', estado: 'moroso', deuda: 24000, ultimoPago: '12/05/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1208' },
+  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1209' },
+  { id: 10, numero: 110, nombre: 'Joaquín', apellido: 'Medina', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1210' },
+  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1211' },
+  { id: 12, numero: 112, nombre: 'Santino', apellido: 'Molina', estado: 'moroso', deuda: 36000, ultimoPago: '20/04/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1212' },
+  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1213' },
+  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1214' },
+  { id: 15, numero: 115, nombre: 'Delfina', apellido: 'Núñez', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1215' },
+  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1216' },
+  { id: 17, numero: 117, nombre: 'Pilar', apellido: 'Vega', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1217' },
+  { id: 18, numero: 118, nombre: 'Agustín', apellido: 'Paz', estado: 'moroso', deuda: 12000, ultimoPago: '15/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1218' },
 ];
 
 export const seedCanchas: Cancha[] = [
@@ -74,13 +77,34 @@ export const seedPagosHoy: Pago[] = [
 ];
 
 export const seedProductosShop: ProductoShop[] = [
-  { id: 1, nombre: 'Buzo oficial', precio: 18000, stock: 8 },
-  { id: 2, nombre: 'Remera oficial', precio: 9000, stock: 12 },
-  { id: 3, nombre: 'Gorra', precio: 6000, stock: 3 },
-  { id: 4, nombre: 'Botella deportiva', precio: 6000, stock: 20 },
-  { id: 5, nombre: 'Bufanda', precio: 5000, stock: 2 },
-  { id: 6, nombre: 'Llavero', precio: 2500, stock: 15 },
-  { id: 7, nombre: 'Mochila', precio: 15000, stock: 5 },
+  {
+    id: 1,
+    nombre: 'Buzo oficial',
+    precio: 18000,
+    categoria: 'Indumentaria',
+    stock: 8,
+    variantes: [
+      { id: 1, talle: 'M', color: 'Negro', stock: 5 },
+      { id: 2, talle: 'L', color: 'Azul', stock: 3 },
+    ],
+  },
+  {
+    id: 2,
+    nombre: 'Remera oficial',
+    precio: 9000,
+    categoria: 'Indumentaria',
+    stock: 12,
+    variantes: [
+      { id: 3, talle: 'S', color: 'Blanco', stock: 4 },
+      { id: 4, talle: 'M', color: 'Blanco', stock: 5 },
+      { id: 5, talle: 'L', color: 'Negro', stock: 3 },
+    ],
+  },
+  { id: 3, nombre: 'Gorra', precio: 6000, categoria: 'Accesorio', stock: 3 },
+  { id: 4, nombre: 'Botella deportiva', precio: 6000, categoria: 'Accesorio', stock: 20 },
+  { id: 5, nombre: 'Bufanda', precio: 5000, categoria: 'Accesorio', stock: 2 },
+  { id: 6, nombre: 'Llavero', precio: 2500, categoria: 'Accesorio', stock: 15 },
+  { id: 7, nombre: 'Mochila', precio: 15000, categoria: 'Accesorio', stock: 5 },
 ];
 
 export const seedVentasShop: VentaShop[] = [
@@ -131,4 +155,23 @@ export const seedCategorias: Categoria[] = [
   { id: 1, nombre: 'Socio activo', monto: 12000 },
   { id: 2, nombre: 'Socio jubilado', monto: 6000 },
   { id: 3, nombre: 'Socio infantil', monto: 8000 },
+];
+
+export const seedTorneos: Torneo[] = [
+  { id: 1, nombre: 'Copa de Tenis Interna', deporte: 'Tenis', fechaInicio: '2026-07-10', fechaFin: '2026-07-20', lugar: 'Cancha de Tenis', cupo: 8, valorInscripcion: 5000, descripcion: 'Torneo finalizado, formato eliminación directa.' },
+  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.' },
+  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.' },
+];
+
+export const seedEquiposTorneo: EquipoTorneo[] = [
+  { id: 1, torneoId: 2, nombre: 'Los Halcones' },
+  { id: 2, torneoId: 2, nombre: 'Dupla Norte' },
+  { id: 3, torneoId: 2, nombre: 'Set Point' },
+  { id: 4, torneoId: 2, nombre: 'Los Zurdos' },
+];
+
+export const seedPartidosTorneo: PartidoTorneo[] = [
+  { id: 1, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 2, golesLocal: 6, golesVisitante: 3 },
+  { id: 2, torneoId: 2, equipoLocalId: 3, equipoVisitanteId: 4, golesLocal: 4, golesVisitante: 4 },
+  { id: 3, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 3, golesLocal: null, golesVisitante: null },
 ];

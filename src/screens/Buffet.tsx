@@ -73,39 +73,15 @@ export default function Buffet() {
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px', marginBottom: 16 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 14 }}>Reponer stock</div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <select
-            value={state.nuevoStockBuffetProductoId}
-            onChange={(e) => actions.setNuevoStockBuffetProductoId(e.target.value)}
-            style={{ ...selectStyle, flex: 2, minWidth: 200 }}
-          >
-            <option value="">Seleccionar producto...</option>
-            {state.productosBuffet.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nombre} — {p.stock} en stock
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min="1"
-            placeholder="Cantidad"
-            value={state.nuevoStockBuffetCantidad}
-            onChange={(e) => actions.setNuevoStockBuffetCantidad(e.target.value)}
-            style={{ ...selectStyle, flex: 1, minWidth: 140 }}
-          />
-          <button
-            onClick={actions.reponerStockBuffet}
-            style={{ minWidth: 150, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-          >
-            Reponer stock
-          </button>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
+        <button
+          onClick={actions.openReponerStockBuffet}
+          style={{ height: 42, padding: '0 20px', border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', boxShadow: '0 2px 8px rgba(23,42,84,0.25)' }}
+        >
+          + Reponer stock
+        </button>
       </div>
-
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosBuffet.map((p) => {
           const bajo = p.stock <= p.stockMin;

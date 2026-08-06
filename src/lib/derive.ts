@@ -1,4 +1,4 @@
-import type { EstadoSocio, Socio, Reserva, VentaShop, Egreso, Partido, TipoPartido } from '../types';
+import type { EstadoSocio, Socio, Reserva, VentaShop, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo } from '../types';
 import { formatMoney } from './format';
 
 export const CUOTA = 12000;
@@ -189,6 +189,70 @@ export const TENDENCIA_BASE = [
   { mes: 'Jun', monto: 216000 },
 ];
 export const TENDENCIA_MAX = 216000;
+
+export function estadoTorneo(t: Torneo, hoyIso: string): EstadoTorneo {
+  if (hoyIso < t.fechaInicio) return 'Próximo';
+  if (hoyIso > t.fechaFin) return 'Finalizado';
+  return 'En curso';
+}
+
+export const estadoTorneoMeta: Record<EstadoTorneo, { bg: string; color: string }> = {
+  'Próximo': { bg: '#eaeefb', color: '#1b3a8a' },
+  'En curso': { bg: '#e5f6ea', color: '#1a7d43' },
+  'Finalizado': { bg: '#eef0f5', color: '#6b7488' },
+};
+
+export interface FilaTabla {
+  equipoId: number;
+  nombre: string;
+  pj: number;
+  g: number;
+  e: number;
+  p: number;
+  gf: number;
+  gc: number;
+  dg: number;
+  pts: number;
+}
+
+export function tablaPosiciones(torneoId: number, equipos: EquipoTorneo[], partidos: PartidoTorneo[]): FilaTabla[] {
+  const equiposDelTorneo = equipos.filter((eq) => eq.torneoId === torneoId);
+  const filas: Record<number, FilaTabla> = {};
+  equiposDelTorneo.forEach((eq) => {
+    filas[eq.id] = { equipoId: eq.id, nombre: eq.nombre, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+  });
+  partidos
+    .filter((p) => p.torneoId === torneoId && p.golesLocal !== null && p.golesVisitante !== null)
+    .forEach((p) => {
+      const local = filas[p.equipoLocalId];
+      const visitante = filas[p.equipoVisitanteId];
+      if (!local || !visitante) return;
+      const gl = p.golesLocal as number;
+      const gv = p.golesVisitante as number;
+      local.pj++;
+      visitante.pj++;
+      local.gf += gl;
+      local.gc += gv;
+      visitante.gf += gv;
+      visitante.gc += gl;
+      if (gl > gv) {
+        local.g++;
+        local.pts += 3;
+        visitante.p++;
+      } else if (gl < gv) {
+        visitante.g++;
+        visitante.pts += 3;
+        local.p++;
+      } else {
+        local.e++;
+        visitante.e++;
+        local.pts += 1;
+        visitante.pts += 1;
+      }
+    });
+  Object.values(filas).forEach((f) => (f.dg = f.gf - f.gc));
+  return Object.values(filas).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+}
 
 export const TURNO_HORAS = [
   '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
