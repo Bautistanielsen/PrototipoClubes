@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react';
 import { HOY_ISO, useApp } from '../state/AppContext';
-
-type EventoCalendario = { tipo: string; fecha: string; horaInicio?: string; rival?: string; condicion?: string; competencia?: string; estado?: string };
+import { readSportsCalendarData } from '../lib/sportsCalendar';
+import type { Evento } from '../lib/sportsCalendar';
 
 export default function DeportivoInicio() {
   const { state, actions } = useApp();
-  const [eventos, setEventos] = useState<EventoCalendario[]>([]);
+  const [eventos, setEventos] = useState<Evento[]>([]);
   const [calendarioInicializado, setCalendarioInicializado] = useState(false);
   useEffect(() => {
-    try {
-      const saved = JSON.parse(window.localStorage.getItem('club-calendario-deportivo-v1') || '{}') as { eventos?: EventoCalendario[] };
-      if (Array.isArray(saved.eventos)) { setEventos(saved.eventos); setCalendarioInicializado(true); }
-    } catch { /* se conserva el resumen original */ }
+    setEventos(readSportsCalendarData().eventos);
+    setCalendarioInicializado(true);
   }, []);
   const partidosCalendario = eventos.filter((evento) => evento.tipo === 'Partido' && !['finalizado', 'suspendido', 'postergado'].includes(evento.estado || '')).map((evento) => ({ fecha: evento.fecha, hora: evento.horaInicio || '', rival: evento.rival || 'Rival a definir', condicion: evento.condicion || 'Local', tipo: evento.competencia || 'Amistoso' }));
   const partidos = calendarioInicializado ? partidosCalendario : state.partidos;

@@ -197,6 +197,7 @@ export interface AppState {
   equiposDeportivos: EquipoDeportivo[];
   jugadores: Jugador[];
   selectedEquipoDeportivoId: number;
+  actaEventoPendienteId: number | null;
   showJugadorModal: boolean;
   jugadorEditandoId: number | null;
   nuevoJugadorNombre: string;
@@ -296,6 +297,7 @@ const initialState: AppState = {
   equiposDeportivos: seedEquiposDeportivos,
   jugadores: seedJugadores,
   selectedEquipoDeportivoId: 1,
+  actaEventoPendienteId: null,
   showJugadorModal: false,
   jugadorEditandoId: null,
   nuevoJugadorNombre: '',
@@ -409,6 +411,8 @@ export interface AppActions {
   quitarPartidoTorneo: (id: number) => void;
   setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
   selectEquipoDeportivo: (id: number) => void;
+  abrirActaEnCalendario: (eventoId: number) => void;
+  limpiarActaEventoPendiente: () => void;
   openAgregarJugador: () => void;
   openEditarJugador: (id: number) => void;
   closeJugadorModal: () => void;
@@ -995,6 +999,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
 
     selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
+    abrirActaEnCalendario: (eventoId) => update({ screen: 'calendario', moreOpen: false, actaEventoPendienteId: eventoId }),
+    limpiarActaEventoPendiente: () => update({ actaEventoPendienteId: null }),
     openAgregarJugador: () => update({
       showJugadorModal: true,
       jugadorEditandoId: null,
