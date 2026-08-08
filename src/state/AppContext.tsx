@@ -30,6 +30,7 @@ import type {
   Torneo,
   EquipoTorneo,
   PartidoTorneo,
+  InscripcionTorneo,
 } from '../types';
 import {
   seedSocios,
@@ -133,6 +134,9 @@ export interface AppState {
   showReservaModal: boolean;
   reservaHoraSel: string;
   reservaNombre: string;
+  reservaBienvenidaVista: boolean;
+  portalRol: 'socio' | 'hincha';
+  portalLoggedIn: boolean;
   partidos: Partido[];
   nuevoPartidoFecha: string;
   nuevoPartidoHora: string;
@@ -168,6 +172,7 @@ export interface AppState {
   nuevoEgresoCategoria: string;
   nuevoEgresoMonto: string;
   comunicados: Comunicado[];
+  comunicadosLeidos: number[];
   nuevoTitulo: string;
   nuevoCuerpo: string;
   nuevoDestinatario: string;
@@ -185,12 +190,14 @@ export interface AppState {
   nuevoTorneoCupo: string;
   nuevoTorneoValorInscripcion: string;
   nuevoTorneoDescripcion: string;
+  nuevoTorneoPremio: string;
   showDifundirTorneo: boolean;
   difundirTorneoId: number | null;
   mensajeDifusionTorneo: string;
   equiposTorneo: EquipoTorneo[];
   partidosTorneo: PartidoTorneo[];
   torneoExpandidoId: number | null;
+  inscripcionesTorneo: InscripcionTorneo[];
   nuevoEquipoNombre: string;
   nuevoPartidoEquipoLocalId: string;
   nuevoPartidoEquipoVisitanteId: string;
@@ -233,6 +240,9 @@ const initialState: AppState = {
   showReservaModal: false,
   reservaHoraSel: '',
   reservaNombre: '',
+  reservaBienvenidaVista: false,
+  portalRol: 'hincha',
+  portalLoggedIn: false,
   partidos: seedPartidos,
   nuevoPartidoFecha: '2026-08-02',
   nuevoPartidoHora: '16:00',
@@ -268,6 +278,7 @@ const initialState: AppState = {
   nuevoEgresoCategoria: 'Jugadores',
   nuevoEgresoMonto: '',
   comunicados: seedComunicados,
+  comunicadosLeidos: [],
   nuevoTitulo: '',
   nuevoCuerpo: '',
   nuevoDestinatario: 'Todos los socios',
@@ -285,12 +296,14 @@ const initialState: AppState = {
   nuevoTorneoCupo: '',
   nuevoTorneoValorInscripcion: '',
   nuevoTorneoDescripcion: '',
+  nuevoTorneoPremio: '',
   showDifundirTorneo: false,
   difundirTorneoId: null,
   mensajeDifusionTorneo: '',
   equiposTorneo: seedEquiposTorneo,
   partidosTorneo: seedPartidosTorneo,
   torneoExpandidoId: null,
+  inscripcionesTorneo: [],
   nuevoEquipoNombre: '',
   nuevoPartidoEquipoLocalId: '',
   nuevoPartidoEquipoVisitanteId: '',
@@ -316,6 +329,17 @@ export interface AppActions {
   selectModule: (module: Modulo) => void;
   showModuleSelector: () => void;
   navigate: (screen: Screen) => void;
+  confirmarAsociacion: (datos: {
+    nombre: string;
+    apellido: string;
+    dni: string;
+    fechaNacimiento: string;
+    domicilio: string;
+    telefono: string;
+    email: string;
+    medioPago: MedioPago;
+    debitoAutomatico: boolean;
+  }) => void;
   toggleIngresosMenu: (e: React.MouseEvent) => void;
   toggleMore: () => void;
   closeMore: () => void;
@@ -331,6 +355,15 @@ export interface AppActions {
   setReservaNombre: (v: string) => void;
   confirmarReserva: () => void;
   liberarReserva: (id: number) => void;
+  reservarTurnoHincha: (canchaId: number, dia: string, hora: string, medioPago: MedioPago) => void;
+  cerrarBienvenidaReservas: () => void;
+  setPortalRol: (rol: 'socio' | 'hincha') => void;
+  iniciarSesionPortal: () => void;
+  cerrarSesionPortal: () => void;
+  marcarComunicadoLeido: (id: number) => void;
+  setFotoPerfil: (dataUrl: string) => void;
+  marcarTodosComunicadosLeidos: () => void;
+  eliminarComunicado: (id: number) => void;
   openAgregarPartido: (fecha?: string) => void;
   closeAgregarPartido: () => void;
   openReponerStockBuffet: () => void;
@@ -394,6 +427,7 @@ export interface AppActions {
   setNuevoTorneoCupo: (v: string) => void;
   setNuevoTorneoValorInscripcion: (v: string) => void;
   setNuevoTorneoDescripcion: (v: string) => void;
+  setNuevoTorneoPremio: (v: string) => void;
   crearTorneo: () => void;
   quitarTorneo: (id: number) => void;
   openDifundirTorneo: (id: number) => void;
@@ -410,6 +444,8 @@ export interface AppActions {
   agregarPartidoTorneo: (torneoId: number) => void;
   quitarPartidoTorneo: (id: number) => void;
   setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
+  inscribirseTorneo: (datos: InscripcionTorneo) => void;
+  cancelarInscripcionTorneo: (torneoId: number) => void;
   selectEquipoDeportivo: (id: number) => void;
   abrirActaEnCalendario: (eventoId: number) => void;
   limpiarActaEventoPendiente: () => void;
@@ -437,6 +473,7 @@ export interface AppActions {
   duplicarFormacion: (id: number) => void;
   eliminarFormacion: (id: number) => void;
   normalizarNombreFormacion: (id: number) => void;
+  publicarFormacionComoNovedad: (formacionId: number) => void;
   mostrarToast: (mensaje: string) => void;
 }
 
@@ -474,8 +511,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const actions: AppActions = {
     selectModule: (module) => {
-      const screen: Screen = module === 'administrativo' ? 'dashboard' : module === 'deportivo' ? 'deportivo_inicio' : 'portal_inicio';
-      update({ activeModule: module, screen, moreOpen: false });
+      update((s) => {
+        const screen: Screen =
+          module === 'administrativo' ? 'dashboard' :
+          module === 'deportivo' ? 'deportivo_inicio' :
+          s.portalLoggedIn ? 'portal_inicio' : 'portal_login';
+        return { activeModule: module, screen, moreOpen: false };
+      });
     },
     showModuleSelector: () => update({ activeModule: null, moreOpen: false }),
 
@@ -523,6 +565,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     liberarReserva: (id) => {
       update((s) => ({ reservas: s.reservas.filter((r) => r.id !== id) }));
       showToast('Turno liberado');
+    },
+    reservarTurnoHincha: (canchaId, dia, hora, medioPago) => {
+      setState((prev) => {
+        const ocupado = prev.reservas.some((r) => r.canchaId === canchaId && r.dia === dia && r.hora === hora);
+        if (ocupado) {
+          showToast('Esa cancha ya está reservada en ese horario');
+          return prev;
+        }
+        const socio = prev.socios[0];
+        const nombre = `${socio.nombre} ${socio.apellido}`;
+        showToast('Turno reservado — ' + nombre);
+        return { ...prev, reservas: [...prev.reservas, { id: Date.now(), canchaId, dia, hora, nombre, medioPago }] };
+      });
+    },
+    cerrarBienvenidaReservas: () => update({ reservaBienvenidaVista: true }),
+    setPortalRol: (rol) => update({ portalRol: rol }),
+    iniciarSesionPortal: () => update({ portalLoggedIn: true, screen: 'portal_inicio' }),
+    cerrarSesionPortal: () => update({ portalLoggedIn: false, screen: 'portal_login' }),
+    marcarComunicadoLeido: (id) => update((s) => (
+      s.comunicadosLeidos.includes(id) ? {} : { comunicadosLeidos: [...s.comunicadosLeidos, id] }
+    )),
+    marcarTodosComunicadosLeidos: () => update((s) => ({ comunicadosLeidos: s.comunicados.map((c) => c.id) })),
+    setFotoPerfil: (dataUrl) => update((s) => ({ socios: s.socios.map((soc, i) => i === 0 ? { ...soc, fotoPerfil: dataUrl } : soc) })),
+    eliminarComunicado: (id) => {
+      update((s) => ({
+        comunicados: s.comunicados.filter((c) => c.id !== id),
+        comunicadosLeidos: s.comunicadosLeidos.filter((x) => x !== id),
+      }));
+      showToast('Novedad eliminada');
     },
 
     openAgregarPartido: (fecha) => update((s) => ({ showAgregarPartido: true, nuevoPartidoFecha: fecha || s.nuevoPartidoFecha })),
@@ -834,7 +905,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return {
           ...prev,
           comunicados: [
-            { id: Date.now(), titulo: prev.nuevoTitulo, cuerpo: prev.nuevoCuerpo, destinatario: prev.nuevoDestinatario, fecha: '29/07/2026' },
+            { id: Date.now(), titulo: prev.nuevoTitulo, cuerpo: prev.nuevoCuerpo, destinatario: prev.nuevoDestinatario, fecha: '29/07/2026', hora: 'ahora' },
             ...prev.comunicados,
           ],
           nuevoTitulo: '',
@@ -858,6 +929,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNuevoTorneoCupo: (v) => update({ nuevoTorneoCupo: v }),
     setNuevoTorneoValorInscripcion: (v) => update({ nuevoTorneoValorInscripcion: v }),
     setNuevoTorneoDescripcion: (v) => update({ nuevoTorneoDescripcion: v }),
+    setNuevoTorneoPremio: (v) => update({ nuevoTorneoPremio: v }),
     crearTorneo: () => {
       setState((prev) => {
         const nombre = prev.nuevoTorneoNombre.trim();
@@ -898,6 +970,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               cupo,
               valorInscripcion,
               descripcion: prev.nuevoTorneoDescripcion.trim(),
+              premio: prev.nuevoTorneoPremio.trim(),
             },
           ],
           nuevoTorneoNombre: '',
@@ -906,6 +979,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           nuevoTorneoCupo: '',
           nuevoTorneoValorInscripcion: '',
           nuevoTorneoDescripcion: '',
+          nuevoTorneoPremio: '',
         };
       });
     },
@@ -996,6 +1070,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       update((s) => ({
         partidosTorneo: s.partidosTorneo.map((p) => (p.id === id ? { ...p, [campo]: Number.isNaN(num as number) ? null : num } : p)),
       }));
+    },
+    inscribirseTorneo: (datos) => {
+      update((s) => ({
+        inscripcionesTorneo: [...s.inscripcionesTorneo.filter((i) => i.torneoId !== datos.torneoId), datos],
+      }));
+      const nombre = state.torneos.find((t) => t.id === datos.torneoId)?.nombre;
+      showToast(nombre ? `Te anotaste a ${nombre}` : 'Te anotaste al torneo');
+    },
+    cancelarInscripcionTorneo: (torneoId) => {
+      update((s) => ({ inscripcionesTorneo: s.inscripcionesTorneo.filter((i) => i.torneoId !== torneoId) }));
+      showToast('Cancelaste tu inscripción');
     },
 
     selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
@@ -1165,7 +1250,70 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const nombre = actual.nombre.trim() || siguienteNombreFormacion(s.formaciones.filter((item) => item.id !== id), actual.equipoId);
       return { formaciones: s.formaciones.map((item) => item.id === id ? { ...item, nombre } : item) };
     }),
+    publicarFormacionComoNovedad: (formacionId) => {
+      const formacion = state.formaciones.find((f) => f.id === formacionId);
+      if (!formacion) return;
+      const titulares = formacion.jugadores.filter((j) => j.zona === 'titular');
+      if (titulares.length === 0) {
+        showToast('Cargá al menos un titular antes de avisar');
+        return;
+      }
+      const equipo = state.equiposDeportivos.find((e) => e.id === formacion.equipoId);
+      const listado = titulares
+        .map((t) => {
+          const jugador = state.jugadores.find((j) => j.id === t.jugadorId);
+          return jugador ? `${t.dorsal} - ${jugador.nombre} ${jugador.apellido}` : null;
+        })
+        .filter(Boolean)
+        .join(', ');
+      const [y, m, d] = HOY_ISO.split('-');
+      update((s) => ({
+        comunicados: [
+          {
+            id: Date.now(),
+            titulo: '¿Juega el equipo hoy?',
+            cuerpo: `El plantel de ${equipo?.nombre ?? 'el equipo'} juega hoy. Formación (${formacion.sistema}): ${listado}.`,
+            destinatario: 'Todos los socios',
+            fecha: `${d}/${m}/${y}`,
+            hora: 'ahora',
+          },
+          ...s.comunicados,
+        ],
+      }));
+      showToast('Novedad publicada');
+    },
     mostrarToast: showToast,
+    confirmarAsociacion: (datos) => {
+      const [y, m, d] = HOY_ISO.split('-');
+      const ultimoPago = `${d}/${m}/${y}`;
+      setState((prev) => {
+        const anterior = prev.socios[0];
+        const nombreAnterior = `${anterior.nombre} ${anterior.apellido}`;
+        const nombreNuevo = `${datos.nombre} ${datos.apellido}`;
+        return {
+          ...prev,
+          socios: prev.socios.map((s, i) => i === 0 ? {
+            ...s,
+            nombre: datos.nombre,
+            apellido: datos.apellido,
+            dni: datos.dni,
+            fechaNacimiento: datos.fechaNacimiento,
+            domicilio: datos.domicilio,
+            telefono: datos.telefono,
+            email: datos.email,
+            debitoAutomatico: datos.debitoAutomatico,
+            medioPago: datos.medioPago,
+            estado: 'al_dia',
+            deuda: 0,
+            ultimoPago,
+          } : s),
+          reservas: nombreNuevo === nombreAnterior ? prev.reservas : prev.reservas.map((r) => r.nombre === nombreAnterior ? { ...r, nombre: nombreNuevo } : r),
+          portalRol: 'socio',
+          screen: 'portal_cuota',
+        };
+      });
+      showToast('¡Bienvenido/a al club! Ya sos socio.');
+    },
   };
 
   return <AppContext.Provider value={{ state, actions }}>{children}</AppContext.Provider>;

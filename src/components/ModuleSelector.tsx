@@ -24,9 +24,9 @@ const modules: Array<{ id: Modulo; title: string; description: string; features:
   },
   {
     id: 'socio',
-    title: 'Portal del Socio',
-    description: 'Cuotas, reservas, novedades y perfil personal.',
-    features: ['Estado de cuota', 'Reservas', 'Novedades del club'],
+    title: 'Portal del Hincha',
+    description: 'Novedades, reservas y el camino para hacerse socio del club.',
+    features: ['Hacete socio', 'Reservas', 'Novedades del club'],
     color: '#2774b8',
     image: portalSocioImage,
   },

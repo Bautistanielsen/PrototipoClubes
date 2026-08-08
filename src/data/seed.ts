@@ -68,20 +68,22 @@ export const seedSocios: Socio[] = [
 ];
 
 export const seedCanchas: Cancha[] = [
-  { id: 1, nombre: 'Fútbol 5' },
-  { id: 2, nombre: 'Pádel' },
-  { id: 3, nombre: 'Tenis' },
+  { id: 1, nombre: 'Fútbol 5', numero: 1, precio: 15000 },
+  { id: 2, nombre: 'Fútbol 5', numero: 2, precio: 15000 },
+  { id: 3, nombre: 'Pádel', numero: 1, precio: 9000 },
+  { id: 4, nombre: 'Pádel', numero: 2, precio: 9000 },
+  { id: 5, nombre: 'Tenis', numero: 1, precio: 7000 },
 ];
 
 export const seedReservas: Reserva[] = [
-  { id: 1, canchaId: 1, dia: '2026-07-29', hora: '18:00', nombre: 'Martina Gómez' },
-  { id: 2, canchaId: 1, dia: '2026-07-29', hora: '19:00', nombre: 'Benjamín Sosa' },
-  { id: 3, canchaId: 1, dia: '2026-07-30', hora: '20:00', nombre: 'Emma Acosta' },
-  { id: 4, canchaId: 2, dia: '2026-07-29', hora: '17:00', nombre: 'Sofía Rodríguez' },
-  { id: 5, canchaId: 2, dia: '2026-07-29', hora: '20:00', nombre: 'Isabella Herrera' },
-  { id: 6, canchaId: 2, dia: '2026-07-30', hora: '09:00', nombre: 'Renata Ortiz' },
-  { id: 7, canchaId: 3, dia: '2026-07-29', hora: '10:00', nombre: 'Lucas Fernández' },
-  { id: 8, canchaId: 3, dia: '2026-08-02', hora: '11:00', nombre: 'Bautista Castro' },
+  { id: 1, canchaId: 1, dia: '2026-07-29', hora: '18:00', nombre: 'Martina Gómez', medioPago: 'Efectivo' },
+  { id: 2, canchaId: 1, dia: '2026-07-29', hora: '19:00', nombre: 'Benjamín Sosa', medioPago: 'Transferencia' },
+  { id: 3, canchaId: 2, dia: '2026-07-30', hora: '20:00', nombre: 'Emma Acosta', medioPago: 'Efectivo' },
+  { id: 4, canchaId: 3, dia: '2026-07-29', hora: '17:00', nombre: 'Sofía Rodríguez', medioPago: 'Transferencia' },
+  { id: 5, canchaId: 3, dia: '2026-07-29', hora: '20:00', nombre: 'Isabella Herrera', medioPago: 'Efectivo' },
+  { id: 6, canchaId: 4, dia: '2026-07-30', hora: '09:00', nombre: 'Renata Ortiz', medioPago: 'Transferencia' },
+  { id: 7, canchaId: 5, dia: '2026-07-29', hora: '10:00', nombre: 'Lucas Fernández', medioPago: 'Efectivo' },
+  { id: 8, canchaId: 5, dia: '2026-08-02', hora: '11:00', nombre: 'Bautista Castro', medioPago: 'Transferencia' },
 ];
 
 export const seedPartidos: Partido[] = [
@@ -167,6 +169,7 @@ export const seedComunicados: Comunicado[] = [
       'Recordamos a los socios que la cuota de julio vence el día 5. Podés abonarla en secretaría o por transferencia.',
     destinatario: 'Todos los socios',
     fecha: '02/07/2026',
+    hora: '09:15',
   },
   {
     id: 2,
@@ -174,6 +177,23 @@ export const seedComunicados: Comunicado[] = [
     cuerpo: 'A partir de esta semana la pileta abre de 9 a 20 hs de lunes a domingo.',
     destinatario: 'Todos los socios',
     fecha: '15/06/2026',
+    hora: '11:40',
+  },
+  {
+    id: 3,
+    titulo: 'Inscripciones abiertas para la Copa Aniversario',
+    cuerpo: 'Ya podés anotar a tu equipo para el torneo de Fútbol 5 del 15 y 16 de agosto. Cupos limitados.',
+    destinatario: 'Todos los socios',
+    fecha: '20/07/2026',
+    hora: '18:05',
+  },
+  {
+    id: 4,
+    titulo: 'Nuevo menú en el buffet',
+    cuerpo: 'Sumamos opciones vegetarianas y descuentos especiales para socios todos los mediodías.',
+    destinatario: 'Todos los socios',
+    hora: '13:20',
+    fecha: '24/07/2026',
   },
 ];
 
@@ -209,9 +229,9 @@ export const seedJugadores: Jugador[] = [
 ];
 
 export const seedTorneos: Torneo[] = [
-  { id: 1, nombre: 'Copa de Tenis Interna', deporte: 'Tenis', fechaInicio: '2026-07-10', fechaFin: '2026-07-20', lugar: 'Cancha de Tenis', cupo: 8, valorInscripcion: 5000, descripcion: 'Torneo finalizado, formato eliminación directa.' },
-  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.' },
-  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.' },
+  { id: 1, nombre: 'Copa de Tenis Interna', deporte: 'Tenis', fechaInicio: '2026-07-10', fechaFin: '2026-07-20', lugar: 'Cancha de Tenis', cupo: 8, valorInscripcion: 5000, descripcion: 'Torneo finalizado, formato eliminación directa.', premio: 'Trofeo y medalla para el campeón' },
+  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.', premio: 'Kit deportivo del club + $20.000' },
+  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.', premio: 'Copa + entradas para el próximo partido del primer equipo' },
 ];
 
 export const seedEquiposTorneo: EquipoTorneo[] = [

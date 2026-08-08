@@ -12,7 +12,7 @@ export default function ReservaModal() {
     <ModalOverlay onClose={actions.closeReservaModal} maxWidth={420}>
       <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Reservar turno</div>
       <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>
-        {cancha?.nombre} · {formatFechaCorta(state.selectedDia)} · {state.reservaHoraSel}
+        {cancha?.nombre} #{cancha?.numero} · {formatFechaCorta(state.selectedDia)} · {state.reservaHoraSel}
       </div>
       <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#16203a', marginBottom: 6 }}>Nombre de quien reserva</label>
       <input

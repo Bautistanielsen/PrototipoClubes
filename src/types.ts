@@ -1,6 +1,6 @@
 export type EstadoSocio = 'al_dia' | 'por_vencer' | 'moroso';
 
-export type MedioPago = 'Efectivo' | 'Transferencia';
+export type MedioPago = 'Efectivo' | 'Transferencia' | 'MercadoPago' | 'Tarjeta';
 
 export interface Socio {
   id: number;
@@ -12,6 +12,12 @@ export interface Socio {
   ultimoPago: string;
   debitoAutomatico: boolean;
   telefono: string;
+  medioPago?: MedioPago;
+  dni?: string;
+  domicilio?: string;
+  email?: string;
+  fechaNacimiento?: string;
+  fotoPerfil?: string;
 }
 
 export interface Pago {
@@ -79,11 +85,14 @@ export interface Comunicado {
   cuerpo: string;
   destinatario: string;
   fecha: string;
+  hora: string;
 }
 
 export interface Cancha {
   id: number;
   nombre: string;
+  numero: number;
+  precio: number;
 }
 
 export interface Reserva {
@@ -92,6 +101,7 @@ export interface Reserva {
   dia: string;
   hora: string;
   nombre: string;
+  medioPago?: MedioPago;
 }
 
 export type TipoPartido = 'Liga' | 'Amistoso' | 'Copa' | 'Torneo';
@@ -172,7 +182,7 @@ export type AdminScreen =
   | 'config';
 
 export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario';
-export type PortalScreen = 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_mas' | 'portal_novedades' | 'portal_perfil';
+export type PortalScreen = 'portal_login' | 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_novedades' | 'portal_perfil' | 'portal_hacete_socio' | 'portal_mis_reservas' | 'portal_torneos';
 export type Screen = AdminScreen | DeportivoScreen | PortalScreen;
 
 export type Modulo = 'administrativo' | 'deportivo' | 'socio';
@@ -191,6 +201,7 @@ export interface Torneo {
   cupo: number;
   valorInscripcion: number;
   descripcion: string;
+  premio: string;
 }
 
 export interface EquipoTorneo {
@@ -206,4 +217,11 @@ export interface PartidoTorneo {
   equipoVisitanteId: number;
   golesLocal: number | null;
   golesVisitante: number | null;
+}
+
+export interface InscripcionTorneo {
+  torneoId: number;
+  nombreEquipo: string;
+  integrantes: string;
+  medioPago: MedioPago;
 }

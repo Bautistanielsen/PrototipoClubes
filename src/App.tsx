@@ -53,7 +53,7 @@ function ScreenContent() {
     case 'equipos': return <Equipos />;
     case 'formaciones': return <Formaciones />;
     case 'partidos': return <Partidos />;
-    case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_mas': case 'portal_novedades': case 'portal_perfil': return <PortalSocio />;
+    case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': return <PortalSocio />;
   }
 }
 
@@ -103,8 +103,21 @@ function DeportivoLayout() {
 }
 
 function PortalLayout() {
-  const { actions } = useApp();
-  return <div className="portal-stage"><button className="portal-module-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button><ScreenContent /><Toast /></div>;
+  const { state, actions } = useApp();
+  const esSocio = state.portalRol === 'socio';
+  return <div className="portal-stage">
+    <button className="portal-module-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button>
+    {state.portalLoggedIn && (
+      <button
+        className="portal-module-switch"
+        style={{ left: 24, right: 'auto' }}
+        onClick={() => actions.setPortalRol(esSocio ? 'hincha' : 'socio')}
+      >
+        Viendo como {esSocio ? 'socio' : 'hincha'} · Cambiar
+      </button>
+    )}
+    <ScreenContent /><Toast />
+  </div>;
 }
 
 function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><ReservaModal /><MediosPagoModal /><ReponerStockBuffetModal /><ReponerStockShopModal /><DifundirTorneoModal /></>; }

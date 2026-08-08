@@ -47,7 +47,7 @@ export default function Canchas() {
                 cursor: 'pointer',
               }}
             >
-              {c.nombre}
+              {c.nombre} #{c.numero}
             </button>
           );
         })}

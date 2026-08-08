@@ -97,9 +97,16 @@ export default function Torneos() {
         <textarea
           value={state.nuevoTorneoDescripcion}
           onChange={(e) => actions.setNuevoTorneoDescripcion(e.target.value)}
-          placeholder="Descripción (categorías, formato, premios...)"
+          placeholder="Descripción (categorías, formato...)"
           rows={2}
-          style={{ width: '100%', border: '1px solid #e3e7ef', borderRadius: 9, padding: '10px 12px', fontSize: 14, color: '#16203a', marginBottom: 14, fontFamily: 'inherit', resize: 'vertical' }}
+          style={{ width: '100%', border: '1px solid #e3e7ef', borderRadius: 9, padding: '10px 12px', fontSize: 14, color: '#16203a', marginBottom: 12, fontFamily: 'inherit', resize: 'vertical' }}
+        />
+        <input
+          type="text"
+          value={state.nuevoTorneoPremio}
+          onChange={(e) => actions.setNuevoTorneoPremio(e.target.value)}
+          placeholder="Premio (ej. Copa + $20.000)"
+          style={{ ...inputStyle, width: '100%', marginBottom: 14 }}
         />
         <button
           onClick={actions.crearTorneo}
@@ -128,7 +135,12 @@ export default function Torneos() {
                 <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: t.descripcion ? 6 : 0 }}>
                   {t.deporte} · {formatFechaCorta(t.fechaInicio)} al {formatFechaCorta(t.fechaFin)} · {t.lugar} · Cupo: {t.cupo} · Inscripción: {formatMoney(t.valorInscripcion)}
                 </div>
-                {t.descripcion && <div style={{ fontSize: 13, color: '#8b93a5', marginBottom: 12 }}>{t.descripcion}</div>}
+                {t.descripcion && <div style={{ fontSize: 13, color: '#8b93a5', marginBottom: t.premio ? 6 : 12 }}>{t.descripcion}</div>}
+                {t.premio && (
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#8a6d1a', background: '#fdf3d9', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, marginBottom: 12 }}>
+                    🏆 {t.premio}
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
                   <button
                     onClick={() => actions.openDifundirTorneo(t.id)}
