@@ -24,6 +24,7 @@ export default function DeportivoInicio() {
         <div style={card}><div style={label}>EQUIPOS ACTIVOS</div><div style={number}>{state.equiposDeportivos.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Ver planteles</button></div>
         <div style={card}><div style={label}>JUGADORES REGISTRADOS</div><div style={number}>{state.jugadores.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Gestionar planteles</button></div>
         <div style={{ ...card, flex: 2 }}><div style={label}>PRÓXIMO PARTIDO</div><div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginTop: 12 }}>{nextMatch ? `${nextMatch.condicion} vs. ${nextMatch.rival}` : 'Sin partidos programados'}</div>{nextMatch && <div style={{ color: '#6b7488', marginTop: 5, fontSize: 14 }}>{nextMatch.fecha} · {nextMatch.hora} · {nextMatch.tipo}</div>}</div>
+        <div style={{ ...card, flex: 2 }}><div style={label}>ESTADÍSTICAS</div><div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginTop: 12 }}>Rendimiento del plantel</div><div style={{ color: '#6b7488', marginTop: 5, fontSize: 14 }}>Resultados, jugadores y contexto táctico.</div><button onClick={() => actions.navigate('estadisticas')} style={{ ...link, marginTop: 12 }}>Ver estadísticas →</button></div>
       </div>
     </div>
   );
