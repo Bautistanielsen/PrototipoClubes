@@ -5,6 +5,17 @@ export type Competencia = 'Liga' | 'Copa' | 'Amistoso';
 export type EstadoPartido = 'programado' | 'finalizado' | 'suspendido' | 'postergado';
 export type Recurrencia = { dias: number[]; hasta?: string };
 
+export type PlayerRef = { playerId: string; equipoId: number; displayName: string };
+export type HistoricalPlayerSnapshot = PlayerRef;
+export type ObservedFacts = { goals?: boolean; assists?: boolean; yellowCards?: boolean; redCards?: boolean };
+
+export type FinalizedResult = {
+  club: number;
+  rival: number;
+  difference: number;
+  outcome: 'win' | 'draw' | 'loss';
+};
+
 export type Evento = {
   id: number;
   equipoId: number;
@@ -41,6 +52,8 @@ export type Acta = {
   cambios: Array<{ saleId: string; entraId: string; minuto: string }>;
   puntajes: Record<string, string>;
   observaciones: string;
+  observedFacts?: ObservedFacts;
+  jugadoresSnapshot?: Record<string, HistoricalPlayerSnapshot>;
 };
 
 export type Prefs = { visibles: number[]; colores: Record<number, string>; configurado?: boolean };
@@ -52,18 +65,112 @@ export function emptyActa(): Acta {
   return { goles: [], amarillas: [], rojas: [], cambios: [], puntajes: {}, observaciones: '' };
 }
 
-export function normalizeActa(value: unknown): Acta {
-  const acta = value && typeof value === 'object' ? value as Partial<Acta> : {};
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
+}
+
+function integerValue(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isInteger(value) ? value : undefined;
+}
+
+function normalizePlayerRef(value: unknown): PlayerRef | undefined {
+  if (!isRecord(value)) return undefined;
+  const playerId = stringValue(value.playerId).trim();
+  const equipoId = integerValue(value.equipoId);
+  if (!playerId || equipoId === undefined) return undefined;
+  return { playerId, equipoId, displayName: stringValue(value.displayName) };
+}
+
+function normalizePlayerSnapshots(value: unknown, expectedEquipoId?: number): Record<string, HistoricalPlayerSnapshot> | undefined {
+  if (!isRecord(value)) return undefined;
+  const snapshots = Object.fromEntries(Object.entries(value).flatMap(([id, snapshot]) => {
+    const normalized = normalizePlayerRef(snapshot);
+    const coherent = normalized && normalized.playerId === id
+      && (expectedEquipoId === undefined || normalized.equipoId === expectedEquipoId);
+    return coherent ? [[id, normalized]] : [];
+  }));
+  return Object.keys(snapshots).length ? snapshots : undefined;
+}
+
+function normalizeGoal(value: unknown) {
+  if (!isRecord(value)) return null;
+  return { jugadorId: stringValue(value.jugadorId), minuto: stringValue(value.minuto), asistenciaId: stringValue(value.asistenciaId) };
+}
+
+function normalizeCard(value: unknown) {
+  if (!isRecord(value)) return null;
+  return { jugadorId: stringValue(value.jugadorId), minuto: stringValue(value.minuto) };
+}
+
+function normalizeChange(value: unknown) {
+  if (!isRecord(value)) return null;
+  return { saleId: stringValue(value.saleId), entraId: stringValue(value.entraId), minuto: stringValue(value.minuto) };
+}
+
+function normalizeObservedFacts(acta: Record<string, unknown>): ObservedFacts | undefined {
+  const supplied = isRecord(acta.observedFacts) ? acta.observedFacts : {};
+  const facts: ObservedFacts = {
+    goals: typeof supplied.goals === 'boolean' ? supplied.goals : Array.isArray(acta.goles),
+    assists: typeof supplied.assists === 'boolean' ? supplied.assists : Array.isArray(acta.goles),
+    yellowCards: typeof supplied.yellowCards === 'boolean' ? supplied.yellowCards : Array.isArray(acta.amarillas),
+    redCards: typeof supplied.redCards === 'boolean' ? supplied.redCards : Array.isArray(acta.rojas),
+  };
+  return facts;
+}
+
+function normalizeFormationSnapshot(value: unknown, expectedEquipoId?: number): Formacion | undefined {
+  if (!isRecord(value) || !Array.isArray(value.jugadores)) return undefined;
+  const equipoId = integerValue(value.equipoId);
+  if (equipoId === undefined || (expectedEquipoId !== undefined && equipoId !== expectedEquipoId)) return undefined;
+  return value as unknown as Formacion;
+}
+
+export function normalizeActa(value: unknown, lineageEquipoId?: number): Acta {
+  const acta = isRecord(value) ? value : {};
+  const formationEquipoId = isRecord(acta.formacionSnapshot) ? integerValue(acta.formacionSnapshot.equipoId) : undefined;
+  const expectedEquipoId = integerValue(lineageEquipoId) ?? formationEquipoId;
+  const jugadoresSnapshot = normalizePlayerSnapshots(acta.jugadoresSnapshot, expectedEquipoId);
+  const puntajes = isRecord(acta.puntajes)
+    ? Object.fromEntries(Object.entries(acta.puntajes).flatMap(([id, score]) => {
+      const normalized = stringValue(score);
+      return normalized === '' && score !== '' ? [] : [[id, normalized]];
+    }))
+    : {};
   return {
     ...emptyActa(),
     ...acta,
-    goles: Array.isArray(acta.goles) ? acta.goles : [],
-    amarillas: Array.isArray(acta.amarillas) ? acta.amarillas : [],
-    rojas: Array.isArray(acta.rojas) ? acta.rojas : [],
-    cambios: Array.isArray(acta.cambios) ? acta.cambios : [],
-    puntajes: acta.puntajes && typeof acta.puntajes === 'object' && !Array.isArray(acta.puntajes) ? acta.puntajes : {},
+    resultadoClub: typeof acta.resultadoClub === 'string' || typeof acta.resultadoClub === 'number' ? stringValue(acta.resultadoClub) : undefined,
+    resultadoRival: typeof acta.resultadoRival === 'string' || typeof acta.resultadoRival === 'number' ? stringValue(acta.resultadoRival) : undefined,
+    formacionId: integerValue(acta.formacionId),
+    formacionSnapshot: normalizeFormationSnapshot(acta.formacionSnapshot, integerValue(lineageEquipoId)),
+    goles: Array.isArray(acta.goles) ? acta.goles.flatMap((item) => { const normalized = normalizeGoal(item); return normalized ? [normalized] : []; }) : [],
+    amarillas: Array.isArray(acta.amarillas) ? acta.amarillas.flatMap((item) => { const normalized = normalizeCard(item); return normalized ? [normalized] : []; }) : [],
+    rojas: Array.isArray(acta.rojas) ? acta.rojas.flatMap((item) => { const normalized = normalizeCard(item); return normalized ? [normalized] : []; }) : [],
+    cambios: Array.isArray(acta.cambios) ? acta.cambios.flatMap((item) => { const normalized = normalizeChange(item); return normalized ? [normalized] : []; }) : [],
+    puntajes,
     observaciones: typeof acta.observaciones === 'string' ? acta.observaciones : '',
+    observedFacts: normalizeObservedFacts(acta),
+    jugadoresSnapshot,
   };
+}
+
+function parseScore(value: unknown): number | null {
+  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+  const score = Number(value);
+  return Number.isInteger(score) && score >= 0 ? score : null;
+}
+
+export function parseFinalizedResult(evento: Evento, acta?: Acta): FinalizedResult | null {
+  if (evento.tipo !== 'Partido' || evento.estado !== 'finalizado' || !acta) return null;
+  const club = parseScore(acta.resultadoClub);
+  const rival = parseScore(acta.resultadoRival);
+  if (club === null || rival === null) return null;
+  return { club, rival, difference: club - rival, outcome: club > rival ? 'win' : club < rival ? 'loss' : 'draw' };
 }
 
 const formacionDemo: Formacion = {
@@ -114,7 +221,15 @@ function withDemoNumeroFecha(eventos: Evento[]) {
 }
 
 function cloneSeedData(): SportsCalendarData {
-  return { eventos: withDemoNumeroFecha(seedEventos), actas: Object.fromEntries(Object.entries(seedActas).map(([id, acta]) => [id, normalizeActa(acta)])), prefs: { visibles: [], colores: {} } };
+  const eventos = withDemoNumeroFecha(seedEventos);
+  const equiposPorActa = new Map(eventos.map((evento) => [String(evento.id), evento.equipoId]));
+  return { eventos, actas: Object.fromEntries(Object.entries(seedActas).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))])), prefs: { visibles: [], colores: {} } };
+}
+
+function normalizeStoredActas(value: unknown, eventos: Evento[], fallback: Record<string, Acta>) {
+  if (!isRecord(value)) return fallback;
+  const equiposPorActa = new Map(eventos.map((evento) => [String(evento.id), evento.equipoId]));
+  return Object.fromEntries(Object.entries(value).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))]));
 }
 
 export function readSportsCalendarData(): SportsCalendarData {
@@ -125,15 +240,13 @@ export function readSportsCalendarData(): SportsCalendarData {
     if (!saved) return fallback;
     const parsed = JSON.parse(saved) as Partial<SportsCalendarData>;
     const storedEventos = Array.isArray(parsed.eventos) ? withDemoNumeroFecha(parsed.eventos) : fallback.eventos;
-    const storedActas = parsed.actas && typeof parsed.actas === 'object'
-      ? Object.fromEntries(Object.entries(parsed.actas).map(([id, acta]) => [id, normalizeActa(acta)]))
-      : fallback.actas;
+    const storedActas = normalizeStoredActas(parsed.actas, storedEventos, fallback.actas);
     const migrateLegacyDemo = storedEventos.length > 0
       && !storedEventos.some((evento) => HISTORICAL_SEED_IDS.has(evento.id))
       && storedEventos.every((evento) => LEGACY_DEMO_IDS.has(evento.id));
     return {
       eventos: migrateLegacyDemo ? [...seedEventos.filter((evento) => HISTORICAL_SEED_IDS.has(evento.id)), ...storedEventos] : storedEventos,
-      actas: migrateLegacyDemo ? { ...seedActas, ...storedActas } : storedActas,
+      actas: migrateLegacyDemo ? { ...fallback.actas, ...storedActas } : storedActas,
       prefs: parsed.prefs && typeof parsed.prefs === 'object' ? parsed.prefs : fallback.prefs,
     };
   } catch {
