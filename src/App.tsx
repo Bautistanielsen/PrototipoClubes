@@ -32,6 +32,7 @@ import DeportivoInicio from './screens/DeportivoInicio';
 import Equipos from './screens/Equipos';
 import Formaciones from './screens/Formaciones';
 import Partidos from './screens/Partidos';
+import Estadisticas from './screens/Estadisticas';
 import PortalSocio from './screens/PortalSocio';
 
 function ScreenContent() {
@@ -53,6 +54,7 @@ function ScreenContent() {
     case 'equipos': return <Equipos />;
     case 'formaciones': return <Formaciones />;
     case 'partidos': return <Partidos />;
+    case 'estadisticas': return <Estadisticas />;
     case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': return <PortalSocio />;
   }
 }
@@ -70,7 +72,7 @@ function AdministrativeLayout() {
   </div>;
 }
 
-function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario' }) {
+function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario' | 'estadisticas' }) {
   const common = { width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
   if (screen === 'deportivo_inicio') {
@@ -85,12 +87,15 @@ function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'f
   if (screen === 'partidos') {
     return <svg {...common}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 4v5M15 4v5" /><path d="M8 15h8M12 12v6" /></svg>;
   }
+  if (screen === 'estadisticas') {
+    return <svg {...common}><path d="M4 19V5M4 19h16" /><path d="m7 15 4-4 3 2 5-7" /></svg>;
+  }
   return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /><path d="m9 15 2 2 4-4" /></svg>;
 }
 
 function DeportivoLayout() {
   const { state, actions } = useApp();
-  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }];
+  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }, { screen: 'estadisticas' as const, label: 'Estadísticas' }];
   return <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f7fb' }}>
     {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand"><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}</div><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
     <div style={{ flex: 1, minWidth: 0 }}>

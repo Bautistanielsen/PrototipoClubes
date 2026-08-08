@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../state/AppContext';
-import { readSportsCalendarData } from '../lib/sportsCalendar';
-import type { Acta, Evento } from '../lib/sportsCalendar';
+import { parseFinalizedResult, readSportsCalendarData } from '../lib/sportsCalendar';
+import type { Acta, Evento, FinalizedResult } from '../lib/sportsCalendar';
 
 type FiltroEstado = 'todos' | 'finalizado' | 'programado' | 'suspendido' | 'postergado';
 type DatosCalendario = { eventos: Evento[]; actas: Record<string, Acta> };
@@ -19,14 +19,7 @@ function estadoDe(evento: Evento): FiltroEstado {
   return evento.estado === 'finalizado' || evento.estado === 'suspendido' || evento.estado === 'postergado' ? evento.estado : 'programado';
 }
 
-function resultadoValido(acta?: Acta) {
-  if (!acta || acta.resultadoClub === undefined || acta.resultadoRival === undefined) return null;
-  const club = Number(acta.resultadoClub);
-  const rival = Number(acta.resultadoRival);
-  return Number.isInteger(club) && club >= 0 && Number.isInteger(rival) && rival >= 0 ? { club, rival } : null;
-}
-
-function classResultado(resultado: { club: number; rival: number }) {
+function classResultado(resultado: Pick<FinalizedResult, 'club' | 'rival'>) {
   if (resultado.club > resultado.rival) return 'win';
   if (resultado.club < resultado.rival) return 'loss';
   return 'draw';
@@ -55,7 +48,7 @@ export default function Partidos() {
   const competencias = [...new Set(partidosEquipo.map((partido) => partido.competencia || 'Liga'))];
   const partidos = partidosEquipo.filter((partido) => (competencia === 'todas' || (partido.competencia || 'Liga') === competencia) && (estado === 'todos' || estadoDe(partido) === estado));
   const resumen = partidosEquipo.reduce((acumulado, partido) => {
-    const resultado = estadoDe(partido) === 'finalizado' ? resultadoValido(datos.actas[String(partido.id)]) : null;
+    const resultado = parseFinalizedResult(partido, datos.actas[String(partido.id)]);
     if (!resultado) return acumulado;
     acumulado.pj += 1; acumulado.gf += resultado.club; acumulado.gc += resultado.rival;
     if (resultado.club > resultado.rival) acumulado.v += 1;
@@ -91,7 +84,7 @@ export default function Partidos() {
 
 function PartidoCard({ partido, acta, abierta, onToggle, onAgenda, onCompletarActa, jugadores, clubNombre }: { partido: Evento; acta?: Acta; abierta: boolean; onToggle: () => void; onAgenda: () => void; onCompletarActa: () => void; jugadores: ReturnType<typeof useApp>['state']['jugadores']; clubNombre: string }) {
   const estado = estadoDe(partido);
-  const resultado = estado === 'finalizado' ? resultadoValido(acta) : null;
+  const resultado = parseFinalizedResult(partido, acta);
   const resultadoClase = resultado ? classResultado(resultado) : estado;
   const etiquetaResultado = resultadoClase === 'win' ? 'Victoria' : resultadoClase === 'draw' ? 'Empate' : resultadoClase === 'loss' ? 'Derrota' : nombreEstado(estado);
   const puedeVerActa = !!acta;
@@ -107,12 +100,13 @@ function PartidoCard({ partido, acta, abierta, onToggle, onAgenda, onCompletarAc
       {(partido.motivo || partido.nuevaFecha) && <p className="match-extra-detail">{partido.motivo || ''}{partido.motivo && partido.nuevaFecha ? ' · ' : ''}{partido.nuevaFecha ? `Nueva fecha: ${fechaLarga(partido.nuevaFecha)}` : ''}</p>}
       <div className="match-card-actions"><button aria-expanded={puedeVerActa ? abierta : undefined} aria-controls={puedeVerActa ? detalleId : undefined} onClick={puedeVerActa ? onToggle : onCompletarActa}>{puedeVerActa ? (abierta ? 'Ocultar acta ↑' : 'Ver acta ↓') : 'Completar acta →'}</button></div>
     </div>
-    {abierta && acta && <ActaDetalle id={detalleId} acta={acta} jugadores={jugadores} onAgenda={onAgenda} />}
+    {abierta && acta && <ActaDetalle id={detalleId} acta={acta} equipoId={partido.equipoId} jugadores={jugadores} onAgenda={onAgenda} />}
   </article>;
 }
 
-function ActaDetalle({ id, acta, jugadores, onAgenda }: { id: string; acta: Acta; jugadores: ReturnType<typeof useApp>['state']['jugadores']; onAgenda: () => void }) {
-  const mapa = new Map(jugadores.map((jugador) => [String(jugador.id), nombreJugador(jugador.nombre, jugador.apellido)]));
+function ActaDetalle({ id, acta, equipoId, jugadores, onAgenda }: { id: string; acta: Acta; equipoId: number; jugadores: ReturnType<typeof useApp>['state']['jugadores']; onAgenda: () => void }) {
+  const mapa = new Map(Object.entries(acta.jugadoresSnapshot || {}).filter(([, player]) => player.equipoId === equipoId && player.displayName).map(([playerId, player]) => [playerId, player.displayName]));
+  jugadores.filter((jugador) => jugador.equipoId === equipoId).forEach((jugador) => { if (!mapa.has(String(jugador.id))) mapa.set(String(jugador.id), nombreJugador(jugador.nombre, jugador.apellido)); });
   const nombre = (id: string) => mapa.get(String(id)) || 'Jugador no disponible';
   const formacion = acta.formacionSnapshot;
   const filas = formacion?.jugadores.map((entrada) => ({ ...entrada, nombre: nombre(String(entrada.jugadorId)), puntaje: acta.puntajes[String(entrada.jugadorId)] })) || [];

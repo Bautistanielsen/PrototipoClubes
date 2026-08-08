@@ -181,7 +181,7 @@ export type AdminScreen =
   | 'comunicados'
   | 'config';
 
-export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario';
+export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario' | 'estadisticas';
 export type PortalScreen = 'portal_login' | 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_novedades' | 'portal_perfil' | 'portal_hacete_socio' | 'portal_mis_reservas' | 'portal_torneos';
 export type Screen = AdminScreen | DeportivoScreen | PortalScreen;
 
