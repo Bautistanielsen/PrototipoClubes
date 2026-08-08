@@ -55,6 +55,12 @@ import {
 } from '../data/seed';
 import { CUOTA } from '../lib/derive';
 import { formatFechaCorta, formatMoney } from '../lib/format';
+import {
+  CANONICAL_DEMO_FORMATIONS_SEED_VERSION,
+  cloneCanonicalPrimeraFormations,
+  migrateCanonicalPrimeraFormations,
+  PRIMERA_433_FORMATION_ID,
+} from '../data/formaciones';
 
 function fechaLocalISO(fecha = new Date()) {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -80,7 +86,8 @@ function siguienteNombreFormacion(formaciones: Formacion[], equipoId: number) {
 }
 
 function recuperarFormaciones() {
-  const vacio = { formaciones: [] as Formacion[], selectedFormacionId: null as number | null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores };
+  const formacionesDemo = cloneCanonicalPrimeraFormations();
+  const vacio = { formaciones: formacionesDemo, selectedFormacionId: formacionesDemo[0]?.id ?? null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores };
   if (typeof window === 'undefined') return vacio;
   try {
     const guardado = window.localStorage.getItem('club-formaciones-v1');
@@ -97,7 +104,7 @@ function recuperarFormaciones() {
       ? valor.jugadores.filter((item): item is Jugador => !!item && typeof item === 'object' && typeof (item as Jugador).id === 'number' && typeof (item as Jugador).equipoId === 'number' && equipoIds.has((item as Jugador).equipoId) && typeof (item as Jugador).nombre === 'string' && typeof (item as Jugador).apellido === 'string' && ((item as Jugador).estado === 'disponible' || (item as Jugador).estado === 'lesionado'))
       : seedJugadores;
     const jugadoresPorId = new Map(jugadores.map((jugador) => [jugador.id, jugador]));
-    const formaciones = !Array.isArray(valor.formaciones) ? [] : valor.formaciones.flatMap((item): Formacion[] => {
+    const formacionesGuardadas = !Array.isArray(valor.formaciones) ? [] : valor.formaciones.flatMap((item): Formacion[] => {
       if (!item || typeof item !== 'object') return [];
       const formacion = item as Partial<Formacion>;
       if (typeof formacion.id !== 'number' || typeof formacion.equipoId !== 'number' || !equipoIds.has(formacion.equipoId) || typeof formacion.nombre !== 'string' || typeof formacion.sistema !== 'string' || !Array.isArray(formacion.jugadores) || !formacion.camiseta || typeof formacion.camiseta !== 'object') return [];
@@ -108,7 +115,11 @@ function recuperarFormaciones() {
       const roles = Object.fromEntries(Object.entries(formacion.roles || {}).filter(([, jugadorId]) => typeof jugadorId === 'number' && miembroIds.has(jugadorId))) as Formacion['roles'];
       return [{ id: formacion.id, equipoId: formacion.equipoId, nombre: formacion.nombre, sistema: formacion.sistema as SistemaFormacion, jugadores: miembros, roles, camiseta }];
     });
-    const selectedFormacionId = typeof valor.selectedFormacionId === 'number' && formaciones.some((formacion) => formacion.id === valor.selectedFormacionId) ? valor.selectedFormacionId : null;
+    const migration = migrateCanonicalPrimeraFormations(formacionesGuardadas, valor.demoFormationsSeedVersion);
+    const formaciones = migration.formaciones;
+    const selectedFormacionId = typeof valor.selectedFormacionId === 'number' && formaciones.some((formacion) => formacion.id === valor.selectedFormacionId)
+      ? valor.selectedFormacionId
+      : migration.seeded ? PRIMERA_433_FORMATION_ID : null;
     return { formaciones, selectedFormacionId, equiposDeportivos: equipos, jugadores };
   } catch { return vacio; }
 }
@@ -500,7 +511,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try { window.localStorage.setItem('club-formaciones-v1', JSON.stringify({ version: 2, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores })); } catch { /* almacenamiento no disponible */ }
+    try { window.localStorage.setItem('club-formaciones-v1', JSON.stringify({ version: 4, demoFormationsSeedVersion: CANONICAL_DEMO_FORMATIONS_SEED_VERSION, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores })); } catch { /* almacenamiento no disponible */ }
   }, [state.formaciones, state.selectedFormacionId, state.equiposDeportivos, state.jugadores]);
 
   const showToast = useCallback((msg: string) => {

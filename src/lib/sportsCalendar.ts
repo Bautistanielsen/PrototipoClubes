@@ -1,4 +1,5 @@
 import type { Formacion } from '../types';
+import { canonicalPrimeraFormations, cloneFormacion } from '../data/formaciones';
 
 export type TipoEvento = 'Partido' | 'Entrenamiento' | 'Descanso' | 'Otro';
 export type Competencia = 'Liga' | 'Copa' | 'Amistoso';
@@ -57,9 +58,10 @@ export type Acta = {
 };
 
 export type Prefs = { visibles: number[]; colores: Record<number, string>; configurado?: boolean };
-export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs };
+export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
+export const CANONICAL_DEMO_SEASON_SEED_VERSION = 1;
 
 export function emptyActa(): Acta {
   return { goles: [], amarillas: [], rojas: [], cambios: [], puntajes: {}, observaciones: '' };
@@ -126,7 +128,7 @@ function normalizeFormationSnapshot(value: unknown, expectedEquipoId?: number): 
   if (!isRecord(value) || !Array.isArray(value.jugadores)) return undefined;
   const equipoId = integerValue(value.equipoId);
   if (equipoId === undefined || (expectedEquipoId !== undefined && equipoId !== expectedEquipoId)) return undefined;
-  return value as unknown as Formacion;
+  return cloneFormacion(value as unknown as Formacion);
 }
 
 export function normalizeActa(value: unknown, lineageEquipoId?: number): Acta {
@@ -173,31 +175,59 @@ export function parseFinalizedResult(evento: Evento, acta?: Acta): FinalizedResu
   return { club, rival, difference: club - rival, outcome: club > rival ? 'win' : club < rival ? 'loss' : 'draw' };
 }
 
-const formacionDemo: Formacion = {
-  id: 9001,
-  equipoId: 1,
-  nombre: 'Once titular',
-  sistema: '4-3-3',
-  jugadores: [
-    { jugadorId: 1, zona: 'titular', x: 50, y: 88, dorsal: '1' }, { jugadorId: 4, zona: 'titular', x: 18, y: 68, dorsal: '3' },
-    { jugadorId: 5, zona: 'titular', x: 39, y: 70, dorsal: '2' }, { jugadorId: 6, zona: 'titular', x: 61, y: 70, dorsal: '6' },
-    { jugadorId: 10, zona: 'titular', x: 82, y: 68, dorsal: '4' }, { jugadorId: 11, zona: 'titular', x: 27, y: 47, dorsal: '8' },
-    { jugadorId: 12, zona: 'titular', x: 50, y: 43, dorsal: '5' }, { jugadorId: 13, zona: 'titular', x: 73, y: 47, dorsal: '10' },
-    { jugadorId: 2, zona: 'titular', x: 20, y: 24, dorsal: '11' }, { jugadorId: 7, zona: 'titular', x: 50, y: 18, dorsal: '9' },
-    { jugadorId: 15, zona: 'titular', x: 80, y: 24, dorsal: '7' }, { jugadorId: 14, zona: 'suplente', x: 0, y: 0, dorsal: '16' },
-    { jugadorId: 16, zona: 'suplente', x: 0, y: 0, dorsal: '17' },
-  ],
-  roles: { capitan: 12 },
-  camiseta: { estilo: 'lisa', principal: '#087f75', secundaria: '#ffffff', texto: '#ffffff' },
+const [formacionDemo, formacionDemo442] = canonicalPrimeraFormations;
+
+const puntajesDemo433: Record<string, string> = {
+  '1': '7', '2': '7.5', '4': '7', '5': '6.5', '6': '6.5', '7': '8', '10': '7',
+  '11': '7', '12': '7.5', '13': '7.5', '14': '6.5', '15': '7', '16': '6.5',
 };
 
+const puntajesDemo442: Record<string, string> = {
+  '1': '7', '2': '8', '4': '6.5', '5': '7', '6': '7', '7': '7.5', '10': '6.5',
+  '11': '7.5', '12': '7', '13': '7', '14': '6.5', '15': '6.5', '16': '7.5',
+};
+
+function actaDemo(
+  resultadoClub: number,
+  resultadoRival: number,
+  formacionSnapshot: Formacion,
+  goles: Acta['goles'],
+  amarillas: Acta['amarillas'],
+  rojas: Acta['rojas'],
+  puntajes: Record<string, string>,
+  observaciones: string,
+): Acta {
+  return {
+    resultadoClub: String(resultadoClub),
+    resultadoRival: String(resultadoRival),
+    formacionId: formacionSnapshot.id,
+    formacionSnapshot: cloneFormacion(formacionSnapshot),
+    goles,
+    amarillas,
+    rojas,
+    cambios: [],
+    puntajes: { ...puntajes },
+    observaciones,
+    observedFacts: { goals: true, assists: true, yellowCards: true, redCards: true },
+  };
+}
+
 export const seedEventos: Evento[] = [
-  { id: 91, equipoId: 1, tipo: 'Partido', fecha: '2026-06-21', horaInicio: '15:30', rival: 'Atlético Peñarol', condicion: 'Visitante', competencia: 'Liga', lugar: 'Estadio Peñarol', estado: 'finalizado' },
-  { id: 92, equipoId: 1, tipo: 'Partido', fecha: '2026-07-05', horaInicio: '16:00', rival: 'Unión Progresista', condicion: 'Local', competencia: 'Liga', lugar: 'Cancha principal', estado: 'finalizado' },
-  { id: 93, equipoId: 1, tipo: 'Partido', fecha: '2026-07-19', horaInicio: '15:30', rival: 'Villa del Parque', condicion: 'Visitante', competencia: 'Copa', lugar: 'Estadio Municipal', estado: 'finalizado' },
+  { id: 201, equipoId: 1, tipo: 'Partido', fecha: '2026-03-22', horaInicio: '16:00', rival: 'Atlético Peñarol', condicion: 'Local', competencia: 'Liga', numeroFecha: 1, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 202, equipoId: 1, tipo: 'Partido', fecha: '2026-04-05', horaInicio: '15:30', rival: 'Unión Progresista', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 2, lugar: 'Estadio Progresista', estado: 'finalizado' },
+  { id: 203, equipoId: 1, tipo: 'Partido', fecha: '2026-04-19', horaInicio: '16:00', rival: 'Villa del Parque', condicion: 'Local', competencia: 'Liga', numeroFecha: 3, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 204, equipoId: 1, tipo: 'Partido', fecha: '2026-05-03', horaInicio: '15:00', rival: 'Deportivo Belgrano', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 4, lugar: 'Estadio Belgrano', estado: 'finalizado' },
+  { id: 205, equipoId: 1, tipo: 'Partido', fecha: '2026-05-17', horaInicio: '16:00', rival: 'Social San Martín', condicion: 'Local', competencia: 'Liga', numeroFecha: 5, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 206, equipoId: 1, tipo: 'Partido', fecha: '2026-05-31', horaInicio: '15:30', rival: 'Juventud Unida', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 6, lugar: 'Estadio Juventud', estado: 'finalizado' },
+  { id: 207, equipoId: 1, tipo: 'Partido', fecha: '2026-06-07', horaInicio: '16:00', rival: 'Atlético Peñarol', condicion: 'Local', competencia: 'Liga', numeroFecha: 7, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 208, equipoId: 1, tipo: 'Partido', fecha: '2026-06-21', horaInicio: '15:30', rival: 'Unión Progresista', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 8, lugar: 'Estadio Progresista', estado: 'finalizado' },
+  { id: 209, equipoId: 1, tipo: 'Partido', fecha: '2026-06-28', horaInicio: '16:00', rival: 'Villa del Parque', condicion: 'Local', competencia: 'Liga', numeroFecha: 9, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 210, equipoId: 1, tipo: 'Partido', fecha: '2026-07-05', horaInicio: '16:00', rival: 'Deportivo Belgrano', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 10, lugar: 'Estadio Belgrano', estado: 'finalizado' },
+  { id: 211, equipoId: 1, tipo: 'Partido', fecha: '2026-07-12', horaInicio: '15:30', rival: 'Social San Martín', condicion: 'Local', competencia: 'Liga', numeroFecha: 11, lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 212, equipoId: 1, tipo: 'Partido', fecha: '2026-07-19', horaInicio: '15:30', rival: 'Juventud Unida', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 12, lugar: 'Estadio Juventud', estado: 'finalizado' },
+  { id: 213, equipoId: 1, tipo: 'Partido', fecha: '2026-07-23', horaInicio: '20:00', rival: 'Deportivo Central', condicion: 'Local', competencia: 'Copa', lugar: 'Cancha principal', estado: 'finalizado' },
+  { id: 214, equipoId: 1, tipo: 'Partido', fecha: '2026-07-26', horaInicio: '16:00', rival: 'Atlético del Sur', condicion: 'Visitante', competencia: 'Copa', lugar: 'Estadio del Sur', estado: 'finalizado' },
   { id: 101, equipoId: 1, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '19:00', horaFin: '21:00', lugar: 'Cancha principal', titulo: 'Trabajo táctico', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 101 },
-  { id: 102, equipoId: 1, tipo: 'Partido', fecha: '2026-08-02', horaInicio: '16:00', rival: 'Deportivo Belgrano', condicion: 'Local', competencia: 'Liga', numeroFecha: 14, lugar: 'Cancha principal' },
-  { id: 103, equipoId: 1, tipo: 'Partido', fecha: '2026-08-09', horaInicio: '15:30', rival: 'Social San Martín', condicion: 'Visitante', competencia: 'Amistoso' },
   { id: 104, equipoId: 2, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '18:00', horaFin: '19:30', titulo: 'Técnica individual', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 104 },
   { id: 105, equipoId: 2, tipo: 'Partido', fecha: '2026-08-08', horaInicio: '11:00', rival: 'Juventud Unida', condicion: 'Local', competencia: 'Copa' },
   { id: 106, equipoId: 2, tipo: 'Descanso', fecha: '2026-08-09', titulo: 'Descanso', recurrencia: { dias: [0], hasta: '2026-08-30' }, serieId: 106 },
@@ -205,14 +235,28 @@ export const seedEventos: Evento[] = [
 ];
 
 export const seedActas: Record<string, Acta> = {
-  '91': { resultadoClub: '1', resultadoRival: '2', formacionSnapshot: formacionDemo, goles: [{ jugadorId: '7', minuto: '63', asistenciaId: '2' }], amarillas: [{ jugadorId: '6', minuto: '28' }], rojas: [], cambios: [{ saleId: '15', entraId: '14', minuto: '67' }], puntajes: { '1': '6.5', '2': '7', '4': '6', '5': '6.5', '6': '5.5', '7': '7.5', '10': '6', '11': '6.5', '12': '6.5', '13': '6', '15': '6', '14': '6.5' }, observaciones: 'El equipo reaccionó en el complemento, pero no alcanzó para igualar el partido.' },
-  '92': { resultadoClub: '2', resultadoRival: '0', formacionSnapshot: formacionDemo, goles: [{ jugadorId: '7', minuto: '34', asistenciaId: '13' }, { jugadorId: '2', minuto: '71', asistenciaId: '14' }], amarillas: [{ jugadorId: '12', minuto: '58' }], rojas: [], cambios: [{ saleId: '15', entraId: '14', minuto: '65' }, { saleId: '11', entraId: '16', minuto: '76' }], puntajes: { '1': '7', '2': '8', '4': '7.5', '5': '7', '6': '7', '7': '8.5', '10': '7.5', '11': '7', '12': '8', '13': '8', '15': '7', '14': '7.5', '16': '7' }, observaciones: 'Partido sólido, con control del juego y arco en cero.' },
-  '93': { resultadoClub: '1', resultadoRival: '1', formacionSnapshot: formacionDemo, goles: [{ jugadorId: '15', minuto: '22', asistenciaId: '7' }], amarillas: [{ jugadorId: '4', minuto: '41' }, { jugadorId: '13', minuto: '74' }], rojas: [], cambios: [{ saleId: '2', entraId: '14', minuto: '60' }], puntajes: { '1': '7', '2': '6.5', '4': '6.5', '5': '7', '6': '7', '7': '7.5', '10': '6.5', '11': '7', '12': '7.5', '13': '7', '15': '7.5', '14': '6.5' }, observaciones: 'Empate intenso en una cancha difícil. Buen cierre defensivo en los últimos minutos.' },
+  '201': actaDemo(2, 1, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '2' }, { jugadorId: '2', minuto: '', asistenciaId: '13' }], [{ jugadorId: '6', minuto: '' }], [], puntajesDemo433, 'Buen estreno de local, con eficacia en las áreas.'),
+  '202': actaDemo(1, 1, formacionDemo442, [{ jugadorId: '11', minuto: '', asistenciaId: '7' }], [{ jugadorId: '4', minuto: '' }], [], puntajesDemo442, 'Empate equilibrado y ordenado fuera de casa.'),
+  '203': actaDemo(3, 0, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '2' }, { jugadorId: '15', minuto: '', asistenciaId: '13' }, { jugadorId: '2', minuto: '', asistenciaId: '' }], [], [], puntajesDemo433, 'Actuación completa y arco en cero.'),
+  '204': actaDemo(0, 1, formacionDemo, [], [{ jugadorId: '6', minuto: '' }], [], puntajesDemo433, 'Partido cerrado que se definió por un detalle.'),
+  '205': actaDemo(2, 0, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '11' }, { jugadorId: '13', minuto: '', asistenciaId: '2' }], [{ jugadorId: '5', minuto: '' }], [], puntajesDemo433, 'Presión alta y control defensivo para sostener el cero.'),
+  '206': actaDemo(2, 2, formacionDemo442, [{ jugadorId: '2', minuto: '', asistenciaId: '7' }, { jugadorId: '11', minuto: '', asistenciaId: '13' }], [{ jugadorId: '12', minuto: '' }, { jugadorId: '6', minuto: '' }], [], puntajesDemo442, 'Partido abierto y de ida y vuelta.'),
+  '207': actaDemo(1, 0, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '2' }], [], [], puntajesDemo433, 'Victoria trabajada y nueva valla invicta.'),
+  '208': actaDemo(1, 2, formacionDemo, [{ jugadorId: '2', minuto: '', asistenciaId: '7' }], [{ jugadorId: '4', minuto: '' }], [], puntajesDemo433, 'El equipo compitió hasta el final, pero no pudo remontar.'),
+  '209': actaDemo(2, 1, formacionDemo, [{ jugadorId: '13', minuto: '', asistenciaId: '11' }, { jugadorId: '7', minuto: '', asistenciaId: '2' }], [{ jugadorId: '10', minuto: '' }], [], puntajesDemo433, 'Triunfo de local con buen volumen ofensivo.'),
+  '210': actaDemo(2, 0, formacionDemo442, [{ jugadorId: '11', minuto: '', asistenciaId: '13' }, { jugadorId: '2', minuto: '', asistenciaId: '' }], [{ jugadorId: '6', minuto: '' }], [], puntajesDemo442, 'Partido sólido y arco en cero como visitante.'),
+  '211': actaDemo(0, 0, formacionDemo, [], [], [], puntajesDemo433, 'Empate sin goles y buena disciplina defensiva.'),
+  '212': actaDemo(1, 1, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '2' }], [{ jugadorId: '12', minuto: '' }], [], puntajesDemo433, 'Cierre parejo de la fase de Liga.'),
+  '213': actaDemo(3, 1, formacionDemo, [{ jugadorId: '7', minuto: '', asistenciaId: '2' }, { jugadorId: '15', minuto: '', asistenciaId: '13' }, { jugadorId: '2', minuto: '', asistenciaId: '11' }], [{ jugadorId: '10', minuto: '' }], [{ jugadorId: '6', minuto: '' }], puntajesDemo433, 'Victoria copera con intensidad y buena respuesta ofensiva.'),
+  '214': actaDemo(0, 2, formacionDemo442, [], [{ jugadorId: '4', minuto: '' }], [], puntajesDemo442, 'La serie se cerró con una derrota fuera de casa.'),
 };
 
-const HISTORICAL_SEED_IDS = new Set([91, 92, 93]);
-const LEGACY_DEMO_IDS = new Set([101, 102, 103, 104, 105, 106, 107]);
-const DEMO_NUMERO_FECHA: Record<number, number> = { 91: 12, 92: 13, 93: 1, 102: 14, 105: 2 };
+const CANONICAL_DEMO_IDS = new Set(seedEventos.filter((evento) => evento.tipo === 'Partido' && evento.equipoId === 1 && evento.estado === 'finalizado').map((evento) => evento.id));
+const LEGACY_PRIMERA_MATCH_IDS = new Set([91, 92, 93, 102, 103]);
+const DEMO_NUMERO_FECHA: Record<number, number> = {
+  201: 1, 202: 2, 203: 3, 204: 4, 205: 5, 206: 6, 207: 7,
+  208: 8, 209: 9, 210: 10, 211: 11, 212: 12,
+};
 
 function withDemoNumeroFecha(eventos: Evento[]) {
   return eventos.map((evento) => evento.numeroFecha === undefined && DEMO_NUMERO_FECHA[evento.id]
@@ -223,7 +267,12 @@ function withDemoNumeroFecha(eventos: Evento[]) {
 function cloneSeedData(): SportsCalendarData {
   const eventos = withDemoNumeroFecha(seedEventos);
   const equiposPorActa = new Map(eventos.map((evento) => [String(evento.id), evento.equipoId]));
-  return { eventos, actas: Object.fromEntries(Object.entries(seedActas).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))])), prefs: { visibles: [], colores: {} } };
+  return {
+    eventos,
+    actas: Object.fromEntries(Object.entries(seedActas).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))])),
+    prefs: { visibles: [], colores: {} },
+    demoSeasonSeedVersion: CANONICAL_DEMO_SEASON_SEED_VERSION,
+  };
 }
 
 function normalizeStoredActas(value: unknown, eventos: Evento[], fallback: Record<string, Acta>) {
@@ -232,23 +281,54 @@ function normalizeStoredActas(value: unknown, eventos: Evento[], fallback: Recor
   return Object.fromEntries(Object.entries(value).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))]));
 }
 
+function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedVersion: unknown) {
+  if (typeof seedVersion === 'number' && seedVersion >= CANONICAL_DEMO_SEASON_SEED_VERSION) {
+    return { eventos, actas, demoSeasonSeedVersion: seedVersion };
+  }
+
+  const preservedEventos = eventos.filter((evento) => !LEGACY_PRIMERA_MATCH_IDS.has(evento.id));
+  const storedIds = new Set(preservedEventos.map((evento) => evento.id));
+  const addedEventos = seedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id) && !storedIds.has(evento.id));
+  const migratedEventos = [...preservedEventos, ...addedEventos];
+  const migratedActas = Object.fromEntries(Object.entries(actas).filter(([id]) => !LEGACY_PRIMERA_MATCH_IDS.has(Number(id))));
+  const canonicalEventIds = new Set(migratedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id)).map((evento) => evento.id));
+  const fallbackActas = Object.fromEntries(seedEventos.flatMap((evento) => {
+    const id = String(evento.id);
+    const acta = seedActas[id];
+    return CANONICAL_DEMO_IDS.has(evento.id) && canonicalEventIds.has(evento.id) && acta && !Object.prototype.hasOwnProperty.call(migratedActas, id)
+      ? [[id, normalizeActa(acta, evento.equipoId)]]
+      : [];
+  }));
+  return {
+    eventos: migratedEventos,
+    actas: { ...fallbackActas, ...migratedActas },
+    demoSeasonSeedVersion: CANONICAL_DEMO_SEASON_SEED_VERSION,
+  };
+}
+
 export function readSportsCalendarData(): SportsCalendarData {
   const fallback = cloneSeedData();
   if (typeof window === 'undefined') return fallback;
   try {
     const saved = window.localStorage.getItem(SPORTS_CALENDAR_STORAGE);
-    if (!saved) return fallback;
+    if (!saved) {
+      writeSportsCalendarData(fallback);
+      return fallback;
+    }
     const parsed = JSON.parse(saved) as Partial<SportsCalendarData>;
     const storedEventos = Array.isArray(parsed.eventos) ? withDemoNumeroFecha(parsed.eventos) : fallback.eventos;
     const storedActas = normalizeStoredActas(parsed.actas, storedEventos, fallback.actas);
-    const migrateLegacyDemo = storedEventos.length > 0
-      && !storedEventos.some((evento) => HISTORICAL_SEED_IDS.has(evento.id))
-      && storedEventos.every((evento) => LEGACY_DEMO_IDS.has(evento.id));
-    return {
-      eventos: migrateLegacyDemo ? [...seedEventos.filter((evento) => HISTORICAL_SEED_IDS.has(evento.id)), ...storedEventos] : storedEventos,
-      actas: migrateLegacyDemo ? { ...fallback.actas, ...storedActas } : storedActas,
+    const migrated = migrateDemoSeason(storedEventos, storedActas, parsed.demoSeasonSeedVersion);
+    const result = {
+      eventos: migrated.eventos,
+      actas: migrated.actas,
       prefs: parsed.prefs && typeof parsed.prefs === 'object' ? parsed.prefs : fallback.prefs,
+      demoSeasonSeedVersion: migrated.demoSeasonSeedVersion,
     };
+    if (!(typeof parsed.demoSeasonSeedVersion === 'number' && parsed.demoSeasonSeedVersion >= CANONICAL_DEMO_SEASON_SEED_VERSION)) {
+      writeSportsCalendarData(result);
+    }
+    return result;
   } catch {
     return fallback;
   }
@@ -256,6 +336,9 @@ export function readSportsCalendarData(): SportsCalendarData {
 
 export function writeSportsCalendarData(data: SportsCalendarData) {
   try {
-    window.localStorage.setItem(SPORTS_CALENDAR_STORAGE, JSON.stringify(data));
+    window.localStorage.setItem(SPORTS_CALENDAR_STORAGE, JSON.stringify({
+      ...data,
+      demoSeasonSeedVersion: data.demoSeasonSeedVersion ?? CANONICAL_DEMO_SEASON_SEED_VERSION,
+    }));
   } catch { /* almacenamiento no disponible */ }
 }
