@@ -6,7 +6,7 @@ export type Competencia = 'Liga' | 'Copa' | 'Amistoso';
 export type EstadoPartido = 'programado' | 'finalizado' | 'suspendido' | 'postergado';
 export type Recurrencia = { dias: number[]; hasta?: string };
 
-export type PlayerRef = { playerId: string; equipoId: number; displayName: string };
+export type PlayerRef = { playerId: string; equipoId: number; displayName: string; foto?: string; posicion?: string; dorsal?: string };
 export type HistoricalPlayerSnapshot = PlayerRef;
 export type ObservedFacts = { goals?: boolean; assists?: boolean; yellowCards?: boolean; redCards?: boolean };
 
@@ -84,7 +84,14 @@ function normalizePlayerRef(value: unknown): PlayerRef | undefined {
   const playerId = stringValue(value.playerId).trim();
   const equipoId = integerValue(value.equipoId);
   if (!playerId || equipoId === undefined) return undefined;
-  return { playerId, equipoId, displayName: stringValue(value.displayName) };
+  return {
+    playerId,
+    equipoId,
+    displayName: stringValue(value.displayName),
+    foto: stringValue(value.foto) || undefined,
+    posicion: stringValue(value.posicion) || stringValue(value.position) || undefined,
+    dorsal: stringValue(value.dorsal) || undefined,
+  };
 }
 
 function normalizePlayerSnapshots(value: unknown, expectedEquipoId?: number): Record<string, HistoricalPlayerSnapshot> | undefined {

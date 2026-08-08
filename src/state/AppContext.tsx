@@ -31,6 +31,7 @@ import type {
   EquipoTorneo,
   PartidoTorneo,
   InscripcionTorneo,
+  StatisticsView,
 } from '../types';
 import {
   seedSocios,
@@ -215,6 +216,7 @@ export interface AppState {
   equiposDeportivos: EquipoDeportivo[];
   jugadores: Jugador[];
   selectedEquipoDeportivoId: number;
+  estadisticasVista: StatisticsView;
   actaEventoPendienteId: number | null;
   showJugadorModal: boolean;
   jugadorEditandoId: number | null;
@@ -321,6 +323,7 @@ const initialState: AppState = {
   equiposDeportivos: seedEquiposDeportivos,
   jugadores: seedJugadores,
   selectedEquipoDeportivoId: 1,
+  estadisticasVista: 'summary',
   actaEventoPendienteId: null,
   showJugadorModal: false,
   jugadorEditandoId: null,
@@ -458,6 +461,7 @@ export interface AppActions {
   inscribirseTorneo: (datos: InscripcionTorneo) => void;
   cancelarInscripcionTorneo: (torneoId: number) => void;
   selectEquipoDeportivo: (id: number) => void;
+  selectEstadisticasVista: (view: StatisticsView) => void;
   abrirActaEnCalendario: (eventoId: number) => void;
   limpiarActaEventoPendiente: () => void;
   openAgregarJugador: () => void;
@@ -1095,6 +1099,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
 
     selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
+    selectEstadisticasVista: (view) => update({ estadisticasVista: view }),
     abrirActaEnCalendario: (eventoId) => update({ screen: 'calendario', moreOpen: false, actaEventoPendienteId: eventoId }),
     limpiarActaEventoPendiente: () => update({ actaEventoPendienteId: null }),
     openAgregarJugador: () => update({
