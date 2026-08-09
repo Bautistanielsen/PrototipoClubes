@@ -86,6 +86,7 @@ export interface Comunicado {
   destinatario: string;
   fecha: string;
   hora: string;
+  imagen?: string;
 }
 
 export interface Cancha {
@@ -127,6 +128,7 @@ export type EstadoJugador = 'disponible' | 'lesionado';
 export interface EquipoDeportivo {
   id: number;
   nombre: string;
+  disciplina: string;
 }
 
 export interface Jugador {
@@ -182,7 +184,7 @@ export type AdminScreen =
   | 'config';
 
 export type DeportivoScreen = 'deportivo_inicio' | 'equipos' | 'formaciones' | 'partidos' | 'calendario' | 'estadisticas';
-export type PortalScreen = 'portal_login' | 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_novedades' | 'portal_perfil' | 'portal_hacete_socio' | 'portal_mis_reservas' | 'portal_torneos';
+export type PortalScreen = 'portal_login' | 'portal_inicio' | 'portal_cuota' | 'portal_reservas' | 'portal_novedades' | 'portal_perfil' | 'portal_hacete_socio' | 'portal_mis_reservas' | 'portal_torneos' | 'portal_partidos';
 export type Screen = AdminScreen | DeportivoScreen | PortalScreen;
 
 export type Modulo = 'administrativo' | 'deportivo' | 'socio';

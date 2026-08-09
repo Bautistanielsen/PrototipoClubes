@@ -1,9 +1,48 @@
-import type { EstadoSocio, Socio, Reserva, VentaShop, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo } from '../types';
+import type { EstadoSocio, Socio, Reserva, VentaShop, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago } from '../types';
 import { formatMoney } from './format';
 
 export const CUOTA = 12000;
 export const PRECIO_TURNO = 8000;
 export const HOY_ISO = '2026-07-29';
+export const DIA_VENCIMIENTO_CUOTA = 5;
+
+/** Próximo vencimiento de cuota en formato ISO, según el día fijo del club (5 de cada mes). */
+export function proximoVencimientoCuota(hoyIso: string): string {
+  const [year, month, day] = hoyIso.split('-').map(Number);
+  const mesVencimiento = day <= DIA_VENCIMIENTO_CUOTA ? month : month + 1;
+  const anioVencimiento = mesVencimiento > 12 ? year + 1 : year;
+  const mes = ((mesVencimiento - 1) % 12) + 1;
+  return `${anioVencimiento}-${String(mes).padStart(2, '0')}-${String(DIA_VENCIMIENTO_CUOTA).padStart(2, '0')}`;
+}
+
+export interface PagoHistorial {
+  fecha: string;
+  monto: number;
+  medioPago: MedioPago;
+}
+
+/** Últimos N pagos de cuota del socio, retrocediendo mes a mes desde `ultimoPago` (dd/mm/aaaa). */
+export function historialPagosSocio(socio: Socio, cantidad = 4): PagoHistorial[] {
+  if (!socio.ultimoPago) return [];
+  const [diaStr, mesStr, anioStr] = socio.ultimoPago.split('/');
+  const dia = Number(diaStr);
+  const mesInicial = Number(mesStr);
+  const anioInicial = Number(anioStr);
+  if (!dia || !mesInicial || !anioInicial) return [];
+
+  const medioPago = socio.medioPago ?? 'Efectivo';
+  const historial: PagoHistorial[] = [];
+  for (let i = 0; i < cantidad; i++) {
+    let mes = mesInicial - i;
+    let anio = anioInicial;
+    while (mes <= 0) {
+      mes += 12;
+      anio -= 1;
+    }
+    historial.push({ fecha: `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`, monto: CUOTA, medioPago });
+  }
+  return historial;
+}
 
 export const estadoMeta: Record<EstadoSocio, { label: string; bg: string; color: string }> = {
   al_dia: { label: 'Al día', bg: '#e5f6ea', color: '#1a7d43' },

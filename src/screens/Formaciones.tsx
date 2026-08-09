@@ -36,6 +36,96 @@ function fichaSvg(formacion: Formacion) {
   return `<circle r="29" fill="${esc(principal)}" stroke="${esc(secundaria)}" stroke-width="6"/>`;
 }
 
+function dividirNombre(nombre: string) {
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (nombre.length <= 17 || palabras.length < 2) return [nombre];
+  const puntoMedio = Math.ceil(palabras.length / 2);
+  return [palabras.slice(0, puntoMedio).join(' '), palabras.slice(puntoMedio).join(' ')];
+}
+
+function acotarLineaNombre(nombre: string) {
+  return nombre.length > 19 ? `${nombre.slice(0, 18).trimEnd()}…` : nombre;
+}
+
+function fichasSvg(formacion: Formacion, jugadores: Jugador[], anchoCancha: number, altoCancha: number, xCancha: number, yCancha: number) {
+  const titulares = formacion.jugadores.filter((item) => item.zona === 'titular');
+  return titulares.map((item) => {
+    const jugador = jugadores.find((entry) => entry.id === item.jugadorId);
+    if (!jugador) return '';
+    const posicion = limitarPosicionFicha((item.x / 100) * anchoCancha, (item.y / 100) * altoCancha, anchoCancha, altoCancha);
+    const x = xCancha + posicion.x;
+    const y = yCancha + posicion.y;
+    const nombre = dividirNombre(nombreJugador(jugador.nombre, jugador.apellido));
+    const lineasNombre = nombre.map((linea, indice) => '<text y="' + (52 + indice * 19) + '" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">' + esc(acotarLineaNombre(linea)) + '</text>').join('');
+    const capitan = formacion.roles.capitan === item.jugadorId
+      ? '<circle cx="25" cy="-25" r="12" fill="#f8fafc"/><text x="25" y="-20" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="900" fill="#101418">C</text>'
+      : '';
+    return '<g transform="translate(' + x + ' ' + y + ')">' + fichaSvg(formacion) + '<text y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="900" fill="' + esc(formacion.camiseta.texto) + '">' + esc(item.dorsal || '') + '</text>' + capitan + lineasNombre + '</g>';
+  }).join('');
+}
+
+function lineasCanchaSvg(anchoCancha: number, altoCancha: number, xCancha: number, yCancha: number) {
+  return '<g transform="translate(' + xCancha + ' ' + yCancha + ') scale(' + (anchoCancha / 100) + ' ' + (altoCancha / 145) + ')" fill="none" stroke="#d9f5df" stroke-width=".75" vector-effect="non-scaling-stroke"><rect x="1.25" y="1.25" width="97.5" height="142.5"/><path d="M1.25 72.5h97.5M20 1.25v20h60v-20M35 1.25v8h30v-8M20 143.75v-20h60v20M35 143.75v-8h30v8"/><circle cx="50" cy="72.5" r="12"/><circle cx="50" cy="72.5" r=".8" fill="#d9f5df" stroke="none"/><circle cx="50" cy="15" r=".8" fill="#d9f5df" stroke="none"/><circle cx="50" cy="130" r=".8" fill="#d9f5df" stroke="none"/><path d="M40.7 21.25a10.5 10.5 0 0 0 18.6 0M40.7 123.75a10.5 10.5 0 0 1 18.6 0M1.25 5.5a4.25 4.25 0 0 1 4.25-4.25M98.75 5.5A4.25 4.25 0 0 0 94.5 1.25M1.25 139.5a4.25 4.25 0 0 0 4.25 4.25M98.75 139.5a4.25 4.25 0 0 1-4.25 4.25"/><path d="M43 1.25v3.75h14v-3.75M43 143.75v-3.75h14v3.75"/></g>';
+}
+
+function construirSvgFormacion(formacion: Formacion, equipo: { nombre: string }, jugadores: Jugador[], clubNombre: string) {
+  const altoCancha = 930;
+  const anchoCancha = altoCancha / 145 * 100;
+  const xCancha = (900 - anchoCancha) / 2;
+  const yCancha = 195;
+  return [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">',
+    '<rect width="900" height="1200" fill="#101418"/><rect x="0" y="151" width="900" height="1" fill="#2a323a"/>',
+    '<text x="450" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2.5" fill="#a9b4bc">FORMACIÓN</text>',
+    '<text x="450" y="101" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#f8fafc">' + esc(clubNombre) + '</text>',
+    '<text x="450" y="132" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="#c7d0d6">' + esc(equipo.nombre) + ' · ' + esc(formacion.nombre) + '</text>',
+    '<rect x="' + xCancha + '" y="' + yCancha + '" width="' + anchoCancha + '" height="' + altoCancha + '" rx="20" fill="#158b50"/>',
+    lineasCanchaSvg(anchoCancha, altoCancha, xCancha, yCancha),
+    fichasSvg(formacion, jugadores, anchoCancha, altoCancha, xCancha, yCancha),
+    '<text x="450" y="1165" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="600" fill="#8a969f">Gestión deportiva</text></svg>',
+  ].join('');
+}
+
+function construirSvgCanchaSolo(formacion: Formacion, jugadores: Jugador[]) {
+  const anchoCancha = 700;
+  const altoCancha = anchoCancha / 100 * 145;
+  return {
+    width: anchoCancha,
+    height: altoCancha,
+    svg: [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' + anchoCancha + '" height="' + altoCancha + '" viewBox="0 0 ' + anchoCancha + ' ' + altoCancha + '">',
+      '<rect width="' + anchoCancha + '" height="' + altoCancha + '" rx="20" fill="#158b50"/>',
+      lineasCanchaSvg(anchoCancha, altoCancha, 0, 0),
+      fichasSvg(formacion, jugadores, anchoCancha, altoCancha, 0, 0),
+      '</svg>',
+    ].join(''),
+  };
+}
+
+function renderizarFormacionPng(svg: string, width = 900, height = 1200): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Canvas no disponible');
+        context.drawImage(image, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (error) {
+        reject(error);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo cargar la imagen')); };
+    image.src = url;
+  });
+}
+
 function limitarPosicionFicha(x: number, y: number, width: number, height: number) {
   const horizontalPadding = Math.min(64, width / 2);
   const verticalTopPadding = Math.min(40, height / 2);
@@ -93,52 +183,32 @@ export default function Formaciones() {
     window.addEventListener('lostpointercapture', limpiar);
   };
 
-  const exportar = () => {
+  const exportar = async () => {
     if (!formacion || !equipo) return;
     try {
-      const titulares = formacion.jugadores.filter((item) => item.zona === 'titular');
-      const altoCancha = 930;
-      const anchoCancha = altoCancha / 145 * 100;
-      const xCancha = (900 - anchoCancha) / 2;
-      const yCancha = 195;
-      const dividirNombre = (nombre: string) => {
-        const palabras = nombre.trim().split(/\s+/).filter(Boolean);
-        if (nombre.length <= 17 || palabras.length < 2) return [nombre];
-        const puntoMedio = Math.ceil(palabras.length / 2);
-        return [palabras.slice(0, puntoMedio).join(' '), palabras.slice(puntoMedio).join(' ')];
-      };
-      const acotarLineaNombre = (nombre: string) => nombre.length > 19 ? `${nombre.slice(0, 18).trimEnd()}…` : nombre;
-      const fichas = titulares.map((item) => {
-        const jugador = jugadores.find((entry) => entry.id === item.jugadorId);
-        if (!jugador) return '';
-        const posicion = limitarPosicionFicha((item.x / 100) * anchoCancha, (item.y / 100) * altoCancha, anchoCancha, altoCancha);
-        const x = xCancha + posicion.x;
-        const y = yCancha + posicion.y;
-        const nombre = dividirNombre(nombreJugador(jugador.nombre, jugador.apellido));
-        const lineasNombre = nombre.map((linea, indice) => '<text y="' + (52 + indice * 19) + '" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">' + esc(acotarLineaNombre(linea)) + '</text>').join('');
-        const capitan = formacion.roles.capitan === item.jugadorId
-          ? '<circle cx="25" cy="-25" r="12" fill="#f8fafc"/><text x="25" y="-20" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="900" fill="#101418">C</text>'
-          : '';
-        return '<g transform="translate(' + x + ' ' + y + ')">' + fichaSvg(formacion) + '<text y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="900" fill="' + esc(formacion.camiseta.texto) + '">' + esc(item.dorsal || '') + '</text>' + capitan + lineasNombre + '</g>';
-      }).join('');
-      const lineasCancha = '<g transform="translate(' + xCancha + ' ' + yCancha + ') scale(' + (anchoCancha / 100) + ' ' + (altoCancha / 145) + ')" fill="none" stroke="#d9f5df" stroke-width=".75" vector-effect="non-scaling-stroke"><rect x="1.25" y="1.25" width="97.5" height="142.5"/><path d="M1.25 72.5h97.5M20 1.25v20h60v-20M35 1.25v8h30v-8M20 143.75v-20h60v20M35 143.75v-8h30v8"/><circle cx="50" cy="72.5" r="12"/><circle cx="50" cy="72.5" r=".8" fill="#d9f5df" stroke="none"/><circle cx="50" cy="15" r=".8" fill="#d9f5df" stroke="none"/><circle cx="50" cy="130" r=".8" fill="#d9f5df" stroke="none"/><path d="M40.7 21.25a10.5 10.5 0 0 0 18.6 0M40.7 123.75a10.5 10.5 0 0 1 18.6 0M1.25 5.5a4.25 4.25 0 0 1 4.25-4.25M98.75 5.5A4.25 4.25 0 0 0 94.5 1.25M1.25 139.5a4.25 4.25 0 0 0 4.25 4.25M98.75 139.5a4.25 4.25 0 0 1-4.25 4.25"/><path d="M43 1.25v3.75h14v-3.75M43 143.75v-3.75h14v3.75"/></g>';
-      const svg = [
-        '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">',
-        '<rect width="900" height="1200" fill="#101418"/><rect x="0" y="151" width="900" height="1" fill="#2a323a"/>',
-        '<text x="450" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2.5" fill="#a9b4bc">FORMACIÓN</text>',
-        '<text x="450" y="101" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="800" fill="#f8fafc">' + esc(state.clubNombre) + '</text>',
-        '<text x="450" y="132" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="#c7d0d6">' + esc(equipo.nombre) + ' · ' + esc(formacion.nombre) + '</text>',
-        '<rect x="' + xCancha + '" y="' + yCancha + '" width="' + anchoCancha + '" height="' + altoCancha + '" rx="20" fill="#158b50"/>',
-        lineasCancha,
-        fichas,
-        '<text x="450" y="1165" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="600" fill="#8a969f">Gestión deportiva</text></svg>',
-      ].join('');
-      const image = new Image();
-      const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      image.onload = () => { try { const canvas = document.createElement('canvas'); canvas.width = 900; canvas.height = 1200; const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas no disponible'); context.drawImage(image, 0, 0); const link = document.createElement('a'); link.download = `${formacion.nombre.replace(/\s+/g, '-').toLowerCase() || 'formacion'}.png`; link.href = canvas.toDataURL('image/png'); document.body.appendChild(link); link.click(); link.remove(); actions.mostrarToast('PNG exportado'); } catch { actions.mostrarToast('No se pudo exportar la formación'); } finally { URL.revokeObjectURL(url); } };
-      image.onerror = () => { URL.revokeObjectURL(url); actions.mostrarToast('No se pudo exportar la formación'); };
-      image.src = url;
-    } catch { actions.mostrarToast('No se pudo exportar la formación'); }
+      const svg = construirSvgFormacion(formacion, equipo, jugadores, state.clubNombre);
+      const dataUrl = await renderizarFormacionPng(svg);
+      const link = document.createElement('a');
+      link.download = `${formacion.nombre.replace(/\s+/g, '-').toLowerCase() || 'formacion'}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      actions.mostrarToast('PNG exportado');
+    } catch {
+      actions.mostrarToast('No se pudo exportar la formación');
+    }
+  };
+
+  const avisarASocios = async () => {
+    if (!formacion || !equipo) return;
+    try {
+      const { svg, width, height } = construirSvgCanchaSolo(formacion, jugadores);
+      const dataUrl = await renderizarFormacionPng(svg, width, height);
+      actions.publicarFormacionComoNovedad(formacion.id, dataUrl);
+    } catch {
+      actions.publicarFormacionComoNovedad(formacion.id);
+    }
   };
 
   const normalizarNombre = () => { if (formacion) actions.normalizarNombreFormacion(formacion.id); };
@@ -180,7 +250,7 @@ export default function Formaciones() {
         <div className="player-zone-title">Lesionados</div>
         {jugadores.filter((jugador) => jugador.estado === 'lesionado' && !jugadorAsignado(jugador.id)).map((jugador) => <FilaDisponible key={jugador.id} jugador={jugador} lesionado />)}
       </aside>
-      <div className="formation-board"><div className="formation-board-tools"><input aria-label="Nombre de la formación" value={formacion.nombre} onChange={(event) => actions.actualizarFormacion(formacion.id, { nombre: event.target.value })} onBlur={normalizarNombre}/><label>Sistema<select value={formacion.sistema} onChange={(event) => actions.cambiarSistemaFormacion(formacion.id, event.target.value as SistemaFormacion)}>{SISTEMAS.map((item) => <option key={item}>{item}</option>)}</select></label><button aria-label="Duplicar formación" onClick={() => actions.duplicarFormacion(formacion.id)}>Duplicar</button><button aria-label="Eliminar formación" className="danger" onClick={() => actions.eliminarFormacion(formacion.id)}>Eliminar</button><button aria-label="Avisar a los socios" className="publish" onClick={() => actions.publicarFormacionComoNovedad(formacion.id)}>Avisar a los socios</button></div><div className="pitch" ref={canchaRef}><MarcadoCancha />{formacion.jugadores.filter((item) => item.zona === 'titular').map((item) => { const jugador = jugadores.find((entry) => entry.id === item.jugadorId); const posicion = posicionVisible(item.x, item.y); return jugador && <button aria-label={`Mover a ${nombreJugador(jugador.nombre, jugador.apellido)} en la cancha`} key={item.jugadorId} className="player-marker" onPointerDown={(event) => moverEnCancha(item.jugadorId, event)} style={{ ...posicion, '--marker-main': formacion.camiseta.principal, '--marker-border': formacion.camiseta.secundaria, '--marker-text': formacion.camiseta.texto } as React.CSSProperties}><span className="player-marker-disc"><span className="player-marker-number">{item.dorsal}</span></span>{formacion.roles.capitan === item.jugadorId && <strong className="player-marker-captain">C</strong>}<span className="player-marker-name">{nombreJugador(jugador.nombre, jugador.apellido)}</span></button>; })}</div><button className="export-button" onClick={exportar}>Exportar PNG</button></div>
+      <div className="formation-board"><div className="formation-board-tools"><input aria-label="Nombre de la formación" value={formacion.nombre} onChange={(event) => actions.actualizarFormacion(formacion.id, { nombre: event.target.value })} onBlur={normalizarNombre}/><label>Sistema<select value={formacion.sistema} onChange={(event) => actions.cambiarSistemaFormacion(formacion.id, event.target.value as SistemaFormacion)}>{SISTEMAS.map((item) => <option key={item}>{item}</option>)}</select></label><button aria-label="Duplicar formación" onClick={() => actions.duplicarFormacion(formacion.id)}>Duplicar</button><button aria-label="Eliminar formación" className="danger" onClick={() => actions.eliminarFormacion(formacion.id)}>Eliminar</button></div><div className="pitch" ref={canchaRef}><MarcadoCancha />{formacion.jugadores.filter((item) => item.zona === 'titular').map((item) => { const jugador = jugadores.find((entry) => entry.id === item.jugadorId); const posicion = posicionVisible(item.x, item.y); return jugador && <button aria-label={`Mover a ${nombreJugador(jugador.nombre, jugador.apellido)} en la cancha`} key={item.jugadorId} className="player-marker" onPointerDown={(event) => moverEnCancha(item.jugadorId, event)} style={{ ...posicion, '--marker-main': formacion.camiseta.principal, '--marker-border': formacion.camiseta.secundaria, '--marker-text': formacion.camiseta.texto } as React.CSSProperties}><span className="player-marker-disc"><span className="player-marker-number">{item.dorsal}</span></span>{formacion.roles.capitan === item.jugadorId && <strong className="player-marker-captain">C</strong>}<span className="player-marker-name">{nombreJugador(jugador.nombre, jugador.apellido)}</span></button>; })}</div><button className="export-button" onClick={exportar}>Exportar PNG</button><button aria-label="Avisar a los socios" className="publish-button" onClick={avisarASocios}>Avisar a los socios</button></div>
       <aside className="formation-panel formation-settings"><div className="panel-title">Ficha de jugador</div>{([['principal', 'Color principal'], ['secundaria', 'Color del borde'], ['texto', 'Color del dorsal']] as const).map(([key, label]) => <label key={key}>{label}<input type="color" value={formacion.camiseta[key]} onChange={(event) => actions.actualizarFormacion(formacion.id, { camiseta: { ...formacion.camiseta, [key]: event.target.value } })}/></label>)}<div className="panel-title roles-title">Roles</div>{ROLES.map((rol) => <label key={rol.key}>{rol.label}<select value={formacion.roles[rol.key] || ''} onChange={(event) => actions.actualizarFormacion(formacion.id, { roles: { ...formacion.roles, [rol.key]: event.target.value ? Number(event.target.value) : undefined } })}><option value="">Sin asignar</option>{formacion.jugadores.map((item) => { const jugador = jugadores.find((entry) => entry.id === item.jugadorId); return jugador && <option key={jugador.id} value={jugador.id}>{nombreJugador(jugador.nombre, jugador.apellido)}</option>; })}</select></label>)}</aside>
     </div>}
   </section>;

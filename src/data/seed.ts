@@ -204,8 +204,10 @@ export const seedCategorias: Categoria[] = [
 ];
 
 export const seedEquiposDeportivos: EquipoDeportivo[] = [
-  { id: 1, nombre: 'Primera división' },
-  { id: 2, nombre: 'Sub 17' },
+  { id: 1, nombre: 'Primera división', disciplina: 'Fútbol' },
+  { id: 2, nombre: 'Sub 17', disciplina: 'Fútbol' },
+  { id: 3, nombre: 'Reserva', disciplina: 'Fútbol' },
+  { id: 4, nombre: 'Primera', disciplina: 'Básquet' },
 ];
 
 export const seedJugadores: Jugador[] = [

@@ -96,7 +96,9 @@ function recuperarFormaciones() {
     if (!datos || typeof datos !== 'object') return vacio;
     const valor = datos as Record<string, unknown>;
     const equiposCandidatos = Array.isArray(valor.equiposDeportivos)
-      ? valor.equiposDeportivos.filter((item): item is EquipoDeportivo => !!item && typeof item === 'object' && typeof (item as EquipoDeportivo).id === 'number' && typeof (item as EquipoDeportivo).nombre === 'string')
+      ? valor.equiposDeportivos
+          .filter((item): item is EquipoDeportivo => !!item && typeof item === 'object' && typeof (item as EquipoDeportivo).id === 'number' && typeof (item as EquipoDeportivo).nombre === 'string')
+          .map((item) => ({ ...item, disciplina: typeof item.disciplina === 'string' && item.disciplina.trim() ? item.disciplina : 'Fútbol' }))
       : seedEquiposDeportivos;
     const equipos = equiposCandidatos.length ? equiposCandidatos : seedEquiposDeportivos;
     const equipoIds = new Set(equipos.map((equipo) => equipo.id));
@@ -484,7 +486,7 @@ export interface AppActions {
   duplicarFormacion: (id: number) => void;
   eliminarFormacion: (id: number) => void;
   normalizarNombreFormacion: (id: number) => void;
-  publicarFormacionComoNovedad: (formacionId: number) => void;
+  publicarFormacionComoNovedad: (formacionId: number, imagen?: string) => void;
   mostrarToast: (mensaje: string) => void;
 }
 
@@ -1183,7 +1185,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('Ya existe un plantel con ese nombre');
         return;
       }
-      const nuevoEquipo = { id: Date.now(), nombre };
+      const nuevoEquipo = { id: Date.now(), nombre, disciplina: 'Fútbol' };
       update((prev) => ({
         equiposDeportivos: [...prev.equiposDeportivos, nuevoEquipo],
         selectedEquipoDeportivoId: nuevoEquipo.id,
@@ -1261,7 +1263,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const nombre = actual.nombre.trim() || siguienteNombreFormacion(s.formaciones.filter((item) => item.id !== id), actual.equipoId);
       return { formaciones: s.formaciones.map((item) => item.id === id ? { ...item, nombre } : item) };
     }),
-    publicarFormacionComoNovedad: (formacionId) => {
+    publicarFormacionComoNovedad: (formacionId, imagen) => {
       const formacion = state.formaciones.find((f) => f.id === formacionId);
       if (!formacion) return;
       const titulares = formacion.jugadores.filter((j) => j.zona === 'titular');
@@ -1282,11 +1284,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         comunicados: [
           {
             id: Date.now(),
-            titulo: '¿Juega el equipo hoy?',
+            titulo: 'Formación confirmada para el partido de hoy',
             cuerpo: `El plantel de ${equipo?.nombre ?? 'el equipo'} juega hoy. Formación (${formacion.sistema}): ${listado}.`,
             destinatario: 'Todos los socios',
             fecha: `${d}/${m}/${y}`,
             hora: 'ahora',
+            imagen,
           },
           ...s.comunicados,
         ],

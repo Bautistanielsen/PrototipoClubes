@@ -51,6 +51,7 @@ export default function Comunicados() {
               <div style={{ fontSize: 14.5, fontWeight: 700, color: '#16203a' }}>{c.titulo}</div>
               <div style={{ fontSize: 12, color: '#8b93a5', whiteSpace: 'nowrap' }}>{c.fecha}</div>
             </div>
+            {c.imagen && <img src={c.imagen} alt={c.titulo} style={{ maxWidth: 160, borderRadius: 8, margin: '8px 0', display: 'block' }} />}
             <div style={{ fontSize: 13.5, color: '#4b5468', marginTop: 6, lineHeight: 1.5 }}>{c.cuerpo}</div>
             <div style={{ fontSize: 12, color: '#1b3a8a', fontWeight: 600, marginTop: 10 }}>Enviado a: {c.destinatario}</div>
           </div>

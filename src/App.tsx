@@ -55,7 +55,7 @@ function ScreenContent() {
     case 'formaciones': return <Formaciones />;
     case 'partidos': return <Partidos />;
     case 'estadisticas': return <Estadisticas />;
-    case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': return <PortalSocio />;
+    case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': case 'portal_partidos': return <PortalSocio />;
   }
 }
 
