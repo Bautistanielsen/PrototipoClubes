@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AppProvider, useApp } from './state/AppContext';
 import Sidebar from './components/Sidebar';
 import MobileTopBar from './components/MobileTopBar';
@@ -34,6 +35,7 @@ import Formaciones from './screens/Formaciones';
 import Partidos from './screens/Partidos';
 import Estadisticas from './screens/Estadisticas';
 import PortalSocio from './screens/PortalSocio';
+import type { StatisticsView } from './types';
 
 function ScreenContent() {
   const { state } = useApp();
@@ -95,12 +97,16 @@ function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'f
 
 function DeportivoLayout() {
   const { state, actions } = useApp();
-  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }, { screen: 'estadisticas' as const, label: 'Estadísticas' }];
+  const [statisticsOpen, setStatisticsOpen] = useState(state.screen === 'estadisticas');
+  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }];
+  const statisticsViews: Array<{ view: StatisticsView; label: string }> = [{ view: 'summary', label: 'Resumen' }, { view: 'players', label: 'Jugadores' }, { view: 'tactics', label: 'Táctica' }];
+  const selectStatistics = (view: StatisticsView) => { actions.selectEstadisticasVista(view); actions.navigate('estadisticas'); };
+  const toggleStatistics = () => setStatisticsOpen((open) => !open);
   return <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f7fb' }}>
-    {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand"><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}</div><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
+    {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand"><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}><SportsNavIcon screen="estadisticas" /><span>Estadísticas</span><b aria-hidden="true">{statisticsOpen ? '−' : '+'}</b></button>{statisticsOpen && <div className="deportivo-statistics-children">{statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</div>}</div><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
     <div style={{ flex: 1, minWidth: 0 }}>
       {state.isMobile && <ModuleSwitcher color="#087f75" />}
-      {state.isMobile && <nav className="deportivo-mobile-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}>{item.label}</button>)}</nav>}
+      {state.isMobile && <nav className="deportivo-mobile-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}>{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}>Estadísticas {statisticsOpen ? '−' : '+'}</button>{statisticsOpen && statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</nav>}
       <main className="deportivo-main"><ScreenContent /></main>
     </div>
     <VerPartidoModal /><AgregarPartidoModal /><JugadorModal /><EquipoDeportivoModal /><Toast />

@@ -1,4 +1,4 @@
-import type { Jugador } from '../types';
+import type { Formacion, Jugador } from '../types';
 import {
   normalizeActa,
   parseFinalizedResult,
@@ -54,7 +54,11 @@ export type PlayerStatistics = {
   redCards: number | null;
   rating: number | null;
   ratedMatches: number;
+  cleanSheets: number;
+  isGoalkeeper: boolean;
 };
+
+export type TacticalLineupPlayer = PlayerRef & { dorsal?: string; x: number; y: number };
 
 export type TacticalEntry = {
   system: string;
@@ -65,25 +69,20 @@ export type TacticalEntry = {
   goalsFor: number;
   goalsAgainst: number;
   usageRate: number | null;
+  latestSnapshot: {
+    eventId: number;
+    date: string;
+    time: string;
+    rival: string;
+    formationName: string;
+    camiseta: Formacion['camiseta'];
+    starters: TacticalLineupPlayer[];
+    substitutes: TacticalLineupPlayer[];
+  } | null;
 };
 
 export type TacticalStatistics = Evidence & {
   registeredSystems: TacticalEntry[];
-};
-
-export type OperationalStatistics = {
-  matchEvents: number;
-  finalizedMatches: number;
-  pendingActs: number;
-  postponedMatches: number;
-  suspendedMatches: number;
-  actaCoverage: number | null;
-  upcomingMatches: number;
-  matchCongestion: number;
-  upcomingTrainings: number;
-  availablePlayers: number | null;
-  injuredPlayers: number | null;
-  availabilityScope: 'current_roster';
 };
 
 export type SportsStatistics = {
@@ -91,7 +90,12 @@ export type SportsStatistics = {
   team: TeamStatistics;
   players: PlayerStatistics[];
   tactical: TacticalStatistics;
-  operations: OperationalStatistics;
+};
+
+export type PlayerHighlights = {
+  bestRated: PlayerStatistics[];
+  topScorers: PlayerStatistics[];
+  topAssisters: PlayerStatistics[];
 };
 
 function matchesFilter(evento: Evento, filters: StatisticsFilters) {
@@ -166,7 +170,13 @@ type ResolvedPlayer = { player: PlayerRef; source: PlayerIdentitySource };
 
 function fallbackPlayer(id: string, equipoId: number, players: Jugador[]): PlayerRef {
   const current = players.find((player) => String(player.id) === id && player.equipoId === equipoId);
-  return { playerId: id, equipoId, displayName: current ? `${current.nombre} ${current.apellido}`.trim() : '' };
+  return {
+    playerId: id,
+    equipoId,
+    displayName: current ? `${current.nombre} ${current.apellido}`.trim() : '',
+    foto: current?.foto,
+    posicion: current?.posicion,
+  };
 }
 
 function resolvePlayer(id: string, acta: Acta, equipoId: number, players: Jugador[]): ResolvedPlayer {
@@ -202,6 +212,55 @@ function numericRating(value?: string) {
   return Number.isFinite(rating) && rating >= 1 && rating <= 10 ? rating : null;
 }
 
+function positionOf(player: Jugador | PlayerRef | undefined) {
+  const value = player?.posicion || (player as (Jugador | PlayerRef) & { position?: string } | undefined)?.position;
+  return value?.trim().toLocaleLowerCase('es-AR') || '';
+}
+
+function isGoalkeeperPosition(position: string) {
+  return position.includes('arquero') || position.includes('portero') || position.includes('goalkeeper') || position === 'gk';
+}
+
+function currentGoalkeeperIds(entries: Formacion['jugadores'], players: Jugador[], equipoId: number) {
+  return entries
+    .filter((entry) => entry.zona === 'titular')
+    .filter((entry) => isGoalkeeperPosition(positionOf(players.find((player) => player.id === entry.jugadorId && player.equipoId === equipoId))))
+    .map((entry) => String(entry.jugadorId));
+}
+
+function snapshotGoalkeeperIds(entries: Formacion['jugadores'], acta: Acta) {
+  return entries
+    .filter((entry) => entry.zona === 'titular')
+    .filter((entry) => isGoalkeeperPosition(positionOf(acta.jugadoresSnapshot?.[String(entry.jugadorId)])))
+    .map((entry) => String(entry.jugadorId));
+}
+
+function goalkeeperIdForMatch(match: FinalizedMatch, players: Jugador[]) {
+  const formation = match.acta.formacionSnapshot;
+  if (!formation) return null;
+  const entries = formation.jugadores;
+  // Historical acta data is authoritative; current roster position is only a last-resort fallback.
+  const bySnapshot = snapshotGoalkeeperIds(entries, match.acta);
+  if (bySnapshot.length) return bySnapshot[0];
+  const bySnapshotDorsal = entries.find((entry) => entry.zona === 'titular' && entry.dorsal.trim() === '1');
+  if (bySnapshotDorsal) return bySnapshotDorsal.jugadorId.toString();
+  const byCurrentRoster = currentGoalkeeperIds(entries, players, match.evento.equipoId);
+  return byCurrentRoster[0] || null;
+}
+
+function isNewerThanSnapshot(match: FinalizedMatch, snapshot: NonNullable<TacticalEntry['latestSnapshot']>) {
+  const date = match.evento.fecha.localeCompare(snapshot.date);
+  if (date !== 0) return date > 0;
+  const time = (match.evento.horaInicio || '').localeCompare(snapshot.time);
+  if (time !== 0) return time > 0;
+  return match.evento.id > snapshot.eventId;
+}
+
+function lineupPlayer(id: number, dorsal: string, x: number, y: number, acta: Acta, players: Jugador[], equipoId: number): TacticalLineupPlayer {
+  const resolved = resolvePlayer(String(id), acta, equipoId, players).player;
+  return { ...resolved, dorsal, x, y };
+}
+
 export function derivePlayerStatistics(data: SportsCalendarData, filters: StatisticsFilters, players: Jugador[] = []): PlayerStatistics[] {
   const matches = selectFinalizedMatches(data, filters);
   const observedFacts = {
@@ -211,17 +270,18 @@ export function derivePlayerStatistics(data: SportsCalendarData, filters: Statis
     redCards: matches.length > 0 && matches.every(({ acta }) => acta.observedFacts?.redCards === true),
   };
   const aggregates = new Map<string, {
-    player: PlayerRef; identitySource: PlayerIdentitySource; goals: number; assistCount: number; assistObserved: boolean; yellowCards: number; redCards: number; ratings: number[];
+    player: PlayerRef; identitySource: PlayerIdentitySource; goals: number; assistCount: number; assistObserved: boolean; yellowCards: number; redCards: number; ratings: number[]; cleanSheets: number; isGoalkeeper: boolean;
   }>();
   const add = (id: string, acta: Acta) => {
     const resolved = resolvePlayer(id, acta, filters.equipoId, players);
-    const current = aggregates.get(id) || { player: resolved.player, identitySource: resolved.source, goals: 0, assistCount: 0, assistObserved: false, yellowCards: 0, redCards: 0, ratings: [] };
+    const current = aggregates.get(id) || { player: resolved.player, identitySource: resolved.source, goals: 0, assistCount: 0, assistObserved: false, yellowCards: 0, redCards: 0, ratings: [], cleanSheets: 0, isGoalkeeper: false };
     const preferred = preferIdentity({ player: current.player, source: current.identitySource }, resolved);
     current.player = preferred.player; current.identitySource = preferred.source;
     aggregates.set(id, current);
     return current;
   };
   players.filter((player) => player.equipoId === filters.equipoId).forEach((player) => add(String(player.id), matches[0]?.acta || normalizeActa(undefined, filters.equipoId)));
+  players.filter((player) => player.equipoId === filters.equipoId && isGoalkeeperPosition(positionOf(player))).forEach((player) => { add(String(player.id), matches[0]?.acta || normalizeActa(undefined, filters.equipoId)).isGoalkeeper = true; });
   matches.forEach(({ acta }) => {
     playerIds(acta).forEach((id) => add(id, acta));
     acta.goles.forEach((goal) => {
@@ -232,6 +292,13 @@ export function derivePlayerStatistics(data: SportsCalendarData, filters: Statis
     acta.rojas.forEach((card) => { add(card.jugadorId, acta).redCards += 1; });
     Object.entries(acta.puntajes).forEach(([id, value]) => { const rating = numericRating(value); if (rating !== null) add(id, acta).ratings.push(rating); });
   });
+  matches.forEach((match) => {
+    const goalkeeperId = goalkeeperIdForMatch(match, players);
+    if (!goalkeeperId) return;
+    const current = add(goalkeeperId, match.acta);
+    current.isGoalkeeper = true;
+    if (match.result.rival === 0) current.cleanSheets += 1;
+  });
   return [...aggregates.values()].map((item) => ({
     player: item.player,
     goals: observedFacts.goals ? item.goals : null,
@@ -240,60 +307,64 @@ export function derivePlayerStatistics(data: SportsCalendarData, filters: Statis
     redCards: observedFacts.redCards ? item.redCards : null,
     rating: item.ratings.length ? item.ratings.reduce((sum, value) => sum + value, 0) / item.ratings.length : null,
     ratedMatches: item.ratings.length,
+    cleanSheets: item.cleanSheets,
+    isGoalkeeper: item.isGoalkeeper,
   }));
 }
 
-export function deriveTacticalStatistics(data: SportsCalendarData, filters: StatisticsFilters): TacticalStatistics {
+export function deriveTacticalStatistics(data: SportsCalendarData, filters: StatisticsFilters, players: Jugador[] = []): TacticalStatistics {
   const matches = selectFinalizedMatches(data, filters);
   const systems = new Map<string, TacticalEntry>();
-  matches.forEach(({ acta, result }) => {
-    const system = acta.formacionSnapshot?.sistema;
+  matches.forEach((match) => {
+    const { acta, result, evento } = match;
+    const formation = acta.formacionSnapshot;
+    const system = formation?.sistema;
     if (!system) return;
-    const current = systems.get(system) || { system, matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, usageRate: null };
+    const current = systems.get(system) || { system, matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, usageRate: null, latestSnapshot: null };
     current.matches += 1; current.goalsFor += result.club; current.goalsAgainst += result.rival;
     if (result.outcome === 'win') current.wins += 1; else if (result.outcome === 'draw') current.draws += 1; else current.losses += 1;
+    const latest = current.latestSnapshot;
+    if (!latest || isNewerThanSnapshot(match, latest)) {
+      const entries = acta.formacionSnapshot?.jugadores || [];
+      current.latestSnapshot = {
+        eventId: evento.id,
+        date: evento.fecha,
+        time: evento.horaInicio || '',
+        rival: evento.rival || 'Rival a definir',
+        formationName: formation.nombre || system,
+        camiseta: formation.camiseta,
+        starters: entries.filter((entry) => entry.zona === 'titular').map((entry) => lineupPlayer(entry.jugadorId, entry.dorsal, entry.x, entry.y, acta, players, evento.equipoId)),
+        substitutes: entries.filter((entry) => entry.zona === 'suplente').map((entry) => lineupPlayer(entry.jugadorId, entry.dorsal, entry.x, entry.y, acta, players, evento.equipoId)),
+      };
+    }
     systems.set(system, current);
   });
   const evidence = evidenceFor(matches);
   return { ...evidence, registeredSystems: [...systems.values()].map((system) => ({ ...system, usageRate: rate(system.matches, matches.length) })) };
 }
 
-export function deriveOperationalStatistics(data: SportsCalendarData, filters: StatisticsFilters, players: Jugador[] = [], asOf = filters.from || new Date().toISOString().slice(0, 10)): OperationalStatistics {
-  const events = selectMatchEvents(data, filters);
-  const finalizedMatches = selectFinalizedMatches(data, filters);
-  const postponedMatches = events.filter((event) => event.estado === 'postergado').length;
-  const suspendedMatches = events.filter((event) => event.estado === 'suspendido').length;
-  const upcomingMatches = events.filter((event) => event.fecha >= asOf && event.estado !== 'finalizado' && event.estado !== 'postergado' && event.estado !== 'suspendido').length;
-  const congestionUntil = new Date(`${asOf}T12:00:00`);
-  congestionUntil.setDate(congestionUntil.getDate() + 7);
-  const congestionDate = congestionUntil.toISOString().slice(0, 10);
-  const matchCongestion = events.filter((event) => event.fecha >= asOf && event.fecha <= congestionDate && event.estado !== 'finalizado' && event.estado !== 'postergado' && event.estado !== 'suspendido').length;
-  const upcomingTrainings = data.eventos.filter((event) => event.tipo === 'Entrenamiento' && event.equipoId === filters.equipoId && event.fecha >= asOf && (!filters.to || event.fecha <= filters.to)).length;
-  const roster = players.filter((player) => player.equipoId === filters.equipoId);
-  const completed = events.filter((event) => event.estado !== 'postergado' && event.estado !== 'suspendido').length;
-  const finalizedIds = new Set(finalizedMatches.map(({ evento }) => evento.id));
+function leadersByValue(players: PlayerStatistics[], value: (player: PlayerStatistics) => number | null) {
+  const eligible = players.filter((player) => !player.isGoalkeeper && value(player) !== null && (value(player) as number) > 0);
+  if (!eligible.length) return [];
+  const maximum = Math.max(...eligible.map((player) => value(player) as number));
+  return eligible.filter((player) => value(player) === maximum);
+}
+
+export function derivePlayerHighlights(players: PlayerStatistics[]): PlayerHighlights {
+  const rated = players.filter((player) => player.rating !== null && player.ratedMatches >= 3);
+  const bestRating = rated.length ? Math.max(...rated.map((player) => player.rating as number)) : null;
   return {
-    matchEvents: events.length,
-    finalizedMatches: finalizedMatches.length,
-    pendingActs: events.filter((event) => event.estado !== 'postergado' && event.estado !== 'suspendido' && (event.estado === undefined || event.estado === 'programado' || (event.estado === 'finalizado' && !finalizedIds.has(event.id)))).length,
-    postponedMatches,
-    suspendedMatches,
-    actaCoverage: completed ? finalizedMatches.length / completed : null,
-    upcomingMatches,
-    matchCongestion,
-    upcomingTrainings,
-    availablePlayers: roster.length ? roster.filter((player) => player.estado === 'disponible').length : null,
-    injuredPlayers: roster.length ? roster.filter((player) => player.estado === 'lesionado').length : null,
-    availabilityScope: 'current_roster',
+    bestRated: bestRating === null ? [] : rated.filter((player) => player.rating === bestRating),
+    topScorers: leadersByValue(players, (player) => player.goals),
+    topAssisters: leadersByValue(players, (player) => player.assists),
   };
 }
 
-export function deriveSportsStatistics(data: SportsCalendarData, filters: StatisticsFilters, players: Jugador[] = [], asOf?: string): SportsStatistics {
+export function deriveSportsStatistics(data: SportsCalendarData, filters: StatisticsFilters, players: Jugador[] = []): SportsStatistics {
   return {
     evidence: deriveEvidence(data, filters),
     team: deriveTeamStatistics(data, filters),
     players: derivePlayerStatistics(data, filters, players),
-    tactical: deriveTacticalStatistics(data, filters),
-    operations: deriveOperationalStatistics(data, filters, players, asOf),
+    tactical: deriveTacticalStatistics(data, filters, players),
   };
 }
