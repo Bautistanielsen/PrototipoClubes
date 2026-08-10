@@ -59,7 +59,7 @@ export default function Partidos() {
 
   return <section className="matches-screen">
     <header className="matches-header">
-      <div><span className="matches-kicker">GESTIÓN DEPORTIVA</span><h1>Partidos</h1><p>Historial, resultados y actas de cada plantel.</p></div>
+      <div><h1>Partidos</h1><p>Historial, resultados y actas de cada plantel.</p></div>
       <label className="matches-team-select">Plantel<select value={state.selectedEquipoDeportivoId} onChange={(event) => actions.selectEquipoDeportivo(Number(event.target.value))}>{state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
     </header>
 

@@ -111,7 +111,7 @@ export default function Calendario() {
   if (state.activeModule !== 'deportivo') return <CalendarioAdministrativo />;
   return <div className="sports-calendar-screen" style={{ animation: 'fadeIn .3s ease' }}>
     <header style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 18 }}>
-      <div><h1 style={{ margin: 0, fontSize: 24, color: '#16203a' }}>Calendario deportivo</h1><p style={{ color: '#6b7488', margin: '4px 0 0' }}>Agenda de todos los planteles</p></div>
+      <div><h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#16203a' }}>Calendario deportivo</h1><p style={{ color: '#6b7488', margin: '4px 0 0' }}>Agenda de todos los planteles</p></div>
       <button className="calendar-primary" onClick={() => openEditor()}>+ Nuevo evento</button>
     </header>
     {pending.length > 0 && <div style={{ background: '#fff4e5', border: '1px solid #f4c878', borderRadius: 11, padding: '12px 14px', color: '#774d12', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}><strong>Hay {pending.length} {pending.length === 1 ? 'partido pendiente' : 'partidos pendientes'} de resultado.</strong>{pending.map((evento) => <button className="calendar-link" key={String(evento.id)} onClick={() => setActaEvento(evento)}>Cargar acta: {eventTitle(evento)}</button>)}</div>}
@@ -152,7 +152,7 @@ export default function Calendario() {
 
 function CalendarioAdministrativo() {
   const { state, actions } = useApp();
-  return <div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}><div><h1 style={{ margin: 0, fontSize: 24, color: '#16203a' }}>Calendario</h1><p style={{ margin: '4px 0 0', color: '#6b7488' }}>Partidos programados del club</p></div><button className="calendar-primary" onClick={() => actions.openAgregarPartido()}>+ Agregar partido</button></div><div className="calendar-card" style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 20 }}>{state.partidos.map((partido) => <button key={partido.id} onClick={() => actions.openVerPartido(partido.id)} className="day-detail-event"><strong>{partido.fecha.split('-').reverse().join('/')} · {partido.hora} · {partido.rival}</strong><span>{partido.tipo} · {partido.condicion}</span></button>)}</div></div>;
+  return <div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}><div><h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#16203a' }}>Calendario</h1><p style={{ margin: '4px 0 0', color: '#6b7488' }}>Partidos programados del club</p></div><button className="calendar-primary" onClick={() => actions.openAgregarPartido()}>+ Agregar partido</button></div><div className="calendar-card" style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 20 }}>{state.partidos.map((partido) => <button key={partido.id} onClick={() => actions.openVerPartido(partido.id)} className="day-detail-event"><strong>{partido.fecha.split('-').reverse().join('/')} · {partido.hora} · {partido.rival}</strong><span>{partido.tipo} · {partido.condicion}</span></button>)}</div></div>;
 }
 
 function SquadFilters({ equipos, prefs, color, onChange }: { equipos: { id: number; nombre: string }[]; prefs: Prefs; color: (id: number) => string; onChange: (prefs: Prefs) => void }) {

@@ -1,35 +1,109 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { HOY_ISO, useApp } from '../state/AppContext';
 import { readSportsCalendarData } from '../lib/sportsCalendar';
-import type { Evento } from '../lib/sportsCalendar';
+import { derivePlayerHighlights, deriveSportsStatistics, selectFinalizedMatches, type PlayerStatistics } from '../lib/sportsStatistics';
+import type { Jugador } from '../types';
+import PlayerAvatar from './estadisticas/PlayerAvatar';
+import { displayName, playerPhoto } from './estadisticas/types';
+
+const normalizeName = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-AR').trim();
+
+const formatDate = (value: string) => new Intl.DateTimeFormat('es-AR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+}).format(new Date(`${value}T12:00:00`));
+
+const playerAge = (birthDate: string) => {
+  const today = new Date();
+  const birth = new Date(`${birthDate}T12:00:00`);
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age -= 1;
+  return age;
+};
 
 export default function DeportivoInicio() {
   const { state, actions } = useApp();
-  const [eventos, setEventos] = useState<Evento[]>([]);
-  const [calendarioInicializado, setCalendarioInicializado] = useState(false);
-  useEffect(() => {
-    setEventos(readSportsCalendarData().eventos);
-    setCalendarioInicializado(true);
-  }, []);
-  const partidosCalendario = eventos.filter((evento) => evento.tipo === 'Partido' && !['finalizado', 'suspendido', 'postergado'].includes(evento.estado || '')).map((evento) => ({ fecha: evento.fecha, hora: evento.horaInicio || '', rival: evento.rival || 'Rival a definir', condicion: evento.condicion || 'Local', tipo: evento.competencia || 'Amistoso' }));
-  const partidos = calendarioInicializado ? partidosCalendario : state.partidos;
-  const nextMatch = [...partidos]
-    .filter((partido) => partido.fecha >= HOY_ISO)
-    .sort((a, b) => `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`))[0];
+  const [calendarData] = useState(readSportsCalendarData);
+  const team = state.equiposDeportivos.find((item) => normalizeName(item.nombre) === 'primera division');
+  const teamName = team?.nombre || 'Primera división';
+  const teamId = team?.id;
+  const teamPlayers = teamId === undefined ? [] : state.jugadores.filter((player) => player.equipoId === teamId);
+  const injuredPlayers = teamPlayers.filter((player) => player.estado === 'lesionado');
+  const filters = { equipoId: teamId ?? -1 };
+  const finalizedMatches = teamId === undefined ? [] : selectFinalizedMatches(calendarData, filters)
+    .sort((a, b) => `${b.evento.fecha}${b.evento.horaInicio || ''}`.localeCompare(`${a.evento.fecha}${a.evento.horaInicio || ''}`))
+    .slice(0, 3);
+  const nextMatch = teamId === undefined ? undefined : calendarData.eventos
+    .filter((event) => event.equipoId === teamId && event.tipo === 'Partido' && !['finalizado', 'suspendido', 'postergado'].includes(event.estado || '') && event.fecha >= HOY_ISO)
+    .sort((a, b) => `${a.fecha}${a.horaInicio || ''}`.localeCompare(`${b.fecha}${b.horaInicio || ''}`))[0];
+  const stats = deriveSportsStatistics(calendarData, filters, state.jugadores);
+  const highlights = derivePlayerHighlights(stats.players);
+
   return (
-    <div style={{ animation: 'fadeIn .3s ease' }}>
-      <div style={{ marginBottom: 22 }}><div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Inicio deportivo</div><div style={{ color: '#6b7488', fontSize: 14, marginTop: 3 }}>Organizá la actividad deportiva del club.</div></div>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <div style={card}><div style={label}>PARTIDOS PROGRAMADOS</div><div style={number}>{partidos.length}</div><button onClick={() => actions.navigate('calendario')} style={link}>Ver agenda deportiva</button></div>
-        <div style={card}><div style={label}>EQUIPOS ACTIVOS</div><div style={number}>{state.equiposDeportivos.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Ver planteles</button></div>
-        <div style={card}><div style={label}>JUGADORES REGISTRADOS</div><div style={number}>{state.jugadores.length}</div><button onClick={() => actions.navigate('equipos')} style={link}>Gestionar planteles</button></div>
-        <div style={{ ...card, flex: 2 }}><div style={label}>PRÓXIMO PARTIDO</div><div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginTop: 12 }}>{nextMatch ? `${nextMatch.condicion} vs. ${nextMatch.rival}` : 'Sin partidos programados'}</div>{nextMatch && <div style={{ color: '#6b7488', marginTop: 5, fontSize: 14 }}>{nextMatch.fecha} · {nextMatch.hora} · {nextMatch.tipo}</div>}</div>
-        <div style={{ ...card, flex: 2 }}><div style={label}>ESTADÍSTICAS</div><div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginTop: 12 }}>Rendimiento del plantel</div><div style={{ color: '#6b7488', marginTop: 5, fontSize: 14 }}>Resultados, jugadores y contexto táctico.</div><button onClick={() => actions.navigate('estadisticas')} style={{ ...link, marginTop: 12 }}>Ver estadísticas →</button></div>
+    <main className="sports-home">
+      <header className="sports-home-header">
+        <div><h1>Inicio deportivo</h1><p>Resumen de la actividad de Primera división.</p></div>
+      </header>
+
+      {nextMatch ? <section className="sports-home-next match-card-detail programado">
+        <div className="match-card-main">
+          <header className="match-competition"><span>{nextMatch.competencia || 'Liga'}</span><span>{nextMatch.condicion || 'Local'} · {formatDate(nextMatch.fecha)}</span></header>
+          <div className="match-scoreboard">
+            <span className="match-status programado">Programado</span>
+            <h3><span>{teamName}</span><b>vs.</b><span>{nextMatch.rival || 'Rival a definir'}</span></h3>
+          </div>
+          <div className="match-details"><span><b>Número de fecha</b>{nextMatch.numeroFecha ? `Fecha ${nextMatch.numeroFecha}` : 'No informado'}</span><span><b>Lugar</b>{nextMatch.lugar || 'A definir'}</span><span><b>Horario</b>{nextMatch.horaInicio || 'A definir'}</span></div>
+          <div className="match-card-actions"><button type="button" onClick={() => actions.navigate('calendario')}>Ver Agenda deportiva →</button></div>
+        </div>
+      </section> : <section className="sports-home-next sports-home-next-empty match-card-detail">
+        <div><span className="sports-home-eyebrow">PRÓXIMO PARTIDO</span><h2>Sin próximos partidos programados</h2><p>La agenda de Primera división no tiene encuentros futuros confirmados.</p></div>
+        <button type="button" onClick={() => actions.navigate('calendario')}>Programar en Agenda</button>
+      </section>}
+
+      <div className="sports-home-content-grid">
+        <section className="sports-home-section sports-home-results">
+          <SectionHeading title="Últimos resultados" action="Ver Partidos" onClick={() => actions.navigate('partidos')} />
+          {finalizedMatches.length ? <div className="sports-home-result-list">
+            {finalizedMatches.map(({ evento, result }) => <article key={evento.id} className="sports-home-result">
+              <span className={`sports-home-outcome ${result.outcome}`}>{result.outcome === 'win' ? 'G' : result.outcome === 'draw' ? 'E' : 'P'}</span>
+              <div><strong>{evento.condicion === 'Visitante' ? evento.rival || 'Rival' : teamName} <b>{evento.condicion === 'Visitante' ? result.rival : result.club}</b> - <b>{evento.condicion === 'Visitante' ? result.club : result.rival}</b> {evento.condicion === 'Visitante' ? teamName : evento.rival || 'Rival'}</strong><small>{formatDate(evento.fecha)} · {evento.competencia || 'Sin competencia'}{evento.lugar ? ` · ${evento.lugar}` : ''}</small></div>
+            </article>)}
+          </div> : <EmptyState title="Todavía no hay resultados finalizados" detail="Los partidos cerrados desde Agenda deportiva aparecerán acá." />}
+        </section>
+
+        <section className="sports-home-section sports-home-highlights">
+          <SectionHeading title="Jugadores destacados" action="Ver Estadísticas" onClick={() => actions.navigate('estadisticas')} />
+          <div className="sports-home-highlight-grid">
+            <Highlight title="Mejor jugador" players={highlights.bestRated} teamPlayers={state.jugadores} teamId={filters.equipoId} value={(player) => player.rating === null ? '' : `${player.rating.toFixed(1)} promedio`} empty="Se necesitan 3 partidos calificados por jugador." />
+            <Highlight title="Máximo goleador" players={highlights.topScorers} teamPlayers={state.jugadores} teamId={filters.equipoId} value={(player) => `${player.goals} ${player.goals === 1 ? 'gol' : 'goles'}`} empty="Todavía no hay goles observados en las actas." />
+          </div>
+        </section>
+
+        <section className="sports-home-section sports-home-injured">
+          <SectionHeading title="Jugadores lesionados" action="Gestionar Plantel" onClick={() => actions.navigate('equipos')} />
+          {injuredPlayers.length ? <div className="sports-home-injured-grid">{injuredPlayers.map((player) => <InjuredPlayer key={player.id} player={player} />)}</div> : <EmptyState title="No hay jugadores lesionados" detail="Todo el plantel de Primera división figura disponible." />}
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
-const card = { flex: 1, minWidth: 220, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 20 };
-const label = { fontSize: 11, letterSpacing: '.06em', fontWeight: 800, color: '#087f75' };
-const number = { fontSize: 32, color: '#16203a', fontWeight: 800, margin: '8px 0 12px' };
-const link = { border: 'none', background: 'transparent', padding: 0, color: '#087f75', fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+
+function SectionHeading({ title, action, onClick }: { title: string; action?: string; onClick?: () => void }) {
+  return <div className="sports-home-section-heading"><h2>{title}</h2>{action && <button type="button" onClick={onClick}>{action}</button>}</div>;
+}
+
+function Highlight({ title, players, teamPlayers, teamId, value, empty }: { title: string; players: PlayerStatistics[]; teamPlayers: Jugador[]; teamId: number; value: (player: PlayerStatistics) => string; empty: string }) {
+  return <article className="sports-home-highlight"><span>{title}</span>{players.length ? players.map((player) => { const name = displayName(player.player.displayName, player.player.playerId, teamPlayers, teamId); return <div className="sports-home-player" key={player.player.playerId}><PlayerAvatar name={name} photo={playerPhoto(player.player.playerId, player.player.foto, teamPlayers, teamId)} /><div><strong>{name}</strong><small>{value(player)}</small></div></div>; }) : <p>{empty}</p>}</article>;
+}
+
+function InjuredPlayer({ player }: { player: Jugador }) {
+  const name = `${player.nombre} ${player.apellido}`.trim();
+  const age = `${playerAge(player.fechaNacimiento)} años`;
+  const details = player.posicion ? `${player.posicion} · ${age}` : age;
+  return <article className="sports-home-player sports-home-injured-player"><PlayerAvatar name={name} photo={player.foto} /><div><strong>{name}</strong><small>{details}</small></div><span>Lesionado</span></article>;
+}
+
+function EmptyState({ title, detail }: { title: string; detail: string }) {
+  return <div className="sports-home-empty"><strong>{title}</strong><p>{detail}</p></div>;
+}

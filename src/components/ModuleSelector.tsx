@@ -48,7 +48,7 @@ export default function ModuleSelector() {
               <img src={module.image} alt="" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" style={{ width: '100%', aspectRatio: '3 / 2', objectFit: 'cover', display: 'block', borderBottom: '1px solid #eef0f5' }} />
               <div style={{ padding: 24, display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div style={{ width: 36, height: 5, borderRadius: 5, background: module.color, marginBottom: 14 }} />
-              <h2 style={{ fontSize: 21, color: '#16203a', margin: '0 0 7px', letterSpacing: '-0.02em' }}>{module.title}</h2>
+              <h2 style={{ fontSize: 21, fontWeight: 800, color: '#16203a', margin: '0 0 7px', letterSpacing: '-0.02em' }}>{module.title}</h2>
               <p style={{ margin: 0, color: '#6b7488', fontSize: 14, lineHeight: 1.5, minHeight: 64 }}>{module.description}</p>
               <ul style={{ margin: '20px 0 24px', padding: 0, listStyle: 'none', display: 'grid', gap: 9, color: '#4b5468', fontSize: 13.5 }}>
                 {module.features.map((feature) => <li key={feature}>✓ {feature}</li>)}

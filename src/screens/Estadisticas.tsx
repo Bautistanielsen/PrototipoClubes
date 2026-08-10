@@ -41,7 +41,7 @@ export default function Estadisticas() {
   }[state.estadisticasVista];
 
   return <section className="statistics-screen">
-    <header className="statistics-header"><div><span className="statistics-eyebrow">GESTIÓN DEPORTIVA</span><h1>{viewHeader.title}</h1><p>{viewHeader.detail}</p></div><label>Plantel<select value={state.selectedEquipoDeportivoId} onChange={(event) => actions.selectEquipoDeportivo(Number(event.target.value))}>{state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label></header>
+    <header className="statistics-header"><div><h1>{viewHeader.title}</h1><p>{viewHeader.detail}</p></div><label>Plantel<select value={state.selectedEquipoDeportivoId} onChange={(event) => actions.selectEquipoDeportivo(Number(event.target.value))}>{state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label></header>
     <div className="statistics-filters" aria-label="Filtros de estadísticas">
       <label>Desde<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
       <label>Hasta<input type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
