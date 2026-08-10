@@ -43,7 +43,7 @@ export default function DeportivoInicio() {
   return (
     <main className="sports-home">
       <header className="sports-home-header">
-        <div><h1>Inicio deportivo</h1><p>Resumen de la actividad de Primera división.</p></div>
+        <div><h1>Inicio</h1><p>Resumen de la actividad de Primera división.</p></div>
       </header>
 
       {nextMatch ? <section className="sports-home-next match-card-detail programado">
@@ -54,11 +54,11 @@ export default function DeportivoInicio() {
             <h3><span>{teamName}</span><b>vs.</b><span>{nextMatch.rival || 'Rival a definir'}</span></h3>
           </div>
           <div className="match-details"><span><b>Número de fecha</b>{nextMatch.numeroFecha ? `Fecha ${nextMatch.numeroFecha}` : 'No informado'}</span><span><b>Lugar</b>{nextMatch.lugar || 'A definir'}</span><span><b>Horario</b>{nextMatch.horaInicio || 'A definir'}</span></div>
-          <div className="match-card-actions"><button type="button" onClick={() => actions.navigate('calendario')}>Ver Agenda deportiva →</button></div>
+          <div className="match-card-actions"><button type="button" onClick={() => actions.navigate('calendario')}>Ver Calendario →</button></div>
         </div>
       </section> : <section className="sports-home-next sports-home-next-empty match-card-detail">
         <div><span className="sports-home-eyebrow">PRÓXIMO PARTIDO</span><h2>Sin próximos partidos programados</h2><p>La agenda de Primera división no tiene encuentros futuros confirmados.</p></div>
-        <button type="button" onClick={() => actions.navigate('calendario')}>Programar en Agenda</button>
+        <button type="button" onClick={() => actions.navigate('calendario')}>Programar en Calendario</button>
       </section>}
 
       <div className="sports-home-content-grid">
@@ -66,10 +66,10 @@ export default function DeportivoInicio() {
           <SectionHeading title="Últimos resultados" action="Ver Partidos" onClick={() => actions.navigate('partidos')} />
           {finalizedMatches.length ? <div className="sports-home-result-list">
             {finalizedMatches.map(({ evento, result }) => <article key={evento.id} className="sports-home-result">
-              <span className={`sports-home-outcome ${result.outcome}`}>{result.outcome === 'win' ? 'G' : result.outcome === 'draw' ? 'E' : 'P'}</span>
+              <span className={`sports-home-outcome ${result.outcome}`}>{result.outcome === 'win' ? 'V' : result.outcome === 'draw' ? 'E' : 'D'}</span>
               <div><strong>{evento.condicion === 'Visitante' ? evento.rival || 'Rival' : teamName} <b>{evento.condicion === 'Visitante' ? result.rival : result.club}</b> - <b>{evento.condicion === 'Visitante' ? result.club : result.rival}</b> {evento.condicion === 'Visitante' ? teamName : evento.rival || 'Rival'}</strong><small>{formatDate(evento.fecha)} · {evento.competencia || 'Sin competencia'}{evento.lugar ? ` · ${evento.lugar}` : ''}</small></div>
             </article>)}
-          </div> : <EmptyState title="Todavía no hay resultados finalizados" detail="Los partidos cerrados desde Agenda deportiva aparecerán acá." />}
+          </div> : <EmptyState title="Todavía no hay resultados finalizados" detail="Los partidos cerrados desde el calendario aparecerán acá." />}
         </section>
 
         <section className="sports-home-section sports-home-highlights">
@@ -101,7 +101,9 @@ function InjuredPlayer({ player }: { player: Jugador }) {
   const name = `${player.nombre} ${player.apellido}`.trim();
   const age = `${playerAge(player.fechaNacimiento)} años`;
   const details = player.posicion ? `${player.posicion} · ${age}` : age;
-  return <article className="sports-home-player sports-home-injured-player"><PlayerAvatar name={name} photo={player.foto} /><div><strong>{name}</strong><small>{details}</small></div><span>Lesionado</span></article>;
+  const recovery = player.fechaEstimadaRecuperacion ? new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${player.fechaEstimadaRecuperacion}T12:00:00`)) : '';
+  const injuryDetails = [player.motivoLesion?.trim() ? `Motivo: ${player.motivoLesion.trim()}` : '', recovery ? `Recuperación estimada: ${recovery}` : ''].filter(Boolean).join(' · ');
+  return <article className="sports-home-player sports-home-injured-player"><PlayerAvatar name={name} photo={player.foto} /><div><strong>{name}</strong><small>{details}</small>{injuryDetails && <small className="sports-home-injury-detail">{injuryDetails}</small>}</div><span>Lesionado</span></article>;
 }
 
 function EmptyState({ title, detail }: { title: string; detail: string }) {

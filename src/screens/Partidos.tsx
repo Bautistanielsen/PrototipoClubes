@@ -77,12 +77,13 @@ export default function Partidos() {
       <div className="goals-against"><span>Goles en contra</span><b>{resumen.gc}</b></div>
     </div>
 
-    <div className="matches-list-heading"><div><h2>Historial de partidos</h2><p>{equipo ? equipo.nombre : 'Plantel'} · más recientes primero</p></div><button className="matches-agenda-link" onClick={() => actions.navigate('calendario')}>Ir a Agenda deportiva →</button></div>
-    {!partidos.length ? <div className="matches-empty"><h2>No hay partidos para estos filtros</h2><p>Cuando cargues un partido en Agenda deportiva, va a aparecer acá junto con su acta.</p><button onClick={() => actions.navigate('calendario')}>Abrir Agenda deportiva</button></div> : <div className="matches-list">{partidos.map((partido) => <PartidoCard key={partido.id} partido={partido} acta={datos.actas[String(partido.id)]} abierta={actaAbierta === partido.id} onToggle={() => setActaAbierta((actual) => actual === partido.id ? null : partido.id)} onAgenda={() => actions.navigate('calendario')} onCompletarActa={() => actions.abrirActaEnCalendario(partido.id)} jugadores={state.jugadores} clubNombre={state.clubNombre} />)}</div>}
+    <div className="matches-list-heading"><div><h2>Historial de partidos</h2><p>{equipo ? equipo.nombre : 'Plantel'} · más recientes primero</p></div><button className="matches-agenda-link" onClick={() => actions.navigate('calendario')}>Ir a Calendario →</button></div>
+    {!partidos.length ? <div className="matches-empty"><h2>No hay partidos para estos filtros</h2><p>Cuando cargues un partido en el calendario, va a aparecer acá junto con su acta.</p><button onClick={() => actions.navigate('calendario')}>Abrir Calendario</button></div> : <div className="matches-list">{partidos.map((partido) => <PartidoCard key={partido.id} partido={partido} acta={datos.actas[String(partido.id)]} abierta={actaAbierta === partido.id} onToggle={() => setActaAbierta((actual) => actual === partido.id ? null : partido.id)} onAgenda={() => actions.navigate('calendario')} onCompletarActa={() => actions.abrirActaEnCalendario(partido.id)} jugadores={state.jugadores} clubNombre={state.clubNombre} />)}</div>}
   </section>;
 }
 
 function PartidoCard({ partido, acta, abierta, onToggle, onAgenda, onCompletarActa, jugadores, clubNombre }: { partido: Evento; acta?: Acta; abierta: boolean; onToggle: () => void; onAgenda: () => void; onCompletarActa: () => void; jugadores: ReturnType<typeof useApp>['state']['jugadores']; clubNombre: string }) {
+  const competencia = partido.competencia || 'Liga';
   const estado = estadoDe(partido);
   const resultado = parseFinalizedResult(partido, acta);
   const resultadoClase = resultado ? classResultado(resultado) : estado;
@@ -91,12 +92,12 @@ function PartidoCard({ partido, acta, abierta, onToggle, onAgenda, onCompletarAc
   const detalleId = `acta-partido-${partido.id}`;
   return <article className={`match-card-detail ${resultadoClase}`}>
     <div className="match-card-main">
-      <header className="match-competition"><span>{partido.competencia || 'Liga'}</span><span>{partido.condicion || 'Local'} · {fechaLarga(partido.fecha)}</span></header>
+      <header className="match-competition"><span>{competencia}</span><span>{partido.condicion || 'Local'} · {fechaLarga(partido.fecha)}</span></header>
       <div className="match-scoreboard">
         <span className={`match-status ${resultadoClase}`}>{etiquetaResultado}</span>
         <h3><span>{clubNombre}</span><b>{resultado ? `${resultado.club} — ${resultado.rival}` : 'vs.'}</b><span>{partido.rival || 'Rival a definir'}</span></h3>
       </div>
-      <div className="match-details"><span><b>Número de fecha</b>{partido.numeroFecha ? `Fecha ${partido.numeroFecha}` : 'No informado'}</span><span><b>Lugar</b>{partido.lugar || 'A definir'}</span><span><b>Horario</b>{partido.horaInicio || 'A definir'}</span></div>
+      <div className={`match-details${competencia === 'Amistoso' ? ' match-details--without-competition-detail' : ''}`}>{competencia === 'Liga' && <span><b>Número de fecha</b>{partido.numeroFecha ? `Fecha ${partido.numeroFecha}` : 'No informado'}</span>}{competencia === 'Copa' && <span><b>Instancia</b>{partido.instancia || 'No informada'}</span>}<span><b>Lugar</b>{partido.lugar || 'A definir'}</span><span><b>Horario</b>{partido.horaInicio || 'A definir'}</span></div>
       {(partido.motivo || partido.nuevaFecha) && <p className="match-extra-detail">{partido.motivo || ''}{partido.motivo && partido.nuevaFecha ? ' · ' : ''}{partido.nuevaFecha ? `Nueva fecha: ${fechaLarga(partido.nuevaFecha)}` : ''}</p>}
       <div className="match-card-actions"><button aria-expanded={puedeVerActa ? abierta : undefined} aria-controls={puedeVerActa ? detalleId : undefined} onClick={puedeVerActa ? onToggle : onCompletarActa}>{puedeVerActa ? (abierta ? 'Ocultar acta ↑' : 'Ver acta ↓') : 'Completar acta →'}</button></div>
     </div>
@@ -116,7 +117,7 @@ function ActaDetalle({ id, acta, equipoId, jugadores, onAgenda }: { id: string; 
     <div className="match-lineup"><div className="match-section-title"><span>FORMACIÓN Y RENDIMIENTO</span><h4>{formacion ? `${formacion.nombre} · ${formacion.sistema}` : 'Sin formación registrada'}</h4></div>{formacion ? <div className="match-lineup-columns"><ListaJugadores titulo="Titulares" jugadores={titulares} /><ListaJugadores titulo="Suplentes" jugadores={suplentes} /></div> : <p className="match-muted">El acta todavía no tiene una formación asociada.</p>}</div>
     {hayIncidencias && <div className="match-incidents"><div className="match-section-title"><span>INCIDENCIAS</span><h4>Detalle del partido</h4></div>{acta.goles.length > 0 && <DetalleIncidencia titulo="Goles">{acta.goles.map((gol, index) => <li key={index}><b>⚽ {nombre(gol.jugadorId)}</b>{gol.asistenciaId && <span>Asistió {nombre(gol.asistenciaId)}</span>}<em>{gol.minuto ? `${gol.minuto}'` : '—'}</em></li>)}</DetalleIncidencia>}{(acta.amarillas.length > 0 || acta.rojas.length > 0) && <DetalleIncidencia titulo="Tarjetas">{acta.amarillas.map((tarjeta, index) => <li key={`a-${index}`}><b><i className="match-card-icon yellow" /> {nombre(tarjeta.jugadorId)}</b><span>Amarilla</span><em>{tarjeta.minuto ? `${tarjeta.minuto}'` : '—'}</em></li>)}{acta.rojas.map((tarjeta, index) => <li key={`r-${index}`}><b><i className="match-card-icon red" /> {nombre(tarjeta.jugadorId)}</b><span>Roja</span><em>{tarjeta.minuto ? `${tarjeta.minuto}'` : '—'}</em></li>)}</DetalleIncidencia>}{acta.cambios.length > 0 && <DetalleIncidencia titulo="Cambios">{acta.cambios.map((cambio, index) => <li key={index}><b>⇄ {nombre(cambio.entraId)}</b><span>por {nombre(cambio.saleId)}</span><em>{cambio.minuto ? `${cambio.minuto}'` : '—'}</em></li>)}</DetalleIncidencia>}</div>}
     {acta.observaciones && <div className="match-notes"><span>OBSERVACIONES TÉCNICAS</span><p>{acta.observaciones}</p></div>}
-    <div className="match-detail-footer"><button onClick={onAgenda}>Ir a Agenda deportiva →</button></div>
+    <div className="match-detail-footer"><button onClick={onAgenda}>Ir a Calendario →</button></div>
   </div>;
 }
 

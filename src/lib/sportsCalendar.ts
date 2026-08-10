@@ -3,6 +3,8 @@ import { canonicalPrimeraFormations, cloneFormacion } from '../data/formaciones'
 
 export type TipoEvento = 'Partido' | 'Entrenamiento' | 'Descanso' | 'Otro';
 export type Competencia = 'Liga' | 'Copa' | 'Amistoso';
+export const INSTANCIAS_COPA = ['Fase de grupos', 'Dieciseisavos', 'Octavos de final', 'Cuartos de final', 'Semifinal', 'Final'] as const;
+export type InstanciaCopa = typeof INSTANCIAS_COPA[number];
 export type EstadoPartido = 'programado' | 'finalizado' | 'suspendido' | 'postergado';
 export type Recurrencia = { dias: number[]; hasta?: string };
 
@@ -30,6 +32,7 @@ export type Evento = {
   condicion?: 'Local' | 'Visitante';
   competencia?: Competencia;
   numeroFecha?: number;
+  instancia?: InstanciaCopa;
   lugar?: string;
   estado?: EstadoPartido;
   motivo?: string;
@@ -61,7 +64,7 @@ export type Prefs = { visibles: number[]; colores: Record<number, string>; confi
 export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
-export const CANONICAL_DEMO_SEASON_SEED_VERSION = 1;
+export const CANONICAL_DEMO_SEASON_SEED_VERSION = 2;
 
 export function emptyActa(): Acta {
   return { goles: [], amarillas: [], rojas: [], cambios: [], puntajes: {}, observaciones: '' };
@@ -266,7 +269,11 @@ const DEMO_NUMERO_FECHA: Record<number, number> = {
 };
 
 function withDemoNumeroFecha(eventos: Evento[]) {
-  return eventos.map((evento) => evento.numeroFecha === undefined && DEMO_NUMERO_FECHA[evento.id]
+  return eventos.map((evento) => evento.numeroFecha === undefined
+    && evento.tipo === 'Partido'
+    && evento.equipoId === 1
+    && (evento.competencia || 'Liga') === 'Liga'
+    && DEMO_NUMERO_FECHA[evento.id] !== undefined
     ? { ...evento, numeroFecha: DEMO_NUMERO_FECHA[evento.id] }
     : evento);
 }
@@ -296,7 +303,7 @@ function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedV
   const preservedEventos = eventos.filter((evento) => !LEGACY_PRIMERA_MATCH_IDS.has(evento.id));
   const storedIds = new Set(preservedEventos.map((evento) => evento.id));
   const addedEventos = seedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id) && !storedIds.has(evento.id));
-  const migratedEventos = [...preservedEventos, ...addedEventos];
+  const migratedEventos = withDemoNumeroFecha([...preservedEventos, ...addedEventos]);
   const migratedActas = Object.fromEntries(Object.entries(actas).filter(([id]) => !LEGACY_PRIMERA_MATCH_IDS.has(Number(id))));
   const canonicalEventIds = new Set(migratedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id)).map((evento) => evento.id));
   const fallbackActas = Object.fromEntries(seedEventos.flatMap((evento) => {
@@ -323,7 +330,7 @@ export function readSportsCalendarData(): SportsCalendarData {
       return fallback;
     }
     const parsed = JSON.parse(saved) as Partial<SportsCalendarData>;
-    const storedEventos = Array.isArray(parsed.eventos) ? withDemoNumeroFecha(parsed.eventos) : fallback.eventos;
+    const storedEventos = Array.isArray(parsed.eventos) ? parsed.eventos : fallback.eventos;
     const storedActas = normalizeStoredActas(parsed.actas, storedEventos, fallback.actas);
     const migrated = migrateDemoSeason(storedEventos, storedActas, parsed.demoSeasonSeedVersion);
     const result = {

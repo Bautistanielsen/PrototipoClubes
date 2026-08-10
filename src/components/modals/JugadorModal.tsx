@@ -31,6 +31,10 @@ export default function JugadorModal() {
           {fotosJugadoresDemo.map((foto, index) => <option key={foto} value={foto}>Foto demo {index + 1}</option>)}
         </select>
       </div>
+      {state.nuevoJugadorEstado === 'lesionado' && <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
+        <input value={state.nuevoJugadorMotivoLesion} onChange={(e) => actions.setNuevoJugadorMotivoLesion(e.target.value)} placeholder="Motivo de lesión" aria-label="Motivo de lesión" required style={inputStyle} />
+        <input type="date" value={state.nuevoJugadorFechaEstimadaRecuperacion} onChange={(e) => actions.setNuevoJugadorFechaEstimadaRecuperacion(e.target.value)} aria-label="Fecha estimada de recuperación" required style={inputStyle} />
+      </div>}
       <div style={{ display: 'flex', gap: 10 }}>
         <button onClick={actions.closeJugadorModal} style={secondaryButton}>Cancelar</button>
         <button onClick={actions.guardarJugador} style={primaryButton}>{editing ? 'Guardar cambios' : 'Agregar jugador'}</button>

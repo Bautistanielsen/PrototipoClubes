@@ -284,9 +284,9 @@ export default function Torneos() {
                               <tr>
                                 <th style={{ textAlign: 'left', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>Equipo</th>
                                 <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>PJ</th>
-                                <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>G</th>
+                                <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>V</th>
                                 <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>E</th>
-                                <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>P</th>
+                                <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>D</th>
                                 <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>GF</th>
                                 <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>GC</th>
                                 <th style={{ textAlign: 'center', padding: '6px 8px', color: '#6b7488', fontWeight: 600, borderBottom: '1px solid #e3e7ef' }}>DG</th>

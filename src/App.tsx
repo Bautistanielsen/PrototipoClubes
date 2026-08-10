@@ -78,16 +78,16 @@ function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'f
   const common = { width: 19, height: 19, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
   if (screen === 'deportivo_inicio') {
-    return <svg {...common}><path d="M4 19V9l8-5 8 5v10" /><path d="M8 19v-5h8v5M3 19h18" /><circle cx="12" cy="9" r="2" /></svg>;
+    return <svg {...common}><path d="m3 11 9-7 9 7" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></svg>;
   }
   if (screen === 'equipos') {
     return <svg {...common}><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9.5" r="2.2" /><path d="M3 20c0-3.4 2.7-6 6-6s6 2.6 6 6M15.5 14.5c2.7.3 4.5 2.3 4.5 5" /><path d="m8 4 1-2 1 2" /></svg>;
   }
   if (screen === 'formaciones') {
-    return <svg {...common}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h5" /><circle cx="17" cy="16" r="2" /></svg>;
+    return <svg {...common}><rect x="2.5" y="4" width="19" height="16" rx="2" /><path d="M12 4v16" /><circle cx="12" cy="12" r="3" /><path d="M2.5 8h4v8h-4M21.5 8h-4v8h4" /></svg>;
   }
   if (screen === 'partidos') {
-    return <svg {...common}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 4v5M15 4v5" /><path d="M8 15h8M12 12v6" /></svg>;
+    return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="m12 7 4.76 3.45L15 16H9l-1.76-5.55L12 7" /><path d="M12 7V3m3 13 2.5 3m-.74-8.55L20.5 9M9.06 16.05 6.5 19m.74-8.55L3.5 9" /></svg>;
   }
   if (screen === 'estadisticas') {
     return <svg {...common}><path d="M4 19V5M4 19h16" /><path d="m7 15 4-4 3 2 5-7" /></svg>;
@@ -98,7 +98,7 @@ function SportsNavIcon({ screen }: { screen: 'deportivo_inicio' | 'equipos' | 'f
 function DeportivoLayout() {
   const { state, actions } = useApp();
   const [statisticsOpen, setStatisticsOpen] = useState(state.screen === 'estadisticas');
-  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio deportivo' }, { screen: 'equipos' as const, label: 'Planteles' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Agenda deportiva' }];
+  const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio' }, { screen: 'equipos' as const, label: 'Plantel' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Calendario' }];
   const statisticsViews: Array<{ view: StatisticsView; label: string }> = [{ view: 'summary', label: 'Resumen' }, { view: 'players', label: 'Jugadores' }, { view: 'tactics', label: 'Táctica' }];
   const selectStatistics = (view: StatisticsView) => { actions.selectEstadisticasVista(view); actions.navigate('estadisticas'); };
   const toggleStatistics = () => setStatisticsOpen((open) => !open);

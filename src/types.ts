@@ -139,6 +139,8 @@ export interface Jugador {
   fechaNacimiento: string;
   telefono: string;
   estado: EstadoJugador;
+  motivoLesion?: string;
+  fechaEstimadaRecuperacion?: string;
   foto?: string;
   posicion?: string;
 }

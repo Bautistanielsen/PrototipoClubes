@@ -29,7 +29,7 @@ export type Evidence = {
 };
 
 export type FinalizedMatch = { evento: Evento; acta: Acta; result: FinalizedResult };
-export type MatchOutcome = 'W' | 'D' | 'L';
+export type MatchOutcome = 'V' | 'E' | 'D';
 
 export type TeamStatistics = Evidence & {
   matchesPlayed: number;
@@ -161,7 +161,7 @@ export function deriveTeamStatistics(data: SportsCalendarData, filters: Statisti
     concedingRate: rate(goalsAgainst, matches.length),
     cleanSheets: matches.filter(({ result }) => result.rival === 0).length,
     scoredMatches: matches.filter(({ result }) => result.club > 0).length,
-    recentSequence: [...matches].sort((a, b) => `${b.evento.fecha}${b.evento.horaInicio || ''}`.localeCompare(`${a.evento.fecha}${a.evento.horaInicio || ''}`)).map(({ result }) => result.outcome === 'win' ? 'W' : result.outcome === 'draw' ? 'D' : 'L'),
+    recentSequence: [...matches].sort((a, b) => `${b.evento.fecha}${b.evento.horaInicio || ''}`.localeCompare(`${a.evento.fecha}${a.evento.horaInicio || ''}`)).map(({ result }) => result.outcome === 'win' ? 'V' : result.outcome === 'draw' ? 'E' : 'D'),
   };
 }
 

@@ -213,7 +213,7 @@ export const seedEquiposDeportivos: EquipoDeportivo[] = [
 export const seedJugadores: Jugador[] = [
   { id: 1, equipoId: 1, nombre: 'Bruno', apellido: 'Fernández', fechaNacimiento: '2001-04-18', telefono: '223 555 0141', estado: 'disponible', foto: brunoFernandez },
   { id: 2, equipoId: 1, nombre: 'Facundo', apellido: 'Herrera', fechaNacimiento: '1999-11-03', telefono: '223 555 0182', estado: 'disponible', foto: facundoHerrera },
-  { id: 3, equipoId: 1, nombre: 'Joaquín', apellido: 'López', fechaNacimiento: '2002-07-21', telefono: '223 555 0115', estado: 'lesionado', foto: joaquinLopez },
+  { id: 3, equipoId: 1, nombre: 'Joaquín', apellido: 'López', fechaNacimiento: '2002-07-21', telefono: '223 555 0115', estado: 'lesionado', motivoLesion: 'Esguince de tobillo derecho', fechaEstimadaRecuperacion: '2026-08-19', foto: joaquinLopez },
   { id: 4, equipoId: 1, nombre: 'Lucas', apellido: 'Domínguez', fechaNacimiento: '1998-01-30', telefono: '223 555 0167', estado: 'disponible', foto: lucasDominguez },
   { id: 5, equipoId: 1, nombre: 'Mateo', apellido: 'Benítez', fechaNacimiento: '2000-09-12', telefono: '223 555 0109', estado: 'disponible', foto: mateoBenitez },
   { id: 6, equipoId: 1, nombre: 'Nicolás', apellido: 'Cabrera', fechaNacimiento: '1997-06-25', telefono: '223 555 0134', estado: 'disponible', foto: nicolasCabrera },
@@ -227,7 +227,7 @@ export const seedJugadores: Jugador[] = [
   { id: 14, equipoId: 1, nombre: 'Lautaro', apellido: 'Navarro', fechaNacimiento: '2000-07-03', telefono: '223 555 0191', estado: 'disponible', foto: lautaroNavarro },
   { id: 15, equipoId: 1, nombre: 'Federico', apellido: 'Ríos', fechaNacimiento: '1997-12-11', telefono: '223 555 0163', estado: 'disponible', foto: federicoRios },
   { id: 16, equipoId: 1, nombre: 'Alan', apellido: 'Medina', fechaNacimiento: '2003-04-24', telefono: '223 555 0118', estado: 'disponible', foto: alanMedina },
-  { id: 17, equipoId: 1, nombre: 'Ignacio', apellido: 'Farías', fechaNacimiento: '2001-08-30', telefono: '223 555 0139', estado: 'lesionado', foto: ignacioFarias },
+  { id: 17, equipoId: 1, nombre: 'Ignacio', apellido: 'Farías', fechaNacimiento: '2001-08-30', telefono: '223 555 0139', estado: 'lesionado', motivoLesion: 'Distensión muscular en isquiotibial izquierdo', fechaEstimadaRecuperacion: '2026-08-28', foto: ignacioFarias },
 ];
 
 export const seedTorneos: Torneo[] = [

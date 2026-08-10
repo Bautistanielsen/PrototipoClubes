@@ -437,9 +437,9 @@ function PortalTorneos() {
                         <tr style={{ color: '#8b93a5', textAlign: 'left' }}>
                           <th style={{ padding: '4px 6px' }}>Equipo</th>
                           <th style={{ padding: '4px 6px' }}>PJ</th>
-                          <th style={{ padding: '4px 6px' }}>G</th>
+                          <th style={{ padding: '4px 6px' }}>V</th>
                           <th style={{ padding: '4px 6px' }}>E</th>
-                          <th style={{ padding: '4px 6px' }}>P</th>
+                          <th style={{ padding: '4px 6px' }}>D</th>
                           <th style={{ padding: '4px 6px' }}>DG</th>
                           <th style={{ padding: '4px 6px' }}>Pts</th>
                         </tr>

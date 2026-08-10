@@ -69,6 +69,13 @@ function fechaLocalISO(fecha = new Date()) {
   return `${fecha.getFullYear()}-${mes}-${dia}`;
 }
 
+function esFechaISO(fecha: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  const valor = new Date(anio, mes - 1, dia);
+  return valor.getFullYear() === anio && valor.getMonth() === mes - 1 && valor.getDate() === dia;
+}
+
 function posicionesIniciales(sistema: SistemaFormacion) {
   const lineas = sistema.split('-').map(Number);
   const posiciones = [{ x: 50, y: 91 }];
@@ -227,6 +234,8 @@ export interface AppState {
   nuevoJugadorFechaNacimiento: string;
   nuevoJugadorTelefono: string;
   nuevoJugadorEstado: EstadoJugador;
+  nuevoJugadorMotivoLesion: string;
+  nuevoJugadorFechaEstimadaRecuperacion: string;
   nuevoJugadorFoto: string;
   showEquipoDeportivoModal: boolean;
   nuevoEquipoDeportivoNombre: string;
@@ -334,6 +343,8 @@ const initialState: AppState = {
   nuevoJugadorFechaNacimiento: '',
   nuevoJugadorTelefono: '',
   nuevoJugadorEstado: 'disponible',
+  nuevoJugadorMotivoLesion: '',
+  nuevoJugadorFechaEstimadaRecuperacion: '',
   nuevoJugadorFoto: '',
   showEquipoDeportivoModal: false,
   nuevoEquipoDeportivoNombre: '',
@@ -474,6 +485,8 @@ export interface AppActions {
   setNuevoJugadorFechaNacimiento: (v: string) => void;
   setNuevoJugadorTelefono: (v: string) => void;
   setNuevoJugadorEstado: (v: EstadoJugador) => void;
+  setNuevoJugadorMotivoLesion: (v: string) => void;
+  setNuevoJugadorFechaEstimadaRecuperacion: (v: string) => void;
   setNuevoJugadorFoto: (v: string) => void;
   guardarJugador: () => void;
   eliminarJugador: (id: number) => void;
@@ -1112,6 +1125,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       nuevoJugadorFechaNacimiento: '',
       nuevoJugadorTelefono: '',
       nuevoJugadorEstado: 'disponible',
+      nuevoJugadorMotivoLesion: '',
+      nuevoJugadorFechaEstimadaRecuperacion: '',
       nuevoJugadorFoto: '',
     }),
     openEditarJugador: (id) => {
@@ -1125,6 +1140,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         nuevoJugadorFechaNacimiento: jugador.fechaNacimiento,
         nuevoJugadorTelefono: jugador.telefono,
         nuevoJugadorEstado: jugador.estado,
+        nuevoJugadorMotivoLesion: jugador.estado === 'lesionado' ? jugador.motivoLesion || '' : '',
+        nuevoJugadorFechaEstimadaRecuperacion: jugador.estado === 'lesionado' ? jugador.fechaEstimadaRecuperacion || '' : '',
         nuevoJugadorFoto: jugador.foto || '',
       });
     },
@@ -1133,17 +1150,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNuevoJugadorApellido: (v) => update({ nuevoJugadorApellido: v }),
     setNuevoJugadorFechaNacimiento: (v) => update({ nuevoJugadorFechaNacimiento: v }),
     setNuevoJugadorTelefono: (v) => update({ nuevoJugadorTelefono: v }),
-    setNuevoJugadorEstado: (v) => update({ nuevoJugadorEstado: v }),
+    setNuevoJugadorEstado: (v) => update(v === 'disponible'
+      ? { nuevoJugadorEstado: v, nuevoJugadorMotivoLesion: '', nuevoJugadorFechaEstimadaRecuperacion: '' }
+      : { nuevoJugadorEstado: v }),
+    setNuevoJugadorMotivoLesion: (v) => update({ nuevoJugadorMotivoLesion: v }),
+    setNuevoJugadorFechaEstimadaRecuperacion: (v) => update({ nuevoJugadorFechaEstimadaRecuperacion: v }),
     setNuevoJugadorFoto: (v) => update({ nuevoJugadorFoto: v }),
     guardarJugador: () => {
       const nombre = state.nuevoJugadorNombre.trim();
       const apellido = state.nuevoJugadorApellido.trim();
+      const motivoLesion = state.nuevoJugadorMotivoLesion.trim();
+      const fechaEstimadaRecuperacion = state.nuevoJugadorFechaEstimadaRecuperacion.trim();
       if (!nombre || !apellido || !state.nuevoJugadorFechaNacimiento || !state.nuevoJugadorTelefono.trim()) {
         showToast('Completá nombre, apellido, nacimiento y teléfono');
         return;
       }
       if (state.nuevoJugadorFechaNacimiento > fechaLocalISO()) {
         showToast('La fecha de nacimiento no puede ser futura');
+        return;
+      }
+      if (state.nuevoJugadorEstado === 'lesionado' && (!motivoLesion || !esFechaISO(fechaEstimadaRecuperacion))) {
+        showToast('Completá el motivo y una recuperación estimada válida');
         return;
       }
       const jugador = {
@@ -1153,6 +1180,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fechaNacimiento: state.nuevoJugadorFechaNacimiento,
         telefono: state.nuevoJugadorTelefono.trim(),
         estado: state.nuevoJugadorEstado,
+        motivoLesion: state.nuevoJugadorEstado === 'lesionado' ? motivoLesion : undefined,
+        fechaEstimadaRecuperacion: state.nuevoJugadorEstado === 'lesionado' ? fechaEstimadaRecuperacion : undefined,
         ...(state.nuevoJugadorFoto ? { foto: state.nuevoJugadorFoto } : {}),
       };
       const editando = state.jugadorEditandoId;

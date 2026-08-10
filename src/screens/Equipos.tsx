@@ -32,8 +32,23 @@ function slug(valor: string) {
 
 function csvCell(valor: string | number) {
   let texto = String(valor);
-  if (/^[=+\-@\t\r]/.test(texto)) texto = `'${texto}`;
-  return /[",\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+  if (/^[\s\u0000-\u001f\u007f]*[=+\-@]/.test(texto)) texto = `'${texto}`;
+  return /[";\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+}
+
+function fechaLegible(fecha?: string) {
+  if (!fecha) return '';
+  const valor = new Date(`${fecha}T12:00:00`);
+  if (Number.isNaN(valor.getTime())) return fecha;
+  return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long', year: 'numeric' }).format(valor);
+}
+
+function detalleLesion(jugador: Jugador) {
+  if (jugador.estado !== 'lesionado') return '';
+  const detalles = [];
+  if (jugador.motivoLesion?.trim()) detalles.push(`Motivo: ${jugador.motivoLesion.trim()}`);
+  if (jugador.fechaEstimadaRecuperacion) detalles.push(`Recuperación estimada: ${fechaLegible(jugador.fechaEstimadaRecuperacion)}`);
+  return detalles.join(' · ');
 }
 
 export default function Equipos() {
@@ -51,10 +66,10 @@ export default function Equipos() {
 
   const descargarCsv = () => {
     const filas = [
-      ['Nombre', 'Apellido', 'Fecha de nacimiento', 'Edad', 'Teléfono', 'Estado'],
-      ...jugadoresFiltrados.map((jugador) => [jugador.nombre, jugador.apellido, jugador.fechaNacimiento, edad(jugador.fechaNacimiento), jugador.telefono, jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado']),
+      ['Nombre', 'Apellido', 'Fecha de nacimiento', 'Edad', 'Teléfono', 'Estado', 'Motivo de lesión', 'Recuperación estimada'],
+      ...jugadores.map((jugador) => [jugador.nombre, jugador.apellido, jugador.fechaNacimiento, edad(jugador.fechaNacimiento), jugador.telefono, jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado', jugador.motivoLesion?.trim() || '', fechaLegible(jugador.fechaEstimadaRecuperacion)]),
     ];
-    const contenido = `\uFEFF${filas.map((fila) => fila.map(csvCell).join(',')).join('\r\n')}`;
+    const contenido = `\uFEFF${filas.map((fila) => fila.map(csvCell).join(';')).join('\r\n')}`;
     const enlace = document.createElement('a');
     const url = URL.createObjectURL(new Blob([contenido], { type: 'text/csv;charset=utf-8' }));
     enlace.href = url;
@@ -70,7 +85,7 @@ export default function Equipos() {
     <div className="roster-screen" style={{ animation: 'fadeIn .3s ease' }}>
       <div className="no-print">
         <div className="roster-header">
-          <div><div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Planteles</div><div style={{ color: '#6b7488', fontSize: 14, marginTop: 3 }}>Jugadores del equipo y su disponibilidad actual.</div></div>
+          <div><div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Plantel</div><div style={{ color: '#6b7488', fontSize: 14, marginTop: 3 }}>Jugadores del equipo y su disponibilidad actual.</div></div>
           <button onClick={actions.openAgregarJugador} style={addButton}>+ Agregar jugador</button>
         </div>
 
@@ -97,7 +112,7 @@ export default function Equipos() {
               <button aria-pressed={vista === 'lista'} className={vista === 'lista' ? 'active' : ''} onClick={() => setVista('lista')}>Lista</button>
               <button aria-pressed={vista === 'grilla'} className={vista === 'grilla' ? 'active' : ''} onClick={() => setVista('grilla')}>Grilla</button>
             </div>
-            <button type="button" disabled={!jugadoresFiltrados.length} onClick={descargarCsv} className="roster-utility">Exportar CSV</button>
+            <button type="button" disabled={!jugadores.length} onClick={descargarCsv} className="roster-utility">Exportar CSV</button>
             <button type="button" disabled={!jugadoresFiltrados.length} onClick={() => window.print()} className="roster-utility">Imprimir / PDF</button>
           </div>
         </div>}
@@ -113,31 +128,38 @@ function ListaJugadores({ jugadores }: { jugadores: Jugador[] }) {
   const { actions } = useApp();
   return <div className="player-list">
     <div className="player-list-head"><span>Jugador</span><span>Edad</span><span>Teléfono</span><span>Estado</span><span>Acciones</span></div>
-    {jugadores.map((jugador) => <div key={jugador.id} className="player-list-row">
-      <div className="player-identity">{jugador.foto ? <img src={jugador.foto} alt="" className="player-list-photo" /> : <div className="player-list-avatar">{iniciales(jugador)}</div>}<div><strong>{jugador.nombre} {jugador.apellido}</strong><small>Fecha nac.: {jugador.fechaNacimiento}</small><small className="player-compact-details">{edad(jugador.fechaNacimiento)} años · Tel. {jugador.telefono}</small></div></div>
-      <span className="player-list-age">{edad(jugador.fechaNacimiento)} años</span>
-      <span className="player-list-phone">{jugador.telefono}</span>
-      <span className={jugador.estado === 'disponible' ? 'player-status available' : 'player-status injured'}>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</span>
-      <div className="player-list-actions"><a aria-label={`Contactar a ${jugador.nombre} ${jugador.apellido} por WhatsApp`} href={`https://wa.me/${telefonoWhatsApp(jugador.telefono)}`} target="_blank" rel="noreferrer">WhatsApp</a><button aria-label={`Editar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => actions.openEditarJugador(jugador.id)}>Editar</button><button aria-label={`Eliminar a ${jugador.nombre} ${jugador.apellido}`} className="delete" onClick={() => window.confirm(`¿Eliminar a ${jugador.nombre} ${jugador.apellido} del plantel?`) && actions.eliminarJugador(jugador.id)}>Eliminar</button></div>
-    </div>)}
+    {jugadores.map((jugador) => {
+      const lesion = detalleLesion(jugador);
+      return <div key={jugador.id} className="player-list-row">
+        <div className="player-identity">{jugador.foto ? <img src={jugador.foto} alt="" className="player-list-photo" /> : <div className="player-list-avatar">{iniciales(jugador)}</div>}<div><strong>{jugador.nombre} {jugador.apellido}</strong><small>Fecha nac.: {jugador.fechaNacimiento}</small><small className="player-compact-details">{edad(jugador.fechaNacimiento)} años · Tel. {jugador.telefono}</small>{lesion && <small>{lesion}</small>}</div></div>
+        <span className="player-list-age">{edad(jugador.fechaNacimiento)} años</span>
+        <span className="player-list-phone">{jugador.telefono}</span>
+        <span className={jugador.estado === 'disponible' ? 'player-status available' : 'player-status injured'}>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</span>
+        <div className="player-list-actions"><a aria-label={`Contactar a ${jugador.nombre} ${jugador.apellido} por WhatsApp`} href={`https://wa.me/${telefonoWhatsApp(jugador.telefono)}`} target="_blank" rel="noreferrer">WhatsApp</a><button aria-label={`Editar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => actions.openEditarJugador(jugador.id)}>Editar</button><button aria-label={`Eliminar a ${jugador.nombre} ${jugador.apellido}`} className="delete" onClick={() => window.confirm(`¿Eliminar a ${jugador.nombre} ${jugador.apellido} del plantel?`) && actions.eliminarJugador(jugador.id)}>Eliminar</button></div>
+      </div>;
+    })}
   </div>;
 }
 
 function GrillaJugadores({ jugadores }: { jugadores: Jugador[] }) {
   const { actions } = useApp();
-  return <div className="roster-grid">{jugadores.map((jugador) => <article key={jugador.id} className="player-card">
-    <div style={{ display: 'flex', gap: 13, alignItems: 'center' }}>
-      {jugador.foto ? <img src={jugador.foto} alt={`${jugador.nombre} ${jugador.apellido}`} className="player-photo" /> : <div className="player-avatar">{iniciales(jugador)}</div>}
-      <div style={{ minWidth: 0, flex: 1 }}><div style={{ color: '#16203a', fontWeight: 800, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{jugador.nombre} {jugador.apellido}</div><div style={{ color: '#6b7488', fontSize: 13, marginTop: 3 }}>{edad(jugador.fechaNacimiento)} años</div></div>
-      <span className={jugador.estado === 'disponible' ? 'player-status available' : 'player-status injured'}>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</span>
-    </div>
-    <div style={{ color: '#6b7488', fontSize: 13, margin: '16px 0 14px' }}>Tel. {jugador.telefono}</div>
-    <div style={{ display: 'flex', gap: 8 }}><a aria-label={`Contactar a ${jugador.nombre} ${jugador.apellido} por WhatsApp`} href={`https://wa.me/${telefonoWhatsApp(jugador.telefono)}`} target="_blank" rel="noreferrer" style={whatsappButton}>Contactar por WhatsApp</a><button aria-label={`Editar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => actions.openEditarJugador(jugador.id)} style={iconButton}>Editar</button><button aria-label={`Eliminar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => window.confirm(`¿Eliminar a ${jugador.nombre} ${jugador.apellido} del plantel?`) && actions.eliminarJugador(jugador.id)} style={{ ...iconButton, color: '#b32b3d' }}>Eliminar</button></div>
-  </article>)}</div>;
+  return <div className="roster-grid">{jugadores.map((jugador) => {
+    const lesion = detalleLesion(jugador);
+    return <article key={jugador.id} className="player-card">
+      <div style={{ display: 'flex', gap: 13, alignItems: 'center' }}>
+        {jugador.foto ? <img src={jugador.foto} alt={`${jugador.nombre} ${jugador.apellido}`} className="player-photo" /> : <div className="player-avatar">{iniciales(jugador)}</div>}
+        <div style={{ minWidth: 0, flex: 1 }}><div style={{ color: '#16203a', fontWeight: 800, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{jugador.nombre} {jugador.apellido}</div><div style={{ color: '#6b7488', fontSize: 13, marginTop: 3 }}>{edad(jugador.fechaNacimiento)} años</div></div>
+        <span className={jugador.estado === 'disponible' ? 'player-status available' : 'player-status injured'}>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</span>
+      </div>
+      <div style={{ color: '#6b7488', fontSize: 13, margin: lesion ? '16px 0 8px' : '16px 0 14px' }}>Tel. {jugador.telefono}</div>
+      {lesion && <div style={{ color: '#9b3e3e', fontSize: 12, lineHeight: 1.4, marginBottom: 14 }}>{lesion}</div>}
+      <div style={{ display: 'flex', gap: 8 }}><a aria-label={`Contactar a ${jugador.nombre} ${jugador.apellido} por WhatsApp`} href={`https://wa.me/${telefonoWhatsApp(jugador.telefono)}`} target="_blank" rel="noreferrer" style={whatsappButton}>Contactar por WhatsApp</a><button aria-label={`Editar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => actions.openEditarJugador(jugador.id)} style={iconButton}>Editar</button><button aria-label={`Eliminar a ${jugador.nombre} ${jugador.apellido}`} onClick={() => window.confirm(`¿Eliminar a ${jugador.nombre} ${jugador.apellido} del plantel?`) && actions.eliminarJugador(jugador.id)} style={{ ...iconButton, color: '#b32b3d' }}>Eliminar</button></div>
+    </article>;
+  })}</div>;
 }
 
 function VistaImpresion({ jugadores, plantel, filtro }: { jugadores: Jugador[]; plantel: string; filtro: string }) {
-  return <section className="print-roster"><h1>{plantel}</h1><p>{filtro}</p><p className="print-date">Listado generado el {fechaLocalISO()}</p><table><thead><tr><th>Jugador</th><th>Fecha de nacimiento</th><th>Edad</th><th>Teléfono</th><th>Estado</th></tr></thead><tbody>{jugadores.map((jugador) => <tr key={jugador.id}><td>{jugador.nombre} {jugador.apellido}</td><td>{jugador.fechaNacimiento}</td><td>{edad(jugador.fechaNacimiento)} años</td><td>{jugador.telefono}</td><td>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</td></tr>)}</tbody></table></section>;
+  return <section className="print-roster"><h1>{plantel}</h1><p>{filtro}</p><p className="print-date">Listado generado el {fechaLocalISO()}</p><table><thead><tr><th>Jugador</th><th>Fecha de nacimiento</th><th>Edad</th><th>Teléfono</th><th>Estado</th><th>Motivo de lesión</th><th>Recuperación estimada</th></tr></thead><tbody>{jugadores.map((jugador) => <tr key={jugador.id}><td>{jugador.nombre} {jugador.apellido}</td><td>{jugador.fechaNacimiento}</td><td>{edad(jugador.fechaNacimiento)} años</td><td>{jugador.telefono}</td><td>{jugador.estado === 'disponible' ? 'Disponible' : 'Lesionado'}</td><td>{jugador.motivoLesion || ''}</td><td>{fechaLegible(jugador.fechaEstimadaRecuperacion)}</td></tr>)}</tbody></table></section>;
 }
 
 const toolbar = { margin: '22px 0 18px', padding: '14px 16px', border: '1px solid #e3e7ef', borderRadius: 13, background: '#fff', display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' as const };
