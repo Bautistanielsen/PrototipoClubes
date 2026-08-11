@@ -153,6 +153,20 @@ a:hover {
 .deportivo-brand { padding: 0 8px 20px; border-bottom: 1px solid rgba(255,255,255,.18); }
 .deportivo-brand strong { display: block; color: #fff; font-size: 18px; }
 .deportivo-brand span { display: block; color: #bce2dd; font-size: 12px; margin-top: 3px; }
+.sports-squad-switcher { display: flex; align-items: end; gap: 8px; }
+.sports-squad-switcher label { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.sports-squad-switcher label span { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.sports-squad-switcher select { width: 100%; height: 36px; border-radius: 8px; padding: 0 8px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.sports-squad-switcher button { height: 36px; border-radius: 8px; padding: 0 9px; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.sports-squad-switcher.sidebar { margin: 0 0 12px; }
+.sports-squad-switcher.sidebar label span { color: #bce2dd; }
+.sports-squad-switcher.sidebar select { border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: #fff; }
+.sports-squad-switcher.sidebar select option { color: #16203a; }
+.sports-squad-switcher.sidebar button { border: 1px solid rgba(255,255,255,.35); background: transparent; color: #fff; }
+.sports-squad-switcher.mobile { padding: 10px 16px; border-bottom: 1px solid #e3e7ef; background: #fff; }
+.sports-squad-switcher.mobile label span { color: #687386; }
+.sports-squad-switcher.mobile select { border: 1px solid #d7dce6; background: #fff; color: #16203a; }
+.sports-squad-switcher.mobile button { border: 1px solid #b7d9d4; background: #f5fbfa; color: #087f75; }
 .deportivo-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-top: 16px; }
 .deportivo-nav button { display: flex; align-items: center; gap: 12px; border: none; border-radius: 9px; padding: 12px; color: #d7eeeb; background: transparent; text-align: left; font-size: 14px; font-weight: 700; cursor: pointer; }
 .deportivo-nav button.active { color: #087f75; background: #fff; }
@@ -162,7 +176,27 @@ a:hover {
 .deportivo-mobile-nav button { border: none; border-radius: 9px; padding: 10px 12px; white-space: nowrap; background: transparent; color: #4b5468; font-weight: 700; }
 .deportivo-mobile-nav button.active { background: #e0f3f0; color: #087f75; }
 .deportivo-main { flex: 1; min-width: 0; max-width: 1180px; padding: 32px; margin: 0 auto; }
+.sports-squad-entry { min-height: 100vh; box-sizing: border-box; padding: 24px; background: radial-gradient(circle at top right, #b8e5df 0, transparent 32%), linear-gradient(145deg, #eff8f7 0%, #f5f7fb 58%, #e7f1f5 100%); color: #16203a; }
+.sports-squad-entry-brand { width: min(100%, 1020px); margin: 0 auto 76px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.sports-squad-entry-brand strong { display: block; font-size: 18px; }
+.sports-squad-entry-brand span { display: block; margin-top: 3px; color: #087f75; font-size: 12px; font-weight: 700; }
+.sports-squad-entry-brand button { border: 1px solid #b7d9d4; border-radius: 9px; padding: 9px 12px; background: rgba(255,255,255,.72); color: #087f75; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.sports-squad-entry-card { width: min(100%, 760px); margin: 0 auto; padding: 34px; border: 1px solid rgba(172,207,204,.72); border-radius: 20px; background: rgba(255,255,255,.88); box-shadow: 0 20px 52px rgba(25,67,70,.12); }
+.sports-squad-entry-card > span { display: block; color: #087f75; font-size: 10px; font-weight: 900; letter-spacing: .12em; }
+.sports-squad-entry-card h1 { max-width: 590px; margin: 9px 0 8px; font-size: 30px; line-height: 1.12; letter-spacing: -.035em; }
+.sports-squad-entry-card > p { max-width: 580px; margin: 0; color: #66758a; font-size: 14px; line-height: 1.55; }
+.sports-squad-entry-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 26px 0 16px; }
+.sports-squad-entry-list button { position: relative; min-height: 104px; padding: 16px; border: 1px solid #dbe7e6; border-radius: 12px; background: #fff; color: #16203a; text-align: left; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.sports-squad-entry-list button:hover { border-color: #66b4a9; box-shadow: 0 8px 18px rgba(17,105,93,.1); transform: translateY(-1px); }
+.sports-squad-entry-list strong { display: block; padding-right: 68px; font-size: 16px; }
+.sports-squad-entry-list span { display: block; margin-top: 6px; color: #728094; font-size: 12px; }
+.sports-squad-entry-list b { position: absolute; right: 15px; bottom: 16px; color: #087f75; font-size: 11px; }
+.sports-squad-entry-create { width: 100%; min-height: 48px; border: 1px dashed #88bbb5; border-radius: 10px; background: #f5fbfa; color: #087f75; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
 .roster-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.roster-danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 18px; padding: 14px 16px; border: 1px solid #f1c7cd; border-radius: 13px; background: #fff8f8; }
+.roster-danger-zone strong { color: #8e2635; font-size: 14px; }
+.roster-danger-zone p { margin: 4px 0 0; color: #7a5a61; font-size: 13px; }
+.roster-danger-zone button { flex: 0 0 auto; border: 1px solid #d65a69; border-radius: 9px; padding: 10px 13px; background: #fff; color: #b32b3d; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .player-card { background: #fff; border: 1px solid #e3e7ef; border-radius: 14px; padding: 16px; }
 .player-photo, .player-avatar { width: 52px; height: 52px; border-radius: 50%; flex: 0 0 52px; }
@@ -210,7 +244,7 @@ a:hover {
 .formation-tabs button.new { color: #087f75; border-color: #b7d9d4; }
 .formation-tabs select { height: 35px; border: 1px solid #d7dce6; border-radius: 8px; background: #fff; padding: 0 7px; color: #4b5468; }
 .formation-empty { background: #fff; border: 1px dashed #b7d9d4; border-radius: 16px; text-align: center; padding: 58px 20px; }
-.formation-empty h2 { margin: 0; font-size: 20px; font-weight: 700; }.formation-empty p { color: #6b7488; }.formation-empty button, .export-button { border: none; border-radius: 9px; background: #087f75; color: #fff; padding: 11px 16px; cursor: pointer; font-weight: 800; }
+.formation-empty h2 { margin: 0; font-size: 20px; font-weight: 700; }.formation-empty p { color: #6b7488; }.formation-empty button { margin-top: 12px; }.formation-empty button, .export-button { border: none; border-radius: 9px; background: #087f75; color: #fff; padding: 11px 16px; cursor: pointer; font-weight: 800; }
 .formation-layout { display: grid; grid-template-columns: minmax(275px, .9fr) minmax(440px, 1.7fr) minmax(190px, .65fr); gap: 15px; align-items: start; }
 .formation-panel, .formation-board { background: #fff; border: 1px solid #e3e7ef; border-radius: 14px; padding: 14px; }
 .panel-title { display: flex; justify-content: space-between; color: #16203a; font-size: 14px; font-weight: 800; margin-bottom: 12px; }.panel-title small { color: #8790a2; font-size: 10px; }
@@ -227,6 +261,8 @@ a:hover {
 .formation-settings label { margin-bottom: 12px; }.formation-settings input[type="color"] { height: 32px; width: 100%; padding: 2px; border: 1px solid #d7dce6; border-radius: 7px; background: #fff; }.roles-title { margin-top: 21px; border-top: 1px solid #edf0f5; padding-top: 15px; }
 @media (max-width: 360px) {
   .roster-grid { grid-template-columns: minmax(0, 1fr); }
+  .roster-danger-zone { align-items: stretch; flex-direction: column; }
+  .roster-danger-zone button { width: 100%; }
 }
 @media (max-width: 1200px) {
   .player-list-head { display: none; }
@@ -250,6 +286,11 @@ a:hover {
   .portal-device-top { display: none; }
   .portal-content { padding-top: 56px; }
   .deportivo-main { padding: 20px 16px; }
+  .sports-squad-entry { padding: 16px; }
+  .sports-squad-entry-brand { margin-bottom: 48px; }
+  .sports-squad-entry-card { padding: 24px 20px; }
+  .sports-squad-entry-card h1 { font-size: 25px; }
+  .sports-squad-entry-list { grid-template-columns: 1fr; }
   .roster-header { align-items: flex-start; flex-direction: column; }
   .roster-header button { width: 100%; }
   .roster-search { max-width: none; }

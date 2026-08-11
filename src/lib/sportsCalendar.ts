@@ -61,7 +61,7 @@ export type Acta = {
 };
 
 export type Prefs = { visibles: number[]; colores: Record<number, string>; configurado?: boolean };
-export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number };
+export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number; deletedEquipoIds?: number[] };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
 export const CANONICAL_DEMO_SEASON_SEED_VERSION = 2;
@@ -295,14 +295,15 @@ function normalizeStoredActas(value: unknown, eventos: Evento[], fallback: Recor
   return Object.fromEntries(Object.entries(value).map(([id, acta]) => [id, normalizeActa(acta, equiposPorActa.get(id))]));
 }
 
-function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedVersion: unknown) {
+function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedVersion: unknown, deletedEquipoIds: unknown) {
+  const deletedIds = Array.isArray(deletedEquipoIds) ? deletedEquipoIds.filter((id): id is number => typeof id === 'number' && Number.isInteger(id)) : [];
   if (typeof seedVersion === 'number' && seedVersion >= CANONICAL_DEMO_SEASON_SEED_VERSION) {
-    return { eventos, actas, demoSeasonSeedVersion: seedVersion };
+    return { eventos, actas, demoSeasonSeedVersion: seedVersion, deletedEquipoIds: deletedIds };
   }
 
   const preservedEventos = eventos.filter((evento) => !LEGACY_PRIMERA_MATCH_IDS.has(evento.id));
   const storedIds = new Set(preservedEventos.map((evento) => evento.id));
-  const addedEventos = seedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id) && !storedIds.has(evento.id));
+  const addedEventos = seedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id) && !storedIds.has(evento.id) && !deletedIds.includes(evento.equipoId));
   const migratedEventos = withDemoNumeroFecha([...preservedEventos, ...addedEventos]);
   const migratedActas = Object.fromEntries(Object.entries(actas).filter(([id]) => !LEGACY_PRIMERA_MATCH_IDS.has(Number(id))));
   const canonicalEventIds = new Set(migratedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id)).map((evento) => evento.id));
@@ -317,6 +318,7 @@ function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedV
     eventos: migratedEventos,
     actas: { ...fallbackActas, ...migratedActas },
     demoSeasonSeedVersion: CANONICAL_DEMO_SEASON_SEED_VERSION,
+    deletedEquipoIds: deletedIds,
   };
 }
 
@@ -332,12 +334,13 @@ export function readSportsCalendarData(): SportsCalendarData {
     const parsed = JSON.parse(saved) as Partial<SportsCalendarData>;
     const storedEventos = Array.isArray(parsed.eventos) ? parsed.eventos : fallback.eventos;
     const storedActas = normalizeStoredActas(parsed.actas, storedEventos, fallback.actas);
-    const migrated = migrateDemoSeason(storedEventos, storedActas, parsed.demoSeasonSeedVersion);
+    const migrated = migrateDemoSeason(storedEventos, storedActas, parsed.demoSeasonSeedVersion, parsed.deletedEquipoIds);
     const result = {
       eventos: migrated.eventos,
       actas: migrated.actas,
       prefs: parsed.prefs && typeof parsed.prefs === 'object' ? parsed.prefs : fallback.prefs,
       demoSeasonSeedVersion: migrated.demoSeasonSeedVersion,
+      deletedEquipoIds: migrated.deletedEquipoIds,
     };
     if (!(typeof parsed.demoSeasonSeedVersion === 'number' && parsed.demoSeasonSeedVersion >= CANONICAL_DEMO_SEASON_SEED_VERSION)) {
       writeSportsCalendarData(result);
@@ -348,11 +351,31 @@ export function readSportsCalendarData(): SportsCalendarData {
   }
 }
 
+export function removeSportsCalendarTeam(data: SportsCalendarData, equipoId: number): SportsCalendarData {
+  const eventIds = new Set(data.eventos.filter((evento) => evento.equipoId === equipoId).map((evento) => String(evento.id)));
+  const visibles = Array.isArray(data.prefs.visibles) ? data.prefs.visibles : [];
+  const colores = data.prefs.colores && typeof data.prefs.colores === 'object' && !Array.isArray(data.prefs.colores) ? data.prefs.colores : {};
+  return {
+    ...data,
+    deletedEquipoIds: [...new Set([...(data.deletedEquipoIds || []), equipoId])],
+    eventos: data.eventos.filter((evento) => evento.equipoId !== equipoId),
+    actas: Object.fromEntries(Object.entries(data.actas).filter(([eventoId]) => !eventIds.has(eventoId))),
+    prefs: {
+      ...data.prefs,
+      visibles: visibles.filter((id) => id !== equipoId),
+      colores: Object.fromEntries(Object.entries(colores).filter(([id]) => Number(id) !== equipoId)),
+    },
+  };
+}
+
 export function writeSportsCalendarData(data: SportsCalendarData) {
   try {
     window.localStorage.setItem(SPORTS_CALENDAR_STORAGE, JSON.stringify({
       ...data,
       demoSeasonSeedVersion: data.demoSeasonSeedVersion ?? CANONICAL_DEMO_SEASON_SEED_VERSION,
     }));
-  } catch { /* almacenamiento no disponible */ }
+    return true;
+  } catch {
+    return false;
+  }
 }

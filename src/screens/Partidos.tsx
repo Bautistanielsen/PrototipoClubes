@@ -39,12 +39,13 @@ export default function Partidos() {
     setCompetencia('todas');
     setEstado('todos');
     setActaAbierta(null);
-  }, [state.selectedEquipoDeportivoId]);
+  }, [state.activeEquipoDeportivoId]);
 
-  const equipo = state.equiposDeportivos.find((item) => item.id === state.selectedEquipoDeportivoId);
+  const equipoId = state.activeEquipoDeportivoId ?? -1;
+  const equipo = state.equiposDeportivos.find((item) => item.id === equipoId);
   const partidosEquipo = useMemo(() => datos.eventos
-    .filter((evento) => evento.tipo === 'Partido' && evento.equipoId === state.selectedEquipoDeportivoId)
-    .sort((a, b) => `${b.fecha}${b.horaInicio || ''}`.localeCompare(`${a.fecha}${a.horaInicio || ''}`)), [datos.eventos, state.selectedEquipoDeportivoId]);
+    .filter((evento) => evento.tipo === 'Partido' && evento.equipoId === equipoId)
+    .sort((a, b) => `${b.fecha}${b.horaInicio || ''}`.localeCompare(`${a.fecha}${a.horaInicio || ''}`)), [datos.eventos, equipoId]);
   const competencias = [...new Set(partidosEquipo.map((partido) => partido.competencia || 'Liga'))];
   const partidos = partidosEquipo.filter((partido) => (competencia === 'todas' || (partido.competencia || 'Liga') === competencia) && (estado === 'todos' || estadoDe(partido) === estado));
   const resumen = partidosEquipo.reduce((acumulado, partido) => {
@@ -59,8 +60,7 @@ export default function Partidos() {
 
   return <section className="matches-screen">
     <header className="matches-header">
-      <div><h1>Partidos</h1><p>Historial, resultados y actas de cada plantel.</p></div>
-      <label className="matches-team-select">Plantel<select value={state.selectedEquipoDeportivoId} onChange={(event) => actions.selectEquipoDeportivo(Number(event.target.value))}>{state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label>
+      <div><h1>Partidos</h1><p>Historial, resultados y actas de {equipo?.nombre || 'este plantel'}.</p></div>
     </header>
 
     <div className="matches-filters" aria-label="Filtros de partidos">

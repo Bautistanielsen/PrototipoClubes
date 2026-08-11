@@ -62,6 +62,9 @@ import {
   migrateCanonicalPrimeraFormations,
   PRIMERA_433_FORMATION_ID,
 } from '../data/formaciones';
+import { readSportsCalendarData, removeSportsCalendarTeam, writeSportsCalendarData } from '../lib/sportsCalendar';
+
+const SPORTS_ROSTER_STORAGE = 'club-formaciones-v1';
 
 function fechaLocalISO(fecha = new Date()) {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -95,20 +98,19 @@ function siguienteNombreFormacion(formaciones: Formacion[], equipoId: number) {
 
 function recuperarFormaciones() {
   const formacionesDemo = cloneCanonicalPrimeraFormations();
-  const vacio = { formaciones: formacionesDemo, selectedFormacionId: formacionesDemo[0]?.id ?? null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores };
+  const vacio = { formaciones: formacionesDemo, selectedFormacionId: formacionesDemo[0]?.id ?? null, equiposDeportivos: seedEquiposDeportivos, jugadores: seedJugadores, activeEquipoDeportivoId: null };
   if (typeof window === 'undefined') return vacio;
   try {
-    const guardado = window.localStorage.getItem('club-formaciones-v1');
+    const guardado = window.localStorage.getItem(SPORTS_ROSTER_STORAGE);
     if (!guardado) return vacio;
     const datos: unknown = JSON.parse(guardado);
     if (!datos || typeof datos !== 'object') return vacio;
     const valor = datos as Record<string, unknown>;
-    const equiposCandidatos = Array.isArray(valor.equiposDeportivos)
+    const equipos = Array.isArray(valor.equiposDeportivos)
       ? valor.equiposDeportivos
           .filter((item): item is EquipoDeportivo => !!item && typeof item === 'object' && typeof (item as EquipoDeportivo).id === 'number' && typeof (item as EquipoDeportivo).nombre === 'string')
           .map((item) => ({ ...item, disciplina: typeof item.disciplina === 'string' && item.disciplina.trim() ? item.disciplina : 'Fútbol' }))
       : seedEquiposDeportivos;
-    const equipos = equiposCandidatos.length ? equiposCandidatos : seedEquiposDeportivos;
     const equipoIds = new Set(equipos.map((equipo) => equipo.id));
     const jugadores = Array.isArray(valor.jugadores)
       ? valor.jugadores.filter((item): item is Jugador => !!item && typeof item === 'object' && typeof (item as Jugador).id === 'number' && typeof (item as Jugador).equipoId === 'number' && equipoIds.has((item as Jugador).equipoId) && typeof (item as Jugador).nombre === 'string' && typeof (item as Jugador).apellido === 'string' && ((item as Jugador).estado === 'disponible' || (item as Jugador).estado === 'lesionado'))
@@ -125,12 +127,17 @@ function recuperarFormaciones() {
       const roles = Object.fromEntries(Object.entries(formacion.roles || {}).filter(([, jugadorId]) => typeof jugadorId === 'number' && miembroIds.has(jugadorId))) as Formacion['roles'];
       return [{ id: formacion.id, equipoId: formacion.equipoId, nombre: formacion.nombre, sistema: formacion.sistema as SistemaFormacion, jugadores: miembros, roles, camiseta }];
     });
-    const migration = migrateCanonicalPrimeraFormations(formacionesGuardadas, valor.demoFormationsSeedVersion);
+    const migration = equipoIds.has(1)
+      ? migrateCanonicalPrimeraFormations(formacionesGuardadas, valor.demoFormationsSeedVersion)
+      : { formaciones: formacionesGuardadas, seeded: false };
     const formaciones = migration.formaciones;
     const selectedFormacionId = typeof valor.selectedFormacionId === 'number' && formaciones.some((formacion) => formacion.id === valor.selectedFormacionId)
       ? valor.selectedFormacionId
       : migration.seeded ? PRIMERA_433_FORMATION_ID : null;
-    return { formaciones, selectedFormacionId, equiposDeportivos: equipos, jugadores };
+    const activeEquipoDeportivoId = typeof valor.activeEquipoDeportivoId === 'number' && equipoIds.has(valor.activeEquipoDeportivoId)
+      ? valor.activeEquipoDeportivoId
+      : null;
+    return { formaciones, selectedFormacionId, equiposDeportivos: equipos, jugadores, activeEquipoDeportivoId };
   } catch { return vacio; }
 }
 
@@ -224,7 +231,7 @@ export interface AppState {
   nuevoPartidoEquipoVisitanteId: string;
   equiposDeportivos: EquipoDeportivo[];
   jugadores: Jugador[];
-  selectedEquipoDeportivoId: number;
+  activeEquipoDeportivoId: number | null;
   estadisticasVista: StatisticsView;
   actaEventoPendienteId: number | null;
   showJugadorModal: boolean;
@@ -333,7 +340,7 @@ const initialState: AppState = {
   nuevoPartidoEquipoVisitanteId: '',
   equiposDeportivos: seedEquiposDeportivos,
   jugadores: seedJugadores,
-  selectedEquipoDeportivoId: 1,
+  activeEquipoDeportivoId: null,
   estadisticasVista: 'summary',
   actaEventoPendienteId: null,
   showJugadorModal: false,
@@ -351,6 +358,20 @@ const initialState: AppState = {
   formaciones: [],
   selectedFormacionId: null,
 };
+
+function persistSportsRoster(state: Pick<AppState, 'formaciones' | 'selectedFormacionId' | 'activeEquipoDeportivoId' | 'equiposDeportivos' | 'jugadores'>) {
+  if (typeof window === 'undefined') return false;
+  try {
+    window.localStorage.setItem(SPORTS_ROSTER_STORAGE, JSON.stringify({ version: 5, demoFormationsSeedVersion: CANONICAL_DEMO_FORMATIONS_SEED_VERSION, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, activeEquipoDeportivoId: state.activeEquipoDeportivoId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function restoreStorageValue(key: string, value: string | null) {
+  try { value === null ? window.localStorage.removeItem(key) : window.localStorage.setItem(key, value); return true; } catch { return false; }
+}
 
 export interface AppActions {
   selectModule: (module: Modulo) => void;
@@ -494,6 +515,7 @@ export interface AppActions {
   closeEquipoDeportivoModal: () => void;
   setNuevoEquipoDeportivoNombre: (v: string) => void;
   agregarEquipoDeportivo: () => void;
+  eliminarEquipoDeportivoActivo: () => void;
   crearFormacion: (sistema: SistemaFormacion) => void;
   seleccionarFormacion: (id: number) => void;
   actualizarFormacion: (id: number, patch: Partial<Omit<Formacion, 'id' | 'equipoId'>>) => void;
@@ -529,9 +551,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [update]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try { window.localStorage.setItem('club-formaciones-v1', JSON.stringify({ version: 4, demoFormationsSeedVersion: CANONICAL_DEMO_FORMATIONS_SEED_VERSION, formaciones: state.formaciones, selectedFormacionId: state.selectedFormacionId, equiposDeportivos: state.equiposDeportivos, jugadores: state.jugadores })); } catch { /* almacenamiento no disponible */ }
-  }, [state.formaciones, state.selectedFormacionId, state.equiposDeportivos, state.jugadores]);
+    persistSportsRoster(state);
+  }, [state.formaciones, state.selectedFormacionId, state.activeEquipoDeportivoId, state.equiposDeportivos, state.jugadores]);
 
   const showToast = useCallback((msg: string) => {
     update({ toast: msg });
@@ -1113,7 +1134,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       showToast('Cancelaste tu inscripción');
     },
 
-    selectEquipoDeportivo: (id) => update({ selectedEquipoDeportivoId: id }),
+    selectEquipoDeportivo: (id) => update((s) => {
+      if (!s.equiposDeportivos.some((equipo) => equipo.id === id)) return {};
+      return {
+        activeEquipoDeportivoId: id,
+        selectedFormacionId: s.formaciones.find((formacion) => formacion.equipoId === id)?.id ?? null,
+        actaEventoPendienteId: null,
+      };
+    }),
     selectEstadisticasVista: (view) => update({ estadisticasVista: view }),
     abrirActaEnCalendario: (eventoId) => update({ screen: 'calendario', moreOpen: false, actaEventoPendienteId: eventoId }),
     limpiarActaEventoPendiente: () => update({ actaEventoPendienteId: null }),
@@ -1131,7 +1159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }),
     openEditarJugador: (id) => {
       const jugador = state.jugadores.find((item) => item.id === id);
-      if (!jugador) return;
+      if (!jugador || jugador.equipoId !== state.activeEquipoDeportivoId) return;
       update({
         showJugadorModal: true,
         jugadorEditandoId: jugador.id,
@@ -1157,6 +1185,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNuevoJugadorFechaEstimadaRecuperacion: (v) => update({ nuevoJugadorFechaEstimadaRecuperacion: v }),
     setNuevoJugadorFoto: (v) => update({ nuevoJugadorFoto: v }),
     guardarJugador: () => {
+      const equipoId = state.activeEquipoDeportivoId;
+      if (equipoId === null) {
+        showToast('Elegí un plantel para gestionar jugadores');
+        return;
+      }
       const nombre = state.nuevoJugadorNombre.trim();
       const apellido = state.nuevoJugadorApellido.trim();
       const motivoLesion = state.nuevoJugadorMotivoLesion.trim();
@@ -1174,7 +1207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const jugador = {
-        equipoId: state.selectedEquipoDeportivoId,
+        equipoId,
         nombre,
         apellido,
         fechaNacimiento: state.nuevoJugadorFechaNacimiento,
@@ -1185,6 +1218,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...(state.nuevoJugadorFoto ? { foto: state.nuevoJugadorFoto } : {}),
       };
       const editando = state.jugadorEditandoId;
+      if (editando && state.jugadores.find((item) => item.id === editando)?.equipoId !== equipoId) {
+        showToast('El jugador ya no pertenece al plantel activo');
+        return;
+      }
       update((prev) => ({
         jugadores: editando
           ? prev.jugadores.map((item) => (item.id === editando ? { ...item, ...jugador } : item))
@@ -1222,15 +1259,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const nuevoEquipo = { id: Date.now(), nombre, disciplina: 'Fútbol' };
       update((prev) => ({
         equiposDeportivos: [...prev.equiposDeportivos, nuevoEquipo],
-        selectedEquipoDeportivoId: nuevoEquipo.id,
+        activeEquipoDeportivoId: nuevoEquipo.id,
         showEquipoDeportivoModal: false,
         nuevoEquipoDeportivoNombre: '',
       }));
       showToast('Plantel creado');
     },
+    eliminarEquipoDeportivoActivo: () => {
+      const equipo = state.equiposDeportivos.find((item) => item.id === state.activeEquipoDeportivoId);
+      if (!equipo) return;
+      const nextState = {
+        ...state,
+        equiposDeportivos: state.equiposDeportivos.filter((item) => item.id !== equipo.id),
+        jugadores: state.jugadores.filter((item) => item.equipoId !== equipo.id),
+        formaciones: state.formaciones.filter((item) => item.equipoId !== equipo.id),
+        activeEquipoDeportivoId: null,
+        selectedFormacionId: null,
+        actaEventoPendienteId: null,
+        showJugadorModal: false,
+        jugadorEditandoId: null,
+        nuevoJugadorNombre: '',
+        nuevoJugadorApellido: '',
+        nuevoJugadorFechaNacimiento: '',
+        nuevoJugadorTelefono: '',
+        nuevoJugadorEstado: 'disponible' as EstadoJugador,
+        nuevoJugadorMotivoLesion: '',
+        nuevoJugadorFechaEstimadaRecuperacion: '',
+        nuevoJugadorFoto: '',
+      };
+      let rosterSnapshot: string | null; let calendarSnapshot: string | null;
+      try {
+        rosterSnapshot = window.localStorage.getItem(SPORTS_ROSTER_STORAGE);
+        calendarSnapshot = window.localStorage.getItem('club-calendario-deportivo-v1');
+      } catch { showToast('No se pudo eliminar el plantel. Intentá nuevamente.'); return; }
+      if (!persistSportsRoster(nextState) || !writeSportsCalendarData(removeSportsCalendarTeam(readSportsCalendarData(), equipo.id))) {
+        showToast([restoreStorageValue(SPORTS_ROSTER_STORAGE, rosterSnapshot), restoreStorageValue('club-calendario-deportivo-v1', calendarSnapshot)].every(Boolean) ? 'No se pudo eliminar el plantel. Intentá nuevamente.' : 'El guardado quedó incompleto. Recargá la página antes de reintentar.'); return;
+      }
+      setState(nextState);
+      showToast('Plantel eliminado permanentemente');
+    },
     crearFormacion: (sistema) => {
       setState((prev) => {
-        const equipoId = prev.selectedEquipoDeportivoId;
+        const equipoId = prev.activeEquipoDeportivoId;
+        if (equipoId === null) {
+          showToast('Elegí un plantel para crear una formación');
+          return prev;
+        }
         const disponibles = prev.jugadores.filter((jugador) => jugador.equipoId === equipoId && jugador.estado === 'disponible').slice(0, 11);
         const posiciones = posicionesIniciales(sistema);
         const id = Date.now();
@@ -1247,11 +1321,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
       showToast('Formación creada');
     },
-    seleccionarFormacion: (id) => update({ selectedFormacionId: id }),
-    actualizarFormacion: (id, patch) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, ...patch } : item) })),
+    seleccionarFormacion: (id) => update((s) => s.formaciones.some((item) => item.id === id && item.equipoId === s.activeEquipoDeportivoId) ? { selectedFormacionId: id } : {}),
+    actualizarFormacion: (id, patch) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id && item.equipoId === s.activeEquipoDeportivoId ? { ...item, ...patch } : item) })),
     cambiarSistemaFormacion: (id, sistema) => update((s) => ({
       formaciones: s.formaciones.map((item) => {
-        if (item.id !== id) return item;
+        if (item.id !== id || item.equipoId !== s.activeEquipoDeportivoId) return item;
         const posiciones = posicionesIniciales(sistema);
         let indice = 0;
         return { ...item, sistema, jugadores: item.jugadores.map((jugador) => jugador.zona === 'titular' ? { ...jugador, ...posiciones[indice++] } : jugador) };
@@ -1259,14 +1333,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })),
     moverJugadorFormacion: (id, jugadorId, zona, x, y) => {
       const actual = state.formaciones.find((item) => item.id === id);
-      const existente = actual?.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
+      if (!actual || actual.equipoId !== state.activeEquipoDeportivoId) return;
+      const existente = actual.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
       if (zona === 'titular' && existente?.zona !== 'titular' && (actual?.jugadores.filter((jugador) => jugador.zona === 'titular').length || 0) >= 11) {
         showToast('La formación ya tiene 11 titulares');
         return;
       }
       update((s) => ({
       formaciones: s.formaciones.map((item) => {
-        if (item.id !== id) return item;
+        if (item.id !== id || item.equipoId !== s.activeEquipoDeportivoId) return item;
         const jugadorExistente = item.jugadores.find((jugador) => jugador.jugadorId === jugadorId);
         return {
           ...item,
@@ -1277,23 +1352,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }),
       }));
     },
-    quitarJugadorFormacion: (id, jugadorId) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id ? { ...item, jugadores: item.jugadores.filter((jugador) => jugador.jugadorId !== jugadorId), roles: Object.fromEntries(Object.entries(item.roles).filter(([, rolJugadorId]) => rolJugadorId !== jugadorId)) } : item) })),
+    quitarJugadorFormacion: (id, jugadorId) => update((s) => ({ formaciones: s.formaciones.map((item) => item.id === id && item.equipoId === s.activeEquipoDeportivoId ? { ...item, jugadores: item.jugadores.filter((jugador) => jugador.jugadorId !== jugadorId), roles: Object.fromEntries(Object.entries(item.roles).filter(([, rolJugadorId]) => rolJugadorId !== jugadorId)) } : item) })),
     duplicarFormacion: (id) => setState((prev) => {
       const original = prev.formaciones.find((item) => item.id === id);
-      if (!original) return prev;
+      if (!original || original.equipoId !== prev.activeEquipoDeportivoId) return prev;
       const nuevoId = Date.now();
       const copia = { ...original, id: nuevoId, nombre: siguienteNombreFormacion(prev.formaciones, original.equipoId), jugadores: original.jugadores.map((jugador) => ({ ...jugador })), roles: { ...original.roles }, camiseta: { ...original.camiseta } };
       showToast('Formación duplicada');
       return { ...prev, formaciones: [...prev.formaciones, copia], selectedFormacionId: nuevoId };
     }),
     eliminarFormacion: (id) => setState((prev) => {
+      const original = prev.formaciones.find((item) => item.id === id);
+      if (!original || original.equipoId !== prev.activeEquipoDeportivoId) return prev;
       const restantes = prev.formaciones.filter((item) => item.id !== id);
       showToast('Formación eliminada');
-      return { ...prev, formaciones: restantes, selectedFormacionId: prev.selectedFormacionId === id ? (restantes.find((item) => item.equipoId === prev.selectedEquipoDeportivoId)?.id ?? null) : prev.selectedFormacionId };
+      return { ...prev, formaciones: restantes, selectedFormacionId: prev.selectedFormacionId === id ? (restantes.find((item) => item.equipoId === prev.activeEquipoDeportivoId)?.id ?? null) : prev.selectedFormacionId };
     }),
     normalizarNombreFormacion: (id) => update((s) => {
       const actual = s.formaciones.find((item) => item.id === id);
-      if (!actual) return {};
+      if (!actual || actual.equipoId !== s.activeEquipoDeportivoId) return {};
       const nombre = actual.nombre.trim() || siguienteNombreFormacion(s.formaciones.filter((item) => item.id !== id), actual.equipoId);
       return { formaciones: s.formaciones.map((item) => item.id === id ? { ...item, nombre } : item) };
     }),

@@ -140,10 +140,11 @@ export default function Formaciones() {
   const { state, actions } = useApp();
   const [tamanoCancha, setTamanoCancha] = useState({ width: 0, height: 0 });
   const canchaRef = useRef<HTMLDivElement>(null);
-  const equipo = state.equiposDeportivos.find((item) => item.id === state.selectedEquipoDeportivoId);
-  const formaciones = state.formaciones.filter((item) => item.equipoId === state.selectedEquipoDeportivoId);
+  const equipoId = state.activeEquipoDeportivoId ?? -1;
+  const equipo = state.equiposDeportivos.find((item) => item.id === equipoId);
+  const formaciones = state.formaciones.filter((item) => item.equipoId === equipoId);
   const formacion = formaciones.find((item) => item.id === state.selectedFormacionId) || formaciones[0];
-  const jugadores = state.jugadores.filter((item) => item.equipoId === state.selectedEquipoDeportivoId);
+  const jugadores = state.jugadores.filter((item) => item.equipoId === equipoId);
 
   useEffect(() => {
     const cancha = canchaRef.current;
@@ -236,9 +237,9 @@ export default function Formaciones() {
     </button>;
   };
   return <section className="formation-screen">
-    <header className="formation-header"><div><h1>Formaciones</h1><p>Elegí el plantel, mové los jugadores y prepará tu once.</p></div><div className="formation-team"><label>Plantel<select value={state.selectedEquipoDeportivoId} onChange={(event) => actions.selectEquipoDeportivo(Number(event.target.value))}>{state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}</select></label></div></header>
-    <div className="formation-tabs">{formaciones.map((item) => <button className={formacion?.id === item.id ? 'active' : ''} key={item.id} onClick={() => actions.seleccionarFormacion(item.id)}>{item.nombre}</button>)}<button aria-label="Crear una nueva formación" className="new" onClick={() => actions.crearFormacion(formacion?.sistema ?? '4-3-3')}>+ Nueva formación</button></div>
-    {!formacion ? <div className="formation-empty"><h2>Tu primera pizarra está lista</h2><p>Creá “Formación 1”. Después podés elegir el sistema y mover todo libremente.</p><button onClick={() => actions.crearFormacion('4-3-3')}>Crear Formación 1</button></div> : <div className="formation-layout">
+    <header className="formation-header"><div><h1>Formaciones</h1><p>Prepará tu once de {equipo?.nombre || 'este plantel'}.</p></div></header>
+    <div className="formation-tabs">{formaciones.map((item) => <button className={formacion?.id === item.id ? 'active' : ''} key={item.id} onClick={() => actions.seleccionarFormacion(item.id)}>{item.nombre}</button>)}{formacion && <button aria-label="Crear una nueva formación" className="new" onClick={() => actions.crearFormacion(formacion.sistema)}>+ Nueva formación</button>}</div>
+    {!formacion ? <div className="formation-empty"><h2>Tu primera pizarra está lista</h2><p>Creá “Formación 1”. Después podés elegir el sistema y mover todo libremente.</p><button onClick={() => actions.crearFormacion('4-3-3')}>+ Nueva formación</button></div> : <div className="formation-layout">
       <aside className="formation-panel">
         <div className="panel-title"><span>Jugadores</span><small>{formacion.jugadores.filter((item) => item.zona === 'titular').length}/11 titulares</small></div>
         <div className="player-zone-title">Disponibles</div>

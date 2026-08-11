@@ -6,8 +6,6 @@ import type { Jugador } from '../types';
 import PlayerAvatar from './estadisticas/PlayerAvatar';
 import { displayName, playerPhoto } from './estadisticas/types';
 
-const normalizeName = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-AR').trim();
-
 const formatDate = (value: string) => new Intl.DateTimeFormat('es-AR', {
   weekday: 'long',
   day: 'numeric',
@@ -25,16 +23,16 @@ const playerAge = (birthDate: string) => {
 export default function DeportivoInicio() {
   const { state, actions } = useApp();
   const [calendarData] = useState(readSportsCalendarData);
-  const team = state.equiposDeportivos.find((item) => normalizeName(item.nombre) === 'primera division');
-  const teamName = team?.nombre || 'Primera división';
-  const teamId = team?.id;
-  const teamPlayers = teamId === undefined ? [] : state.jugadores.filter((player) => player.equipoId === teamId);
+  const teamId = state.activeEquipoDeportivoId ?? -1;
+  const team = state.equiposDeportivos.find((item) => item.id === teamId);
+  const teamName = team?.nombre || 'Plantel';
+  const teamPlayers = state.jugadores.filter((player) => player.equipoId === teamId);
   const injuredPlayers = teamPlayers.filter((player) => player.estado === 'lesionado');
-  const filters = { equipoId: teamId ?? -1 };
-  const finalizedMatches = teamId === undefined ? [] : selectFinalizedMatches(calendarData, filters)
+  const filters = { equipoId: teamId };
+  const finalizedMatches = selectFinalizedMatches(calendarData, filters)
     .sort((a, b) => `${b.evento.fecha}${b.evento.horaInicio || ''}`.localeCompare(`${a.evento.fecha}${a.evento.horaInicio || ''}`))
     .slice(0, 3);
-  const nextMatch = teamId === undefined ? undefined : calendarData.eventos
+  const nextMatch = calendarData.eventos
     .filter((event) => event.equipoId === teamId && event.tipo === 'Partido' && !['finalizado', 'suspendido', 'postergado'].includes(event.estado || '') && event.fecha >= HOY_ISO)
     .sort((a, b) => `${a.fecha}${a.horaInicio || ''}`.localeCompare(`${b.fecha}${b.horaInicio || ''}`))[0];
   const stats = deriveSportsStatistics(calendarData, filters, state.jugadores);
@@ -43,7 +41,7 @@ export default function DeportivoInicio() {
   return (
     <main className="sports-home">
       <header className="sports-home-header">
-        <div><h1>Inicio</h1><p>Resumen de la actividad de Primera división.</p></div>
+        <div><h1>Inicio</h1><p>Resumen de la actividad de {teamName}.</p></div>
       </header>
 
       {nextMatch ? <section className="sports-home-next match-card-detail programado">
@@ -57,7 +55,7 @@ export default function DeportivoInicio() {
           <div className="match-card-actions"><button type="button" onClick={() => actions.navigate('calendario')}>Ver Calendario →</button></div>
         </div>
       </section> : <section className="sports-home-next sports-home-next-empty match-card-detail">
-        <div><span className="sports-home-eyebrow">PRÓXIMO PARTIDO</span><h2>Sin próximos partidos programados</h2><p>La agenda de Primera división no tiene encuentros futuros confirmados.</p></div>
+        <div><span className="sports-home-eyebrow">PRÓXIMO PARTIDO</span><h2>Sin próximos partidos programados</h2><p>La agenda de {teamName} no tiene encuentros futuros confirmados.</p></div>
         <button type="button" onClick={() => actions.navigate('calendario')}>Programar en Calendario</button>
       </section>}
 
@@ -82,7 +80,7 @@ export default function DeportivoInicio() {
 
         <section className="sports-home-section sports-home-injured">
           <SectionHeading title="Jugadores lesionados" action="Gestionar Plantel" onClick={() => actions.navigate('equipos')} />
-          {injuredPlayers.length ? <div className="sports-home-injured-grid">{injuredPlayers.map((player) => <InjuredPlayer key={player.id} player={player} />)}</div> : <EmptyState title="No hay jugadores lesionados" detail="Todo el plantel de Primera división figura disponible." />}
+          {injuredPlayers.length ? <div className="sports-home-injured-grid">{injuredPlayers.map((player) => <InjuredPlayer key={player.id} player={player} />)}</div> : <EmptyState title="No hay jugadores lesionados" detail={`Todo el plantel de ${teamName} figura disponible.`} />}
         </section>
       </div>
     </main>

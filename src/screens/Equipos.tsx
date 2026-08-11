@@ -55,14 +55,15 @@ export default function Equipos() {
   const { state, actions } = useApp();
   const [busqueda, setBusqueda] = useState('');
   const [vista, setVista] = useState<'lista' | 'grilla'>('lista');
-  const equipo = state.equiposDeportivos.find((item) => item.id === state.selectedEquipoDeportivoId);
-  const jugadores = state.jugadores.filter((jugador) => jugador.equipoId === state.selectedEquipoDeportivoId);
+  const equipoId = state.activeEquipoDeportivoId ?? -1;
+  const equipo = state.equiposDeportivos.find((item) => item.id === equipoId);
+  const jugadores = state.jugadores.filter((jugador) => jugador.equipoId === equipoId);
   const disponibles = jugadores.filter((jugador) => jugador.estado === 'disponible').length;
   const normalizar = (valor: string) => valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-AR');
   const jugadoresFiltrados = jugadores.filter((jugador) => normalizar(`${jugador.nombre} ${jugador.apellido}`).includes(normalizar(busqueda.trim())));
   const descripcionFiltro = busqueda.trim() ? `Filtro: “${busqueda.trim()}” · ${jugadoresFiltrados.length} jugador${jugadoresFiltrados.length === 1 ? '' : 'es'}` : `${jugadoresFiltrados.length} jugador${jugadoresFiltrados.length === 1 ? '' : 'es'} en el plantel`;
 
-  useEffect(() => setBusqueda(''), [state.selectedEquipoDeportivoId]);
+  useEffect(() => setBusqueda(''), [equipoId]);
 
   const descargarCsv = () => {
     const filas = [
@@ -81,6 +82,12 @@ export default function Equipos() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  const eliminarPlantel = () => {
+    if (!equipo) return;
+    const confirmado = window.confirm(`¿Eliminar permanentemente el plantel “${equipo.nombre}”?\n\nEsta acción no se puede deshacer. Se eliminarán permanentemente los jugadores, las formaciones, los partidos y demás eventos, las actas y las estadísticas asociadas.`);
+    if (confirmado) actions.eliminarEquipoDeportivoActivo();
+  };
+
   return (
     <div className="roster-screen" style={{ animation: 'fadeIn .3s ease' }}>
       <div className="no-print">
@@ -90,15 +97,7 @@ export default function Equipos() {
         </div>
 
         <section style={toolbar}>
-          <div style={{ display: 'flex', alignItems: 'end', gap: 8, flexWrap: 'wrap' }}>
-            <label style={{ color: '#4b5468', fontWeight: 700, fontSize: 13 }}>
-              Equipo o categoría
-              <select value={state.selectedEquipoDeportivoId} onChange={(e) => actions.selectEquipoDeportivo(Number(e.target.value))} style={selectStyle}>
-                {state.equiposDeportivos.map((item) => <option key={item.id} value={item.id}>{item.nombre}</option>)}
-              </select>
-            </label>
-            <button onClick={actions.openAgregarEquipoDeportivo} style={newTeamButton}>+ Nuevo plantel</button>
-          </div>
+          <div><div style={{ color: '#8b93a5', fontSize: 10, fontWeight: 800, letterSpacing: '.06em' }}>PLANTEL ACTIVO</div><strong style={{ display: 'block', color: '#16203a', fontSize: 15, marginTop: 5 }}>{equipo?.nombre || 'Plantel'}</strong></div>
           <div style={{ display: 'flex', gap: 18, paddingBottom: 3 }}>
             <div><div style={statNumber}>{jugadores.length}</div><div style={statLabel}>JUGADORES</div></div>
             <div><div style={{ ...statNumber, color: '#1a7d43' }}>{disponibles}</div><div style={statLabel}>DISPONIBLES</div></div>
@@ -118,6 +117,11 @@ export default function Equipos() {
         </div>}
 
         {jugadoresFiltrados.length ? vista === 'lista' ? <ListaJugadores jugadores={jugadoresFiltrados} /> : <GrillaJugadores jugadores={jugadoresFiltrados} /> : <div style={empty}><div style={{ fontWeight: 800, color: '#16203a', fontSize: 16 }}>{jugadores.length ? 'No encontramos jugadores con esa búsqueda' : 'Todavía no hay jugadores en este plantel'}</div><div style={{ color: '#6b7488', fontSize: 14, marginTop: 5 }}>{jugadores.length ? 'Probá con otro nombre o apellido.' : 'Agregá el primero para comenzar a organizarlo.'}</div></div>}
+
+        <section className="roster-danger-zone">
+          <div><strong>Eliminar este plantel</strong><p>Borrá definitivamente el plantel y toda su información deportiva.</p></div>
+          <button type="button" onClick={eliminarPlantel}>Eliminar plantel</button>
+        </section>
       </div>
       <VistaImpresion jugadores={jugadoresFiltrados} plantel={equipo?.nombre || 'Plantel'} filtro={descripcionFiltro} />
     </div>
@@ -163,8 +167,6 @@ function VistaImpresion({ jugadores, plantel, filtro }: { jugadores: Jugador[]; 
 }
 
 const toolbar = { margin: '22px 0 18px', padding: '14px 16px', border: '1px solid #e3e7ef', borderRadius: 13, background: '#fff', display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' as const };
-const selectStyle = { display: 'block', marginTop: 7, minWidth: 220, height: 40, border: '1px solid #d7dce6', borderRadius: 8, color: '#16203a', background: '#fff', padding: '0 10px', fontSize: 14 };
-const newTeamButton = { height: 40, border: '1px solid #b7d9d4', borderRadius: 8, padding: '0 11px', background: '#fff', color: '#087f75', fontWeight: 800, fontSize: 12, cursor: 'pointer' };
 const addButton = { border: 'none', borderRadius: 9, padding: '11px 14px', background: '#087f75', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' };
 const statNumber = { color: '#16203a', fontSize: 20, fontWeight: 800, lineHeight: 1 };
 const statLabel = { color: '#8b93a5', fontSize: 10, fontWeight: 800, letterSpacing: '.06em', marginTop: 5 };
