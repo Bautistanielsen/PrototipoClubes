@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '../state/AppContext';
 import type { Formacion } from '../types';
-import { emptyActa, INSTANCIAS_COPA, readSportsCalendarData, writeSportsCalendarData } from '../lib/sportsCalendar';
+import { emptyActa, expandSportsEventos, INSTANCIAS_COPA, readSportsCalendarData, writeSportsCalendarData } from '../lib/sportsCalendar';
 import type { Acta, Competencia, EstadoPartido, Evento, InstanciaCopa, TipoEvento } from '../lib/sportsCalendar';
 
 const EVENT_COLORS: Record<TipoEvento, string> = {
@@ -35,20 +35,6 @@ function status(evento: Evento) {
   if (!evento.horaInicio) return 'programado';
   const limite = new Date(`${evento.fecha}T${evento.horaInicio}:00`).getTime() + 2 * 60 * 60 * 1000;
   return Date.now() >= limite ? 'pendiente' : 'programado';
-}
-function expandEventos(eventos: Evento[], desde: string, hasta: string) {
-  const result: Evento[] = [];
-  eventos.forEach((evento) => {
-    if (!evento.recurrencia) { if (evento.fecha >= desde && evento.fecha <= hasta) result.push(evento); return; }
-    const inicio = dateFromIso(evento.fecha); const limite = evento.recurrencia.hasta ? dateFromIso(evento.recurrencia.hasta) : dateFromIso(hasta);
-    for (let fecha = inicio; fecha <= limite && isoDate(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()) <= hasta; fecha = addDays(fecha, 1)) {
-      const iso = isoDate(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
-      if (iso >= desde && evento.recurrencia.dias.includes(fecha.getDay()) && !evento.exclusiones?.includes(iso)) {
-        result.push({ ...evento, ...(evento.overrides?.[iso] || {}), fecha: iso, ocurrenciaDe: { id: evento.id, fecha: iso } });
-      }
-    }
-  });
-  return result.sort((a, b) => `${a.fecha}${a.horaInicio || ''}`.localeCompare(`${b.fecha}${b.horaInicio || ''}`));
 }
 
 export default function Calendario() {
@@ -98,7 +84,7 @@ export default function Calendario() {
   const inicioSemanaDate = addDays(cursorDate, -cursorDate.getDay());
   const finSemanaDate = addDays(inicioSemanaDate, 6);
   const rango = vista === 'mes' ? { desde: inicioMes, hasta: finMes } : { desde: isoDate(inicioSemanaDate.getFullYear(), inicioSemanaDate.getMonth(), inicioSemanaDate.getDate()), hasta: isoDate(finSemanaDate.getFullYear(), finSemanaDate.getMonth(), finSemanaDate.getDate()) };
-  const visibles = useMemo(() => expandEventos(eventos, rango.desde, rango.hasta).filter((evento) => evento.equipoId === equipoId), [equipoId, eventos, rango.desde, rango.hasta]);
+  const visibles = useMemo(() => expandSportsEventos(eventos, rango.desde, rango.hasta).filter((evento) => evento.equipoId === equipoId), [equipoId, eventos, rango.desde, rango.hasta]);
   const pending = eventos.filter((evento) => evento.equipoId === equipoId && status(evento) === 'pendiente');
   const color = (tipo: TipoEvento) => EVENT_COLORS[tipo];
   const openEvent = (evento: Evento) => resultadoPartido(evento, actas) ? setActaEvento(evento) : setEditor(evento);
