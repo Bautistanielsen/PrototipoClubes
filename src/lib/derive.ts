@@ -1,10 +1,14 @@
-import type { EstadoSocio, Socio, Reserva, VentaShop, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago } from '../types';
+import type { EstadoSocio, Socio, Reserva, VentaShop, VentaBuffet, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago, Categoria, Cancha, Pago, InscripcionTorneo } from '../types';
 import { formatMoney } from './format';
 
 export const CUOTA = 12000;
-export const PRECIO_TURNO = 8000;
 export const HOY_ISO = '2026-07-29';
 export const DIA_VENCIMIENTO_CUOTA = 5;
+
+/** Monto de cuota mensual de un socio según su categoría configurada en Config. */
+export function cuotaDeSocio(socio: Socio, categorias: Categoria[]): number {
+  return categorias.find((c) => c.id === socio.categoriaId)?.monto ?? CUOTA;
+}
 
 /** Próximo vencimiento de cuota en formato ISO, según el día fijo del club (5 de cada mes). */
 export function proximoVencimientoCuota(hoyIso: string): string {
@@ -22,7 +26,7 @@ export interface PagoHistorial {
 }
 
 /** Últimos N pagos de cuota del socio, retrocediendo mes a mes desde `ultimoPago` (dd/mm/aaaa). */
-export function historialPagosSocio(socio: Socio, cantidad = 4): PagoHistorial[] {
+export function historialPagosSocio(socio: Socio, categorias: Categoria[], cantidad = 4): PagoHistorial[] {
   if (!socio.ultimoPago) return [];
   const [diaStr, mesStr, anioStr] = socio.ultimoPago.split('/');
   const dia = Number(diaStr);
@@ -31,6 +35,7 @@ export function historialPagosSocio(socio: Socio, cantidad = 4): PagoHistorial[]
   if (!dia || !mesInicial || !anioInicial) return [];
 
   const medioPago = socio.medioPago ?? 'Efectivo';
+  const monto = cuotaDeSocio(socio, categorias);
   const historial: PagoHistorial[] = [];
   for (let i = 0; i < cantidad; i++) {
     let mes = mesInicial - i;
@@ -39,7 +44,7 @@ export function historialPagosSocio(socio: Socio, cantidad = 4): PagoHistorial[]
       mes += 12;
       anio -= 1;
     }
-    historial.push({ fecha: `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`, monto: CUOTA, medioPago });
+    historial.push({ fecha: `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`, monto, medioPago });
   }
   return historial;
 }
@@ -72,15 +77,15 @@ export interface CuotasResumen {
   pctMoroso: number;
 }
 
-export function cuotasResumen(socios: Socio[]): CuotasResumen {
+export function cuotasResumen(socios: Socio[], categorias: Categoria[]): CuotasResumen {
   const totalSocios = socios.length;
   const countAlDia = socios.filter((x) => x.estado === 'al_dia').length;
   const countPorVencer = socios.filter((x) => x.estado === 'por_vencer').length;
   const countMoroso = socios.filter((x) => x.estado === 'moroso').length;
-  const esperadoMes = totalSocios * CUOTA;
-  const recaudadoMes = countAlDia * CUOTA;
+  const esperadoMes = socios.reduce((a, x) => a + cuotaDeSocio(x, categorias), 0);
+  const recaudadoMes = socios.filter((x) => x.estado === 'al_dia').reduce((a, x) => a + cuotaDeSocio(x, categorias), 0);
   const pendienteMes = esperadoMes - recaudadoMes;
-  const porVencerMonto = countPorVencer * CUOTA;
+  const porVencerMonto = socios.filter((x) => x.estado === 'por_vencer').reduce((a, x) => a + cuotaDeSocio(x, categorias), 0);
   const deudaTotal = socios.reduce((a, x) => a + (x.deuda || 0), 0);
   const pctRecaudado = Math.round((recaudadoMes / esperadoMes) * 100);
   const pctPorVencer = Math.round((porVencerMonto / esperadoMes) * 100);
@@ -105,63 +110,197 @@ export interface IngresosPorFuente {
   ingresoSocios: number;
   ingresoCanchas: number;
   ingresoVentas: number;
+  ingresoBuffet: number;
+  ingresoTorneos: number;
   totalIngresos: number;
   pctIngresoSocios: number;
   pctIngresoCanchas: number;
   pctIngresoVentas: number;
+  pctIngresoBuffet: number;
+  pctIngresoTorneos: number;
   ingresoSociosDetalle: string;
   ingresoCanchasDetalle: string;
   ingresoVentasDetalle: string;
+  ingresoBuffetDetalle: string;
+  ingresoTorneosDetalle: string;
 }
 
-export function ingresosPorFuente(recaudadoMes: number, countAlDia: number, reservas: Reserva[], ventasShop: VentaShop[]): IngresosPorFuente {
+export function ingresosPorFuente(
+  recaudadoMes: number,
+  countAlDia: number,
+  reservas: Reserva[],
+  ventasShop: VentaShop[],
+  ventasBuffet: VentaBuffet[],
+  inscripcionesTorneo: InscripcionTorneo[]
+): IngresosPorFuente {
   const ingresoSocios = recaudadoMes;
-  const ingresoCanchas = reservas.length * PRECIO_TURNO;
+  const ingresoCanchas = reservas.reduce((a, r) => a + r.monto, 0);
   const ingresoVentas = ventasShop.reduce((a, v) => a + v.precio, 0);
-  const totalFuentes = ingresoSocios + ingresoCanchas + ingresoVentas || 1;
-  const totalIngresos = ingresoSocios + ingresoCanchas + ingresoVentas;
+  const ingresoBuffet = ventasBuffet.reduce((a, v) => a + v.precio, 0);
+  const ingresoTorneos = inscripcionesTorneo.reduce((a, i) => a + i.monto, 0);
+  const totalIngresos = ingresoSocios + ingresoCanchas + ingresoVentas + ingresoBuffet + ingresoTorneos;
+  const totalFuentes = totalIngresos || 1;
   return {
     ingresoSocios,
     ingresoCanchas,
     ingresoVentas,
+    ingresoBuffet,
+    ingresoTorneos,
     totalIngresos,
     pctIngresoSocios: Math.round((ingresoSocios / totalFuentes) * 100),
     pctIngresoCanchas: Math.round((ingresoCanchas / totalFuentes) * 100),
     pctIngresoVentas: Math.round((ingresoVentas / totalFuentes) * 100),
-    ingresoSociosDetalle: `${countAlDia} socios x ${formatMoney(CUOTA)}`,
-    ingresoCanchasDetalle: `${reservas.length} turnos reservados x ${formatMoney(PRECIO_TURNO)}`,
+    pctIngresoBuffet: Math.round((ingresoBuffet / totalFuentes) * 100),
+    pctIngresoTorneos: Math.round((ingresoTorneos / totalFuentes) * 100),
+    ingresoSociosDetalle: `${countAlDia} socio${countAlDia === 1 ? '' : 's'} al día`,
+    ingresoCanchasDetalle: `${reservas.length} turno${reservas.length === 1 ? '' : 's'} reservado${reservas.length === 1 ? '' : 's'}`,
     ingresoVentasDetalle: `${ventasShop.length} venta${ventasShop.length === 1 ? '' : 's'} registrada${ventasShop.length === 1 ? '' : 's'}`,
+    ingresoBuffetDetalle: `${ventasBuffet.length} venta${ventasBuffet.length === 1 ? '' : 's'} registrada${ventasBuffet.length === 1 ? '' : 's'}`,
+    ingresoTorneosDetalle: `${inscripcionesTorneo.length} inscripción${inscripcionesTorneo.length === 1 ? '' : 'es'}`,
   };
 }
 
-export function balanceMes(recaudadoMes: number, reservas: Reserva[], ventasShop: VentaShop[], egresos: Egreso[]): number {
+export function balanceMes(
+  recaudadoMes: number,
+  reservas: Reserva[],
+  ventasShop: VentaShop[],
+  ventasBuffet: VentaBuffet[],
+  inscripcionesTorneo: InscripcionTorneo[],
+  egresos: Egreso[]
+): number {
   return (
     recaudadoMes +
-    reservas.length * PRECIO_TURNO +
-    ventasShop.reduce((a, v) => a + v.precio, 0) -
+    reservas.reduce((a, r) => a + r.monto, 0) +
+    ventasShop.reduce((a, v) => a + v.precio, 0) +
+    ventasBuffet.reduce((a, v) => a + v.precio, 0) +
+    inscripcionesTorneo.reduce((a, i) => a + i.monto, 0) -
     egresos.reduce((a, e) => a + e.monto, 0)
   );
+}
+
+export interface MovimientoCaja {
+  id: string;
+  tipo: 'ingreso' | 'egreso';
+  fuente: string;
+  concepto: string;
+  monto: number;
+  medioPago: MedioPago;
+  fecha: string;
+  hora: string;
+}
+
+export interface LibroCajaInput {
+  pagosHoy: Pago[];
+  ventasShop: VentaShop[];
+  ventasBuffet: VentaBuffet[];
+  reservas: Reserva[];
+  canchas: Cancha[];
+  inscripcionesTorneo: InscripcionTorneo[];
+  torneos: Torneo[];
+  egresos: Egreso[];
+  hoyIso: string;
+}
+
+function numeroOrden(id: string): number {
+  const partes = id.split('-');
+  return Number(partes[partes.length - 1]) || 0;
+}
+
+/** Une todas las fuentes de ingresos y egresos en un único libro de caja cronológico. */
+export function construirLibroCaja(input: LibroCajaInput): MovimientoCaja[] {
+  const movimientos: MovimientoCaja[] = [];
+
+  input.pagosHoy.forEach((p) =>
+    movimientos.push({ id: `pago-${p.id}`, tipo: 'ingreso', fuente: 'Cuota de socio', concepto: p.nombre, monto: p.monto, medioPago: p.medio, fecha: input.hoyIso, hora: p.hora })
+  );
+  input.ventasShop.forEach((v) =>
+    movimientos.push({ id: `venta-shop-${v.id}`, tipo: 'ingreso', fuente: 'Venta de tienda', concepto: v.producto, monto: v.precio, medioPago: v.medio, fecha: input.hoyIso, hora: v.hora })
+  );
+  input.ventasBuffet.forEach((v) =>
+    movimientos.push({ id: `venta-buffet-${v.id}`, tipo: 'ingreso', fuente: 'Venta de buffet', concepto: `${v.producto} · ${v.tipoCliente}`, monto: v.precio, medioPago: v.medio, fecha: input.hoyIso, hora: v.hora })
+  );
+  input.reservas.forEach((r) => {
+    const cancha = input.canchas.find((c) => c.id === r.canchaId);
+    movimientos.push({
+      id: `reserva-${r.id}`,
+      tipo: 'ingreso',
+      fuente: 'Reserva de cancha',
+      concepto: `${cancha ? `${cancha.nombre} #${cancha.numero}` : 'Cancha'} · ${r.nombre}`,
+      monto: r.monto,
+      medioPago: r.medioPago || 'Efectivo',
+      fecha: r.dia,
+      hora: r.hora,
+    });
+  });
+  input.inscripcionesTorneo.forEach((i) => {
+    const torneo = input.torneos.find((t) => t.id === i.torneoId);
+    movimientos.push({
+      id: `torneo-${i.id}`,
+      tipo: 'ingreso',
+      fuente: 'Inscripción a torneo',
+      concepto: `${torneo?.nombre || 'Torneo'} · ${i.nombreEquipo}`,
+      monto: i.monto,
+      medioPago: i.medioPago,
+      fecha: input.hoyIso,
+      hora: '—',
+    });
+  });
+  input.egresos.forEach((e) =>
+    movimientos.push({ id: `egreso-${e.id}`, tipo: 'egreso', fuente: e.categoria, concepto: e.detalle || e.categoria, monto: e.monto, medioPago: e.medioPago, fecha: e.fecha, hora: e.hora })
+  );
+
+  return movimientos.sort((a, b) => (a.fecha !== b.fecha ? b.fecha.localeCompare(a.fecha) : numeroOrden(b.id) - numeroOrden(a.id)));
+}
+
+export interface SaldoPorMedio {
+  medio: MedioPago;
+  ingresos: number;
+  egresos: number;
+  saldo: number;
+}
+
+const MEDIOS_PAGO: MedioPago[] = ['Efectivo', 'Transferencia', 'MercadoPago', 'Tarjeta'];
+
+/** Ingresos, egresos y saldo neto por cada medio de pago — el arqueo de caja del club. */
+export function saldosPorMedioPago(movimientos: MovimientoCaja[]): SaldoPorMedio[] {
+  return MEDIOS_PAGO.map((medio) => {
+    const propios = movimientos.filter((m) => m.medioPago === medio);
+    const ingresos = propios.filter((m) => m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
+    const egresos = propios.filter((m) => m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
+    return { medio, ingresos, egresos, saldo: ingresos - egresos };
+  });
 }
 
 export function totalEgresos(egresos: Egreso[]): number {
   return egresos.reduce((a, e) => a + e.monto, 0);
 }
 
-export interface EgresoConPct extends Egreso {
+function agruparEgresosPorCategoria(egresos: Egreso[]): { categoria: string; monto: number }[] {
+  const totales = new Map<string, number>();
+  egresos.forEach((e) => totales.set(e.categoria, (totales.get(e.categoria) || 0) + e.monto));
+  return Array.from(totales, ([categoria, monto]) => ({ categoria, monto }));
+}
+
+export interface EgresoCategoriaPct {
+  categoria: string;
+  monto: number;
   montoLabel: string;
   pct: number;
 }
 
-export function egresosOrdenadosPorMonto(egresos: Egreso[]): EgresoConPct[] {
-  const maxEgreso = Math.max(...egresos.map((e) => e.monto), 1);
-  return [...egresos]
+/** Total gastado por categoría (sumando todos los movimientos de cada una), de mayor a menor. */
+export function egresosPorCategoria(egresos: Egreso[]): EgresoCategoriaPct[] {
+  const agrupado = agruparEgresosPorCategoria(egresos);
+  const maxEgreso = Math.max(...agrupado.map((e) => e.monto), 1);
+  return agrupado
     .sort((a, b) => b.monto - a.monto)
     .map((e) => ({ ...e, montoLabel: formatMoney(e.monto), pct: Math.round((e.monto / maxEgreso) * 100) }));
 }
 
 export function topEgreso(egresos: Egreso[]): { categoria: string; montoLabel: string; pct: number } | null {
-  if (!egresos.length) return null;
-  const top = egresos.reduce((a, b) => (b.monto > a.monto ? b : a));
+  const agrupado = agruparEgresosPorCategoria(egresos);
+  if (!agrupado.length) return null;
+  const top = agrupado.reduce((a, b) => (b.monto > a.monto ? b : a));
   const total = totalEgresos(egresos);
   return { categoria: top.categoria, montoLabel: formatMoney(top.monto), pct: total ? Math.round((top.monto / total) * 100) : 0 };
 }

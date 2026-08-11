@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { CSSProperties, ReactNode, MouseEvent } from 'react';
 
 interface ModalOverlayProps {
@@ -10,6 +11,14 @@ interface ModalOverlayProps {
 
 export default function ModalOverlay({ onClose, maxWidth, children, cardStyle, ariaLabel }: ModalOverlayProps) {
   const stop = (e: MouseEvent) => e.stopPropagation();
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
   return (
     <div
       onClick={onClose}

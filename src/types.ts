@@ -12,6 +12,7 @@ export interface Socio {
   ultimoPago: string;
   debitoAutomatico: boolean;
   telefono: string;
+  categoriaId: number;
   medioPago?: MedioPago;
   dni?: string;
   domicilio?: string;
@@ -77,6 +78,10 @@ export interface Egreso {
   id: number;
   categoria: string;
   monto: number;
+  fecha: string;
+  hora: string;
+  medioPago: MedioPago;
+  detalle?: string;
 }
 
 export interface Comunicado {
@@ -102,6 +107,7 @@ export interface Reserva {
   dia: string;
   hora: string;
   nombre: string;
+  monto: number;
   medioPago?: MedioPago;
 }
 
@@ -227,8 +233,10 @@ export interface PartidoTorneo {
 }
 
 export interface InscripcionTorneo {
+  id: number;
   torneoId: number;
   nombreEquipo: string;
   integrantes: string;
+  monto: number;
   medioPago: MedioPago;
 }

@@ -499,6 +499,7 @@ function InscripcionTorneoModal({ torneo, onClose }: { torneo: Torneo; onClose: 
       torneoId: torneo.id,
       nombreEquipo: nombreEquipo.trim(),
       integrantes: integrantes.trim(),
+      monto: torneo.valorInscripcion,
       medioPago,
     });
     onClose();
@@ -920,7 +921,7 @@ function BeneficioIcon({ tipo }: { tipo: 'buffet' | 'tienda' | 'entrada' | 'nove
 function Cuota() {
   const { state, actions } = useApp();
   const socio = state.socios[0];
-  const historial = useMemo(() => historialPagosSocio(socio), [socio]);
+  const historial = useMemo(() => historialPagosSocio(socio, state.categorias), [socio, state.categorias]);
 
   if (state.portalRol === 'hincha') {
     return <>

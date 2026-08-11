@@ -7,7 +7,7 @@ const selectStyle = { flex: 1, minWidth: 150, height: 46, border: '1px solid #e3
 
 export default function Cobranza() {
   const { state, actions } = useApp();
-  const resumen = useMemo(() => cuotasResumen(state.socios), [state.socios]);
+  const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
   const totalCaja = useMemo(() => state.pagosHoy.reduce((a, p) => a + p.monto, 0), [state.pagosHoy]);
 
   return (

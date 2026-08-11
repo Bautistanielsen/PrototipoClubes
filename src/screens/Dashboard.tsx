@@ -10,15 +10,15 @@ const bigCardLight = { flex: 1, minWidth: 160, background: '#fff', border: '1px 
 export default function Dashboard() {
   const { state, actions } = useApp();
 
-  const resumen = useMemo(() => cuotasResumen(state.socios), [state.socios]);
+  const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
   const balance = useMemo(
-    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.egresos),
-    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.egresos]
+    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos),
+    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos]
   );
   const totalEgresos = useMemo(() => state.egresos.reduce((a, e) => a + e.monto, 0), [state.egresos]);
   const fuentes = useMemo(
-    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop),
-    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop]
+    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo),
+    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo]
   );
 
   const actividadReciente = useMemo(() => {

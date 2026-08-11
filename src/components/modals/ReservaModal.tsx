@@ -1,5 +1,5 @@
 import { useApp } from '../../state/AppContext';
-import { formatFechaCorta } from '../../lib/format';
+import { formatFechaCorta, formatMoney } from '../../lib/format';
 import ModalOverlay from './ModalOverlay';
 
 export default function ReservaModal() {
@@ -12,7 +12,7 @@ export default function ReservaModal() {
     <ModalOverlay onClose={actions.closeReservaModal} maxWidth={420}>
       <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Reservar turno</div>
       <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>
-        {cancha?.nombre} #{cancha?.numero} · {formatFechaCorta(state.selectedDia)} · {state.reservaHoraSel}
+        {cancha?.nombre} #{cancha?.numero} · {formatFechaCorta(state.selectedDia)} · {state.reservaHoraSel} · {cancha ? formatMoney(cancha.precio) : ''}
       </div>
       <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#16203a', marginBottom: 6 }}>Nombre de quien reserva</label>
       <input
@@ -22,6 +22,17 @@ export default function ReservaModal() {
         placeholder="Nombre y apellido"
         style={{ width: '100%', height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 14px', fontSize: 14, color: '#16203a', marginBottom: 14 }}
       />
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#16203a', marginBottom: 6 }}>Medio de pago</label>
+      <select
+        value={state.reservaMedioPago}
+        onChange={(e) => actions.setReservaMedioPago(e.target.value as any)}
+        style={{ width: '100%', height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 14px', fontSize: 14, color: '#16203a', marginBottom: 14, background: '#fff' }}
+      >
+        <option value="Efectivo">Efectivo</option>
+        <option value="Transferencia">Transferencia</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="MercadoPago">MercadoPago</option>
+      </select>
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
         <button
           onClick={actions.closeReservaModal}

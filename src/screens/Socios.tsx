@@ -59,6 +59,34 @@ export default function Socios() {
         </button>
       </div>
 
+      <button
+        onClick={actions.openAgregarSocio}
+        aria-label="Nuevo socio"
+        style={{
+          position: 'fixed',
+          right: 28,
+          bottom: state.isMobile ? 92 : 28,
+          zIndex: 30,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          height: 54,
+          padding: '0 24px',
+          border: 'none',
+          borderRadius: 27,
+          background: '#172a54',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: 15,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          boxShadow: '0 8px 20px rgba(23, 42, 84, 0.45)',
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        Nuevo socio
+      </button>
+
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         <input
           value={state.searchQuery}

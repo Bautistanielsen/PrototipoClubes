@@ -54,7 +54,7 @@ import {
   seedPartidosTorneo,
   HOY_ISO,
 } from '../data/seed';
-import { CUOTA } from '../lib/derive';
+import { cuotaDeSocio } from '../lib/derive';
 import { formatFechaCorta, formatMoney } from '../lib/format';
 import {
   CANONICAL_DEMO_FORMATIONS_SEED_VERSION,
@@ -147,6 +147,7 @@ export interface AppState {
   activeModule: Modulo | null;
   moreOpen: boolean;
   showMediosPago: boolean;
+  cobranzaMediosPagoVisto: boolean;
   showInfoCanchas: boolean;
   showAgregarPartido: boolean;
   showReponerStockBuffet: boolean;
@@ -162,6 +163,7 @@ export interface AppState {
   showReservaModal: boolean;
   reservaHoraSel: string;
   reservaNombre: string;
+  reservaMedioPago: MedioPago;
   reservaBienvenidaVista: boolean;
   portalRol: 'socio' | 'hincha';
   portalLoggedIn: boolean;
@@ -176,6 +178,13 @@ export interface AppState {
   socios: Socio[];
   searchQuery: string;
   estadoFilter: EstadoFilter;
+  showSocioModal: boolean;
+  nuevoSocioNombre: string;
+  nuevoSocioApellido: string;
+  nuevoSocioTelefono: string;
+  nuevoSocioCategoriaId: string;
+  nuevoSocioMedioPago: MedioPago;
+  nuevoSocioDebitoAutomatico: boolean;
   recordatorios: Record<number, EstadoRecordatorio>;
   pagosHoy: Pago[];
   nuevoPagoSocioId: string;
@@ -198,7 +207,13 @@ export interface AppState {
   nuevoStockBuffetCantidad: string;
   egresos: Egreso[];
   nuevoEgresoCategoria: string;
+  nuevoEgresoDetalle: string;
   nuevoEgresoMonto: string;
+  nuevoEgresoMedioPago: MedioPago;
+  egresoFiltroCategoria: string;
+  cajaFiltroTipo: 'todos' | 'ingreso' | 'egreso';
+  cajaFiltroMedio: 'todos' | MedioPago;
+  cajaFiltroFuente: string;
   comunicados: Comunicado[];
   comunicadosLeidos: number[];
   nuevoTitulo: string;
@@ -256,6 +271,7 @@ const initialState: AppState = {
   activeModule: null,
   moreOpen: false,
   showMediosPago: false,
+  cobranzaMediosPagoVisto: false,
   showInfoCanchas: false,
   showAgregarPartido: false,
   showReponerStockBuffet: false,
@@ -271,6 +287,7 @@ const initialState: AppState = {
   showReservaModal: false,
   reservaHoraSel: '',
   reservaNombre: '',
+  reservaMedioPago: 'Efectivo',
   reservaBienvenidaVista: false,
   portalRol: 'hincha',
   portalLoggedIn: false,
@@ -285,6 +302,13 @@ const initialState: AppState = {
   socios: seedSocios,
   searchQuery: '',
   estadoFilter: 'todos',
+  showSocioModal: false,
+  nuevoSocioNombre: '',
+  nuevoSocioApellido: '',
+  nuevoSocioTelefono: '',
+  nuevoSocioCategoriaId: '',
+  nuevoSocioMedioPago: 'Efectivo',
+  nuevoSocioDebitoAutomatico: false,
   recordatorios: seedRecordatorios,
   pagosHoy: seedPagosHoy,
   nuevoPagoSocioId: '',
@@ -307,7 +331,13 @@ const initialState: AppState = {
   nuevoStockBuffetCantidad: '',
   egresos: seedEgresos,
   nuevoEgresoCategoria: 'Jugadores',
+  nuevoEgresoDetalle: '',
   nuevoEgresoMonto: '',
+  nuevoEgresoMedioPago: 'Efectivo',
+  egresoFiltroCategoria: 'todas',
+  cajaFiltroTipo: 'todos',
+  cajaFiltroMedio: 'todos',
+  cajaFiltroFuente: 'todas',
   comunicados: seedComunicados,
   comunicadosLeidos: [],
   nuevoTitulo: '',
@@ -401,6 +431,7 @@ export interface AppActions {
   openReservar: (hora: string) => void;
   closeReservaModal: () => void;
   setReservaNombre: (v: string) => void;
+  setReservaMedioPago: (v: MedioPago) => void;
   confirmarReserva: () => void;
   liberarReserva: (id: number) => void;
   reservarTurnoHincha: (canchaId: number, dia: string, hora: string, medioPago: MedioPago) => void;
@@ -434,6 +465,15 @@ export interface AppActions {
   toggleRecordatorio: (id: number) => void;
   enviarRecordatorioWhatsapp: (id: number) => void;
   cobrarMoroso: (id: number) => void;
+  openAgregarSocio: () => void;
+  closeSocioModal: () => void;
+  setNuevoSocioNombre: (v: string) => void;
+  setNuevoSocioApellido: (v: string) => void;
+  setNuevoSocioTelefono: (v: string) => void;
+  setNuevoSocioCategoriaId: (v: string) => void;
+  setNuevoSocioMedioPago: (v: MedioPago) => void;
+  toggleNuevoSocioDebitoAutomatico: () => void;
+  guardarSocio: () => void;
   setNuevoPagoSocioId: (v: string) => void;
   setNuevoPagoMedio: (v: MedioPago) => void;
   registrarPago: () => void;
@@ -454,7 +494,13 @@ export interface AppActions {
   setNuevoStockBuffetCantidad: (v: string) => void;
   reponerStockBuffet: () => void;
   setNuevoEgresoCategoria: (v: string) => void;
+  setNuevoEgresoDetalle: (v: string) => void;
   setNuevoEgresoMonto: (v: string) => void;
+  setNuevoEgresoMedioPago: (v: MedioPago) => void;
+  setEgresoFiltroCategoria: (v: string) => void;
+  setCajaFiltroTipo: (v: 'todos' | 'ingreso' | 'egreso') => void;
+  setCajaFiltroMedio: (v: 'todos' | MedioPago) => void;
+  setCajaFiltroFuente: (v: string) => void;
   agregarEgreso: () => void;
   quitarEgreso: (id: number) => void;
   setNuevoTitulo: (v: string) => void;
@@ -492,7 +538,7 @@ export interface AppActions {
   agregarPartidoTorneo: (torneoId: number) => void;
   quitarPartidoTorneo: (id: number) => void;
   setResultadoPartido: (id: number, campo: 'golesLocal' | 'golesVisitante', valor: string) => void;
-  inscribirseTorneo: (datos: InscripcionTorneo) => void;
+  inscribirseTorneo: (datos: Omit<InscripcionTorneo, 'id'>) => void;
   cancelarInscripcionTorneo: (torneoId: number) => void;
   selectEquipoDeportivo: (id: number) => void;
   selectEstadisticasVista: (view: StatisticsView) => void;
@@ -574,7 +620,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     navigate: (screen) => {
       const opensIngresos = screen === 'ventas' || screen === 'buffet' || screen === 'canchas' || screen === 'torneos';
-      update((s) => ({ screen, moreOpen: false, ingresosMenuOpen: opensIngresos ? true : s.ingresosMenuOpen }));
+      update((s) => ({
+        screen,
+        moreOpen: false,
+        ingresosMenuOpen: opensIngresos ? true : s.ingresosMenuOpen,
+        showMediosPago: screen === 'cobranza' && !s.cobranzaMediosPagoVisto ? true : s.showMediosPago,
+        cobranzaMediosPagoVisto: screen === 'cobranza' ? true : s.cobranzaMediosPagoVisto,
+      }));
     },
     toggleIngresosMenu: (e) => {
       e.stopPropagation();
@@ -592,9 +644,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     selectCancha: (id) => update({ selectedCanchaId: id }),
     onDiaChange: (v) => update({ selectedDia: v }),
 
-    openReservar: (hora) => update({ showReservaModal: true, reservaHoraSel: hora, reservaNombre: '' }),
+    openReservar: (hora) => update({ showReservaModal: true, reservaHoraSel: hora, reservaNombre: '', reservaMedioPago: 'Efectivo' }),
     closeReservaModal: () => update({ showReservaModal: false }),
     setReservaNombre: (v) => update({ reservaNombre: v }),
+    setReservaMedioPago: (v) => update({ reservaMedioPago: v }),
     confirmarReserva: () => {
       setState((prev) => {
         const nombre = prev.reservaNombre.trim();
@@ -602,12 +655,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           showToast('Ingresá el nombre de quien reserva');
           return prev;
         }
+        const monto = prev.canchas.find((c) => c.id === prev.selectedCanchaId)?.precio ?? 0;
         showToast('Turno reservado para ' + nombre);
         return {
           ...prev,
           reservas: [
             ...prev.reservas,
-            { id: Date.now(), canchaId: prev.selectedCanchaId, dia: prev.selectedDia, hora: prev.reservaHoraSel, nombre },
+            { id: Date.now(), canchaId: prev.selectedCanchaId, dia: prev.selectedDia, hora: prev.reservaHoraSel, nombre, monto, medioPago: prev.reservaMedioPago },
           ],
           showReservaModal: false,
         };
@@ -626,8 +680,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         const socio = prev.socios[0];
         const nombre = `${socio.nombre} ${socio.apellido}`;
+        const monto = prev.canchas.find((c) => c.id === canchaId)?.precio ?? 0;
         showToast('Turno reservado — ' + nombre);
-        return { ...prev, reservas: [...prev.reservas, { id: Date.now(), canchaId, dia, hora, nombre, medioPago }] };
+        return { ...prev, reservas: [...prev.reservas, { id: Date.now(), canchaId, dia, hora, nombre, monto, medioPago }] };
       });
     },
     cerrarBienvenidaReservas: () => update({ reservaBienvenidaVista: true }),
@@ -749,6 +804,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
 
+    openAgregarSocio: () => update({
+      showSocioModal: true,
+      nuevoSocioNombre: '',
+      nuevoSocioApellido: '',
+      nuevoSocioTelefono: '',
+      nuevoSocioCategoriaId: '',
+      nuevoSocioMedioPago: 'Efectivo',
+      nuevoSocioDebitoAutomatico: false,
+    }),
+    closeSocioModal: () => update({ showSocioModal: false }),
+    setNuevoSocioNombre: (v) => update({ nuevoSocioNombre: v }),
+    setNuevoSocioApellido: (v) => update({ nuevoSocioApellido: v }),
+    setNuevoSocioTelefono: (v) => update({ nuevoSocioTelefono: v }),
+    setNuevoSocioCategoriaId: (v) => update({ nuevoSocioCategoriaId: v }),
+    setNuevoSocioMedioPago: (v) => update({ nuevoSocioMedioPago: v }),
+    toggleNuevoSocioDebitoAutomatico: () => update((s) => ({ nuevoSocioDebitoAutomatico: !s.nuevoSocioDebitoAutomatico })),
+    guardarSocio: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoSocioNombre.trim();
+        const apellido = prev.nuevoSocioApellido.trim();
+        const telefono = prev.nuevoSocioTelefono.trim();
+        const categoriaId = parseInt(prev.nuevoSocioCategoriaId, 10);
+        if (!nombre || !apellido || !telefono || !categoriaId) {
+          showToast('Completá nombre, apellido, teléfono y categoría');
+          return prev;
+        }
+        const numero = prev.socios.reduce((max, s) => Math.max(max, s.numero), 100) + 1;
+        const nuevoSocio: Socio = {
+          id: Date.now(),
+          numero,
+          nombre,
+          apellido,
+          estado: 'al_dia',
+          deuda: 0,
+          ultimoPago: '29/07/2026',
+          debitoAutomatico: prev.nuevoSocioDebitoAutomatico,
+          telefono,
+          medioPago: prev.nuevoSocioMedioPago,
+          categoriaId,
+        };
+        showToast('Socio agregado — #' + numero);
+        return { ...prev, socios: [...prev.socios, nuevoSocio], showSocioModal: false };
+      });
+    },
+
     setNuevoPagoSocioId: (v) => update({ nuevoPagoSocioId: v }),
     setNuevoPagoMedio: (v) => update({ nuevoPagoMedio: v }),
     registrarPago: () => {
@@ -761,7 +861,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('Cuota marcada como pagada');
         return {
           ...prev,
-          pagosHoy: [{ id: Date.now(), nombre: s.nombre + ' ' + s.apellido, monto: CUOTA, medio: prev.nuevoPagoMedio, hora: 'ahora' }, ...prev.pagosHoy],
+          pagosHoy: [{ id: Date.now(), nombre: s.nombre + ' ' + s.apellido, monto: cuotaDeSocio(s, prev.categorias), medio: prev.nuevoPagoMedio, hora: 'ahora' }, ...prev.pagosHoy],
           socios: prev.socios.map((x) => (x.id === s.id ? { ...x, estado: 'al_dia', deuda: 0, ultimoPago: '29/07/2026' } : x)),
           nuevoPagoSocioId: '',
         };
@@ -920,10 +1020,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
 
     setNuevoEgresoCategoria: (v) => update({ nuevoEgresoCategoria: v }),
+    setNuevoEgresoDetalle: (v) => update({ nuevoEgresoDetalle: v }),
     setNuevoEgresoMonto: (v) => update({ nuevoEgresoMonto: v }),
+    setNuevoEgresoMedioPago: (v) => update({ nuevoEgresoMedioPago: v }),
+    setEgresoFiltroCategoria: (v) => update({ egresoFiltroCategoria: v }),
+    setCajaFiltroTipo: (v) => update({ cajaFiltroTipo: v }),
+    setCajaFiltroMedio: (v) => update({ cajaFiltroMedio: v }),
+    setCajaFiltroFuente: (v) => update({ cajaFiltroFuente: v }),
     agregarEgreso: () => {
       setState((prev) => {
         const categoria = prev.nuevoEgresoCategoria.trim();
+        const detalle = prev.nuevoEgresoDetalle.trim();
         const monto = parseInt(prev.nuevoEgresoMonto, 10);
         if (!categoria || !monto || monto <= 0) {
           showToast('Completá categoría y monto');
@@ -932,8 +1039,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('Egreso registrado');
         return {
           ...prev,
-          egresos: [...prev.egresos, { id: Date.now(), categoria, monto }],
-          nuevoEgresoCategoria: '',
+          egresos: [
+            ...prev.egresos,
+            { id: Date.now(), categoria, monto, fecha: HOY_ISO, hora: 'ahora', medioPago: prev.nuevoEgresoMedioPago, ...(detalle ? { detalle } : {}) },
+          ],
+          nuevoEgresoDetalle: '',
           nuevoEgresoMonto: '',
         };
       });
@@ -1124,7 +1234,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     inscribirseTorneo: (datos) => {
       update((s) => ({
-        inscripcionesTorneo: [...s.inscripcionesTorneo.filter((i) => i.torneoId !== datos.torneoId), datos],
+        inscripcionesTorneo: [...s.inscripcionesTorneo.filter((i) => i.torneoId !== datos.torneoId), { id: Date.now(), ...datos }],
       }));
       const nombre = state.torneos.find((t) => t.id === datos.torneoId)?.nombre;
       showToast(nombre ? `Te anotaste a ${nombre}` : 'Te anotaste al torneo');

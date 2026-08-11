@@ -43,28 +43,27 @@ export const fotosJugadoresDemo = [
 ];
 
 export const CUOTA = 12000;
-export const PRECIO_TURNO = 8000;
 export const HOY_ISO = '2026-07-29';
 
 export const seedSocios: Socio[] = [
-  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1201' },
-  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1202' },
-  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1203' },
-  { id: 4, numero: 104, nombre: 'Mateo', apellido: 'Álvarez', estado: 'al_dia', deuda: 0, ultimoPago: '02/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1204' },
-  { id: 5, numero: 105, nombre: 'Valentina', apellido: 'Torres', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1205' },
-  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1206' },
-  { id: 7, numero: 107, nombre: 'Catalina', apellido: 'Romero', estado: 'al_dia', deuda: 0, ultimoPago: '08/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1207' },
-  { id: 8, numero: 108, nombre: 'Thiago', apellido: 'Díaz', estado: 'moroso', deuda: 24000, ultimoPago: '12/05/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1208' },
-  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1209' },
-  { id: 10, numero: 110, nombre: 'Joaquín', apellido: 'Medina', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1210' },
-  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1211' },
-  { id: 12, numero: 112, nombre: 'Santino', apellido: 'Molina', estado: 'moroso', deuda: 36000, ultimoPago: '20/04/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1212' },
-  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1213' },
-  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1214' },
-  { id: 15, numero: 115, nombre: 'Delfina', apellido: 'Núñez', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1215' },
-  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1216' },
-  { id: 17, numero: 117, nombre: 'Pilar', apellido: 'Vega', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1217' },
-  { id: 18, numero: 118, nombre: 'Agustín', apellido: 'Paz', estado: 'moroso', deuda: 12000, ultimoPago: '15/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1218' },
+  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1201', categoriaId: 1 },
+  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1202', categoriaId: 1 },
+  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1203', categoriaId: 1 },
+  { id: 4, numero: 104, nombre: 'Mateo', apellido: 'Álvarez', estado: 'al_dia', deuda: 0, ultimoPago: '02/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1204', categoriaId: 1 },
+  { id: 5, numero: 105, nombre: 'Valentina', apellido: 'Torres', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1205', categoriaId: 1 },
+  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1206', categoriaId: 1 },
+  { id: 7, numero: 107, nombre: 'Catalina', apellido: 'Romero', estado: 'al_dia', deuda: 0, ultimoPago: '08/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1207', categoriaId: 1 },
+  { id: 8, numero: 108, nombre: 'Thiago', apellido: 'Díaz', estado: 'moroso', deuda: 24000, ultimoPago: '12/05/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1208', categoriaId: 1 },
+  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1209', categoriaId: 1 },
+  { id: 10, numero: 110, nombre: 'Joaquín', apellido: 'Medina', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1210', categoriaId: 1 },
+  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1211', categoriaId: 1 },
+  { id: 12, numero: 112, nombre: 'Santino', apellido: 'Molina', estado: 'moroso', deuda: 36000, ultimoPago: '20/04/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1212', categoriaId: 1 },
+  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1213', categoriaId: 1 },
+  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1214', categoriaId: 1 },
+  { id: 15, numero: 115, nombre: 'Delfina', apellido: 'Núñez', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1215', categoriaId: 1 },
+  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1216', categoriaId: 1 },
+  { id: 17, numero: 117, nombre: 'Pilar', apellido: 'Vega', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1217', categoriaId: 1 },
+  { id: 18, numero: 118, nombre: 'Agustín', apellido: 'Paz', estado: 'moroso', deuda: 12000, ultimoPago: '15/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1218', categoriaId: 1 },
 ];
 
 export const seedCanchas: Cancha[] = [
@@ -76,14 +75,14 @@ export const seedCanchas: Cancha[] = [
 ];
 
 export const seedReservas: Reserva[] = [
-  { id: 1, canchaId: 1, dia: '2026-07-29', hora: '18:00', nombre: 'Martina Gómez', medioPago: 'Efectivo' },
-  { id: 2, canchaId: 1, dia: '2026-07-29', hora: '19:00', nombre: 'Benjamín Sosa', medioPago: 'Transferencia' },
-  { id: 3, canchaId: 2, dia: '2026-07-30', hora: '20:00', nombre: 'Emma Acosta', medioPago: 'Efectivo' },
-  { id: 4, canchaId: 3, dia: '2026-07-29', hora: '17:00', nombre: 'Sofía Rodríguez', medioPago: 'Transferencia' },
-  { id: 5, canchaId: 3, dia: '2026-07-29', hora: '20:00', nombre: 'Isabella Herrera', medioPago: 'Efectivo' },
-  { id: 6, canchaId: 4, dia: '2026-07-30', hora: '09:00', nombre: 'Renata Ortiz', medioPago: 'Transferencia' },
-  { id: 7, canchaId: 5, dia: '2026-07-29', hora: '10:00', nombre: 'Lucas Fernández', medioPago: 'Efectivo' },
-  { id: 8, canchaId: 5, dia: '2026-08-02', hora: '11:00', nombre: 'Bautista Castro', medioPago: 'Transferencia' },
+  { id: 1, canchaId: 1, dia: '2026-07-29', hora: '18:00', nombre: 'Martina Gómez', monto: 15000, medioPago: 'Efectivo' },
+  { id: 2, canchaId: 1, dia: '2026-07-29', hora: '19:00', nombre: 'Benjamín Sosa', monto: 15000, medioPago: 'Transferencia' },
+  { id: 3, canchaId: 2, dia: '2026-07-30', hora: '20:00', nombre: 'Emma Acosta', monto: 15000, medioPago: 'Efectivo' },
+  { id: 4, canchaId: 3, dia: '2026-07-29', hora: '17:00', nombre: 'Sofía Rodríguez', monto: 9000, medioPago: 'Transferencia' },
+  { id: 5, canchaId: 3, dia: '2026-07-29', hora: '20:00', nombre: 'Isabella Herrera', monto: 9000, medioPago: 'Efectivo' },
+  { id: 6, canchaId: 4, dia: '2026-07-30', hora: '09:00', nombre: 'Renata Ortiz', monto: 9000, medioPago: 'Transferencia' },
+  { id: 7, canchaId: 5, dia: '2026-07-29', hora: '10:00', nombre: 'Lucas Fernández', monto: 7000, medioPago: 'Efectivo' },
+  { id: 8, canchaId: 5, dia: '2026-08-02', hora: '11:00', nombre: 'Bautista Castro', monto: 7000, medioPago: 'Transferencia' },
 ];
 
 export const seedPartidos: Partido[] = [
@@ -154,11 +153,11 @@ export const seedVentasBuffet: VentaBuffet[] = [
 ];
 
 export const seedEgresos: Egreso[] = [
-  { id: 1, categoria: 'Cuerpo técnico', monto: 80000 },
-  { id: 2, categoria: 'Jugadores', monto: 35000 },
-  { id: 3, categoria: 'Mantenimiento de predio', monto: 45000 },
-  { id: 4, categoria: 'Servicios (luz, agua, gas)', monto: 28000 },
-  { id: 5, categoria: 'Insumos y equipamiento', monto: 15000 },
+  { id: 1, categoria: 'Cuerpo técnico', monto: 80000, fecha: '2026-07-01', hora: '09:00', medioPago: 'Transferencia', detalle: 'Sueldos de julio' },
+  { id: 2, categoria: 'Jugadores', monto: 35000, fecha: '2026-07-01', hora: '09:15', medioPago: 'Transferencia', detalle: 'Viáticos de julio' },
+  { id: 3, categoria: 'Mantenimiento de predio', monto: 45000, fecha: '2026-07-05', hora: '11:30', medioPago: 'Efectivo', detalle: 'Corte de césped y pintura de vestuarios' },
+  { id: 4, categoria: 'Servicios (luz, agua, gas)', monto: 28000, fecha: '2026-07-10', hora: '08:45', medioPago: 'Transferencia', detalle: 'Factura de luz y gas' },
+  { id: 5, categoria: 'Insumos y equipamiento', monto: 15000, fecha: '2026-07-18', hora: '16:20', medioPago: 'Efectivo', detalle: 'Pelotas y conos de entrenamiento' },
 ];
 
 export const seedComunicados: Comunicado[] = [

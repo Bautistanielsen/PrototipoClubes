@@ -1,22 +1,28 @@
 import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { useApp } from '../state/AppContext';
-import { cuotasResumen, balanceMes, ingresosPorFuente, egresosOrdenadosPorMonto, totalEgresos as sumEgresos, TENDENCIA_BASE, TENDENCIA_MAX } from '../lib/derive';
-import { formatMoney } from '../lib/format';
+import { cuotasResumen, balanceMes, ingresosPorFuente, egresosPorCategoria, totalEgresos as sumEgresos, construirLibroCaja, saldosPorMedioPago, HOY_ISO, TENDENCIA_BASE, TENDENCIA_MAX } from '../lib/derive';
+import type { SaldoPorMedio } from '../lib/derive';
+import { formatMoney, formatFechaCorta } from '../lib/format';
 import { exportToCSV } from '../lib/export';
+import mercadoPagoIcon from '../assets/mercadopago-icon.webp';
+
+const filtroLabelStyle = { display: 'block', fontSize: 11, fontWeight: 700, color: '#8b93a5', textTransform: 'uppercase' as const, letterSpacing: '.04em', marginBottom: 6 };
+const filtroSelectStyle = { width: '100%', height: 44, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 12px', fontSize: 14, color: '#16203a', background: '#fff' };
 
 export default function Reportes() {
-  const { state } = useApp();
+  const { state, actions } = useApp();
 
-  const resumen = useMemo(() => cuotasResumen(state.socios), [state.socios]);
+  const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
   const balance = useMemo(
-    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.egresos),
-    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.egresos]
+    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos),
+    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos]
   );
   const fuentes = useMemo(
-    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop),
-    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop]
+    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo),
+    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo]
   );
-  const egresosOrdenados = useMemo(() => egresosOrdenadosPorMonto(state.egresos), [state.egresos]);
+  const egresosOrdenados = useMemo(() => egresosPorCategoria(state.egresos), [state.egresos]);
   const egresosTotal = useMemo(() => sumEgresos(state.egresos), [state.egresos]);
 
   const tendencia = useMemo(() => {
@@ -28,6 +34,32 @@ export default function Reportes() {
       color: i === base.length - 1 ? '#7c8ac2' : '#172a54',
     }));
   }, [balance]);
+
+  const movimientos = useMemo(
+    () =>
+      construirLibroCaja({
+        pagosHoy: state.pagosHoy,
+        ventasShop: state.ventasShop,
+        ventasBuffet: state.ventasBuffet,
+        reservas: state.reservas,
+        canchas: state.canchas,
+        inscripcionesTorneo: state.inscripcionesTorneo,
+        torneos: state.torneos,
+        egresos: state.egresos,
+        hoyIso: HOY_ISO,
+      }),
+    [state.pagosHoy, state.ventasShop, state.ventasBuffet, state.reservas, state.canchas, state.inscripcionesTorneo, state.torneos, state.egresos]
+  );
+  const saldos = useMemo(() => saldosPorMedioPago(movimientos), [movimientos]);
+  const fuentesPresentes = useMemo(() => Array.from(new Set(movimientos.map((m) => m.fuente))), [movimientos]);
+  const movimientosFiltrados = useMemo(
+    () =>
+      movimientos
+        .filter((m) => state.cajaFiltroTipo === 'todos' || m.tipo === state.cajaFiltroTipo)
+        .filter((m) => state.cajaFiltroMedio === 'todos' || m.medioPago === state.cajaFiltroMedio)
+        .filter((m) => state.cajaFiltroFuente === 'todas' || m.fuente === state.cajaFiltroFuente),
+    [movimientos, state.cajaFiltroTipo, state.cajaFiltroMedio, state.cajaFiltroFuente]
+  );
 
   const exportarEgresos = () => {
     exportToCSV(
@@ -45,7 +77,17 @@ export default function Reportes() {
         ['Cuotas de socios', fuentes.ingresoSocios, fuentes.pctIngresoSocios],
         ['Reserva de canchas', fuentes.ingresoCanchas, fuentes.pctIngresoCanchas],
         ['Ventas del shop', fuentes.ingresoVentas, fuentes.pctIngresoVentas],
+        ['Ventas de buffet', fuentes.ingresoBuffet, fuentes.pctIngresoBuffet],
+        ['Inscripciones a torneos', fuentes.ingresoTorneos, fuentes.pctIngresoTorneos],
       ]
+    );
+  };
+
+  const exportarMovimientos = () => {
+    exportToCSV(
+      'libro-de-caja.csv',
+      ['Fecha', 'Hora', 'Tipo', 'Fuente', 'Concepto', 'Medio de pago', 'Monto'],
+      movimientos.map((m) => [formatFechaCorta(m.fecha), m.hora, m.tipo === 'ingreso' ? 'Ingreso' : 'Egreso', m.fuente, m.concepto, m.medioPago, m.monto])
     );
   };
 
@@ -53,8 +95,8 @@ export default function Reportes() {
     <div style={{ animation: 'fadeIn .3s ease' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Reportes financieros</div>
-          <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Últimos 6 meses</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Resumen financiero</div>
+          <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Últimos 6 meses · todo lo que entra y sale del club</div>
         </div>
         <button
           onClick={() => window.print()}
@@ -108,43 +150,12 @@ export default function Reportes() {
             </button>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: '#16203a' }}>Cuotas de socios</span>
-              <span style={{ color: '#16203a', fontWeight: 700 }}>{formatMoney(fuentes.ingresoSocios)}</span>
-            </div>
-            <div style={{ height: 10, background: '#eef0f5', borderRadius: 6, overflow: 'hidden', marginBottom: 4 }}>
-              <div style={{ height: '100%', width: `${fuentes.pctIngresoSocios}%`, background: '#172a54' }} />
-            </div>
-            <div style={{ fontSize: 12, color: '#8b93a5' }}>
-              {fuentes.ingresoSociosDetalle} · {fuentes.pctIngresoSocios}% del total
-            </div>
-          </div>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: '#16203a' }}>Reserva de canchas</span>
-              <span style={{ color: '#16203a', fontWeight: 700 }}>{formatMoney(fuentes.ingresoCanchas)}</span>
-            </div>
-            <div style={{ height: 10, background: '#eef0f5', borderRadius: 6, overflow: 'hidden', marginBottom: 4 }}>
-              <div style={{ height: '100%', width: `${fuentes.pctIngresoCanchas}%`, background: '#4a5fa0' }} />
-            </div>
-            <div style={{ fontSize: 12, color: '#8b93a5' }}>
-              {fuentes.ingresoCanchasDetalle} · {fuentes.pctIngresoCanchas}% del total
-            </div>
-          </div>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, marginBottom: 4 }}>
-              <span style={{ fontWeight: 600, color: '#16203a' }}>Ventas del shop</span>
-              <span style={{ color: '#16203a', fontWeight: 700 }}>{formatMoney(fuentes.ingresoVentas)}</span>
-            </div>
-            <div style={{ height: 10, background: '#eef0f5', borderRadius: 6, overflow: 'hidden', marginBottom: 4 }}>
-              <div style={{ height: '100%', width: `${fuentes.pctIngresoVentas}%`, background: '#8b93a5' }} />
-            </div>
-            <div style={{ fontSize: 12, color: '#8b93a5' }}>
-              {fuentes.ingresoVentasDetalle} · {fuentes.pctIngresoVentas}% del total
-            </div>
-          </div>
+        <div>
+          <FuenteRow meta={FUENTE_META['Cuotas de socios']} label="Cuotas de socios" monto={fuentes.ingresoSocios} pct={fuentes.pctIngresoSocios} detalle={fuentes.ingresoSociosDetalle} />
+          <FuenteRow meta={FUENTE_META['Reserva de canchas']} label="Reserva de canchas" monto={fuentes.ingresoCanchas} pct={fuentes.pctIngresoCanchas} detalle={fuentes.ingresoCanchasDetalle} />
+          <FuenteRow meta={FUENTE_META['Ventas del shop']} label="Ventas del shop" monto={fuentes.ingresoVentas} pct={fuentes.pctIngresoVentas} detalle={fuentes.ingresoVentasDetalle} />
+          <FuenteRow meta={FUENTE_META['Ventas de buffet']} label="Ventas de buffet" monto={fuentes.ingresoBuffet} pct={fuentes.pctIngresoBuffet} detalle={fuentes.ingresoBuffetDetalle} />
+          <FuenteRow meta={FUENTE_META['Inscripciones a torneos']} label="Inscripciones a torneos" monto={fuentes.ingresoTorneos} pct={fuentes.pctIngresoTorneos} detalle={fuentes.ingresoTorneosDetalle} ultima />
         </div>
       </div>
 
@@ -161,18 +172,262 @@ export default function Reportes() {
             </button>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {egresosOrdenados.map((eg) => (
-            <div key={eg.id}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13.5, marginBottom: 6, gap: 10 }}>
-                <span style={{ fontWeight: 600, color: '#16203a' }}>{eg.categoria}</span>
-                <span style={{ color: '#16203a', fontWeight: 700 }}>{eg.montoLabel}</span>
+        <div>
+          {egresosOrdenados.map((eg, i) => (
+            <FuenteRow
+              key={eg.categoria}
+              meta={CATEGORIA_META[eg.categoria] ?? CATEGORIA_META.Otros}
+              label={eg.categoria}
+              monto={eg.monto}
+              pct={eg.pct}
+              detalle=""
+              ultima={i === egresosOrdenados.length - 1}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 22, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 4 }}>Saldo por medio de pago</div>
+        <div style={{ fontSize: 12.5, color: '#8b93a5', marginBottom: 14 }}>Para el arqueo de caja: cuánto debería haber en efectivo vs. en cada cuenta, según todos los movimientos registrados.</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {saldos.map((s) => (
+            <SaldoMedioCard key={s.medio} saldo={s} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Movimientos</div>
+        <button
+          onClick={exportarMovimientos}
+          style={{ height: 32, padding: '0 12px', fontSize: 12, border: '1px solid #d7dce6', borderRadius: 7, background: '#fff', color: '#16203a', fontWeight: 600, cursor: 'pointer' }}
+        >
+          Exportar CSV
+        </button>
+      </div>
+
+      <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '16px 18px', marginBottom: 16, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <label style={filtroLabelStyle}>Tipo</label>
+          <select value={state.cajaFiltroTipo} onChange={(e) => actions.setCajaFiltroTipo(e.target.value as any)} style={filtroSelectStyle}>
+            <option value="todos">Todos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Egresos</option>
+          </select>
+        </div>
+        <div style={{ flex: 1, minWidth: 160 }}>
+          <label style={filtroLabelStyle}>Medio de pago</label>
+          <select value={state.cajaFiltroMedio} onChange={(e) => actions.setCajaFiltroMedio(e.target.value as any)} style={filtroSelectStyle}>
+            <option value="todos">Todos</option>
+            {saldos.map((s) => (
+              <option key={s.medio} value={s.medio}>{s.medio}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <label style={filtroLabelStyle}>Fuente</label>
+          <select value={state.cajaFiltroFuente} onChange={(e) => actions.setCajaFiltroFuente(e.target.value)} style={filtroSelectStyle}>
+            <option value="todas">Todas</option>
+            {fuentesPresentes.map((f) => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {movimientosFiltrados.length === 0 ? (
+        <div style={{ background: '#fff', border: '1px dashed #d7dce6', borderRadius: 14, padding: '40px 24px', textAlign: 'center', fontSize: 13.5, color: '#6b7488' }}>
+          No hay movimientos para ese filtro.
+        </div>
+      ) : (
+        <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden' }}>
+          {movimientosFiltrados.map((m) => (
+            <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 15,
+                    fontWeight: 800,
+                    background: m.tipo === 'ingreso' ? '#e5f6ea' : '#fbe6e9',
+                    color: m.tipo === 'ingreso' ? '#1a7d43' : '#c1293c',
+                  }}
+                >
+                  {m.tipo === 'ingreso' ? '+' : '−'}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{m.fuente}</div>
+                  <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2 }}>
+                    {m.concepto} · {m.medioPago} · {formatFechaCorta(m.fecha)}{m.hora && m.hora !== '—' ? ' · ' + m.hora : ''}
+                  </div>
+                </div>
               </div>
-              <div style={{ height: 10, background: '#eef0f5', borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${eg.pct}%`, background: '#c1293c' }} />
+              <div style={{ fontSize: 15, fontWeight: 700, color: m.tipo === 'ingreso' ? '#1a7d43' : '#c1293c' }}>
+                {m.tipo === 'ingreso' ? '+' : '-'}
+                {formatMoney(m.monto)}
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface FilaMeta {
+  color: string;
+  bg: string;
+  icon: ReactNode;
+}
+
+const iconCommon = { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+
+const FUENTE_META: Record<string, FilaMeta> = {
+  'Cuotas de socios': {
+    color: '#172a54',
+    bg: '#eef1f8',
+    icon: <svg {...iconCommon}><circle cx="9" cy="8" r="3.2" /><circle cx="17" cy="9.5" r="2.4" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M15.5 14.2c2.6.3 4.5 2.4 4.5 5.1" /></svg>,
+  },
+  'Reserva de canchas': {
+    color: '#2f6fb0',
+    bg: '#eaf2fa',
+    icon: <svg {...iconCommon}><rect x="3" y="5" width="18" height="14" rx="1.5" /><path d="M12 5v14M3 12h5M16 12h5" /><circle cx="12" cy="12" r="2.5" /></svg>,
+  },
+  'Ventas del shop': {
+    color: '#6c4fa1',
+    bg: '#f1ecf9',
+    icon: <svg {...iconCommon}><path d="M4 8h16l-1 13H5L4 8Z" /><path d="M8 8a4 4 0 0 1 8 0" /></svg>,
+  },
+  'Ventas de buffet': {
+    color: '#1a7d43',
+    bg: '#e5f6ea',
+    icon: <svg {...iconCommon}><path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M16 3v18M16 3c3 2 4 5 4 8h-4" /></svg>,
+  },
+  'Inscripciones a torneos': {
+    color: '#a15c00',
+    bg: '#fdf0dc',
+    icon: <svg {...iconCommon}><path d="M8 4h8v5a4 4 0 0 1-8 0V4z" /><path d="M8 5H5a3 3 0 0 0 3 5" /><path d="M16 5h3a3 3 0 0 1-3 5" /><line x1="12" y1="13" x2="12" y2="17" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="17" x2="12" y2="20" /></svg>,
+  },
+};
+
+const CATEGORIA_META: Record<string, FilaMeta> = {
+  'Cuerpo técnico': {
+    color: '#c1293c',
+    bg: '#fbe6e9',
+    icon: <svg {...iconCommon}><rect x="6" y="4" width="12" height="16" rx="2" /><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" /><path d="M9 10h6M9 14h6" /></svg>,
+  },
+  Jugadores: {
+    color: '#2f6fb0',
+    bg: '#eaf2fa',
+    icon: <svg {...iconCommon}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" /></svg>,
+  },
+  'Mantenimiento de predio': {
+    color: '#a15c00',
+    bg: '#fdf0dc',
+    icon: <svg {...iconCommon}><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2 2.8-2.8Z" /></svg>,
+  },
+  'Servicios (luz, agua, gas)': {
+    color: '#0f7d8b',
+    bg: '#e3f3f5',
+    icon: <svg {...iconCommon}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" /></svg>,
+  },
+  'Insumos y equipamiento': {
+    color: '#6c4fa1',
+    bg: '#f1ecf9',
+    icon: <svg {...iconCommon}><path d="M21 8 12 3 3 8l9 5 9-5Z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></svg>,
+  },
+  Otros: {
+    color: '#6b7280',
+    bg: '#f1f2f4',
+    icon: <svg {...iconCommon}><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" /></svg>,
+  },
+};
+
+const MEDIO_META: Record<string, FilaMeta> = {
+  Efectivo: {
+    color: '#1a7d43',
+    bg: '#e5f6ea',
+    icon: <svg {...iconCommon}><rect x="2" y="6" width="20" height="12" rx="2.5" /><circle cx="12" cy="12" r="2.8" /><path d="M6 9v.01M18 15v.01" /></svg>,
+  },
+  Transferencia: {
+    color: '#2f6fb0',
+    bg: '#eaf2fa',
+    icon: <svg {...iconCommon}><path d="m12 3 9 5H3l9-5Z" /><path d="M5 10v8M10 10v8M14 10v8M19 10v8" /><path d="M3 21h18" /></svg>,
+  },
+  MercadoPago: {
+    color: '#0f7d8b',
+    bg: '#e3f3f5',
+    icon: <svg {...iconCommon}><rect x="3" y="6" width="18" height="13" rx="2.5" /><path d="M3 10h18" /><circle cx="16" cy="14" r="1.3" fill="currentColor" stroke="none" /></svg>,
+  },
+  Tarjeta: {
+    color: '#6c4fa1',
+    bg: '#f1ecf9',
+    icon: <svg {...iconCommon}><rect x="2" y="5" width="20" height="14" rx="2.5" /><path d="M2 10h20" /><path d="M6 15h4" /></svg>,
+  },
+};
+
+function SaldoMedioCard({ saldo }: { saldo: SaldoPorMedio }) {
+  const meta = MEDIO_META[saldo.medio];
+  const total = saldo.ingresos + saldo.egresos || 1;
+  const pctIngresos = Math.round((saldo.ingresos / total) * 100);
+  return (
+    <div style={{ flex: 1, minWidth: 200, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 12, padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, height: 32 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 9, background: meta.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          {saldo.medio === 'MercadoPago' ? (
+            <img src={mercadoPagoIcon} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+          ) : (
+            <span style={{ color: meta.color, display: 'flex' }}>{meta.icon}</span>
+          )}
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#16203a' }}>{saldo.medio}</div>
+      </div>
+
+      <div style={{ fontSize: 12, color: '#6b7488', display: 'flex', justifyContent: 'space-between' }}>
+        <span>Ingresos</span>
+        <span style={{ fontWeight: 700, color: '#1a7d43' }}>{formatMoney(saldo.ingresos)}</span>
+      </div>
+      <div style={{ fontSize: 12, color: '#6b7488', display: 'flex', justifyContent: 'space-between', marginTop: 3, marginBottom: 8 }}>
+        <span>Egresos</span>
+        <span style={{ fontWeight: 700, color: '#c1293c' }}>{formatMoney(saldo.egresos)}</span>
+      </div>
+      <div style={{ display: 'flex', height: 6, borderRadius: 6, overflow: 'hidden', background: '#eef0f5', marginBottom: 14 }}>
+        {saldo.ingresos > 0 && <div style={{ width: `${pctIngresos}%`, background: '#1a7d43' }} />}
+        {saldo.egresos > 0 && <div style={{ width: `${100 - pctIngresos}%`, background: '#c1293c' }} />}
+      </div>
+
+      <div style={{ borderTop: '1px solid #f0f1f5', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#6b7488' }}>Saldo</span>
+        <span style={{ fontSize: 19, fontWeight: 800, color: saldo.saldo >= 0 ? '#1a7d43' : '#c1293c' }}>{formatMoney(saldo.saldo)}</span>
+      </div>
+    </div>
+  );
+}
+
+function FuenteRow({ meta, label, monto, pct, detalle, ultima }: { meta: FilaMeta; label: string; monto: number; pct: number; detalle: string; ultima?: boolean }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: ultima ? 'none' : '1px solid #f0f1f5' }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        {meta.icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#16203a' }}>{label}</span>
+          <span style={{ color: '#16203a', fontWeight: 800, fontSize: 14.5, whiteSpace: 'nowrap' }}>{formatMoney(monto)}</span>
+        </div>
+        <div style={{ height: 7, background: '#eef0f5', borderRadius: 6, overflow: 'hidden', marginBottom: 5 }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: meta.color, borderRadius: 6 }} />
+        </div>
+        <div style={{ fontSize: 12, color: '#8b93a5' }}>
+          {detalle ? detalle + ' · ' : ''}
+          {pct}% del total
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import ModuleSwitcher from './components/ModuleSwitcher';
 import SportsSquadEntry from './components/SportsSquadEntry';
 import SportsSquadSwitcher from './components/SportsSquadSwitcher';
 import MediosPagoModal from './components/modals/MediosPagoModal';
+import SocioModal from './components/modals/SocioModal';
 import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import VerPartidoModal from './components/modals/VerPartidoModal';
 import AgregarPartidoModal from './components/modals/AgregarPartidoModal';
@@ -134,7 +135,7 @@ function PortalLayout() {
   </div>;
 }
 
-function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><ReservaModal /><MediosPagoModal /><ReponerStockBuffetModal /><ReponerStockShopModal /><DifundirTorneoModal /></>; }
+function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><ReservaModal /><MediosPagoModal /><ReponerStockBuffetModal /><ReponerStockShopModal /><DifundirTorneoModal /><SocioModal /></>; }
 
 function Shell() {
   const { state } = useApp();
