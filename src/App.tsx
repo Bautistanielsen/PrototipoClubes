@@ -9,6 +9,7 @@ import ModuleSelector from './components/ModuleSelector';
 import ModuleSwitcher from './components/ModuleSwitcher';
 import SportsSquadEntry from './components/SportsSquadEntry';
 import SportsSquadSwitcher from './components/SportsSquadSwitcher';
+import SportsAssistant from './components/SportsAssistant';
 import MediosPagoModal from './components/modals/MediosPagoModal';
 import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import VerPartidoModal from './components/modals/VerPartidoModal';
@@ -112,7 +113,7 @@ function DeportivoLayout() {
       {state.isMobile && <nav className="deportivo-mobile-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}>{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}>Estadísticas {statisticsOpen ? '−' : '+'}</button>{statisticsOpen && statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</nav>}
       <main className="deportivo-main"><ScreenContent /></main>
     </div>
-    <VerPartidoModal /><AgregarPartidoModal /><JugadorModal /><EquipoDeportivoModal /><Toast />
+    <SportsAssistant /><VerPartidoModal /><AgregarPartidoModal /><JugadorModal /><EquipoDeportivoModal /><Toast />
   </div>;
 }
 

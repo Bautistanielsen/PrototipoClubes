@@ -66,6 +66,39 @@ export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
 export const CANONICAL_DEMO_SEASON_SEED_VERSION = 2;
 
+function dateFromIso(value: string) {
+  return new Date(`${value}T12:00:00`);
+}
+
+function addDays(date: Date, amount: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function isoDate(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function expandSportsEventos(eventos: Evento[], desde: string, hasta: string) {
+  const result: Evento[] = [];
+  eventos.forEach((evento) => {
+    if (!evento.recurrencia) {
+      if (evento.fecha >= desde && evento.fecha <= hasta) result.push(evento);
+      return;
+    }
+    const inicio = dateFromIso(evento.fecha);
+    const limite = evento.recurrencia.hasta ? dateFromIso(evento.recurrencia.hasta) : dateFromIso(hasta);
+    for (let fecha = inicio; fecha <= limite && isoDate(fecha) <= hasta; fecha = addDays(fecha, 1)) {
+      const fechaIso = isoDate(fecha);
+      if (fechaIso >= desde && evento.recurrencia.dias.includes(fecha.getDay()) && !evento.exclusiones?.includes(fechaIso)) {
+        result.push({ ...evento, ...(evento.overrides?.[fechaIso] || {}), fecha: fechaIso, ocurrenciaDe: { id: evento.id, fecha: fechaIso } });
+      }
+    }
+  });
+  return result.sort((a, b) => `${a.fecha}${a.horaInicio || ''}`.localeCompare(`${b.fecha}${b.horaInicio || ''}`));
+}
+
 export function emptyActa(): Acta {
   return { goles: [], amarillas: [], rojas: [], cambios: [], puntajes: {}, observaciones: '' };
 }
