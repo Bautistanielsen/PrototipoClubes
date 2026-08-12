@@ -17,12 +17,24 @@ export default function Reportes() {
 
   const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
   const balance = useMemo(
-    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos),
-    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos]
+    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos, state.sponsors, HOY_ISO),
+    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos, state.sponsors]
   );
   const fuentes = useMemo(
-    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo),
-    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo]
+    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.sponsors, HOY_ISO),
+    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.sponsors]
+  );
+  const fuentesOrdenadas = useMemo(
+    () =>
+      [
+        { label: 'Cuotas de socios', monto: fuentes.ingresoSocios, pct: fuentes.pctIngresoSocios, detalle: fuentes.ingresoSociosDetalle },
+        { label: 'Reserva de canchas', monto: fuentes.ingresoCanchas, pct: fuentes.pctIngresoCanchas, detalle: fuentes.ingresoCanchasDetalle },
+        { label: 'Ventas del shop', monto: fuentes.ingresoVentas, pct: fuentes.pctIngresoVentas, detalle: fuentes.ingresoVentasDetalle },
+        { label: 'Ventas de buffet', monto: fuentes.ingresoBuffet, pct: fuentes.pctIngresoBuffet, detalle: fuentes.ingresoBuffetDetalle },
+        { label: 'Inscripciones a torneos', monto: fuentes.ingresoTorneos, pct: fuentes.pctIngresoTorneos, detalle: fuentes.ingresoTorneosDetalle },
+        { label: 'Sponsors', monto: fuentes.ingresoSponsors, pct: fuentes.pctIngresoSponsors, detalle: fuentes.ingresoSponsorsDetalle },
+      ].sort((a, b) => b.monto - a.monto),
+    [fuentes]
   );
   const egresosOrdenados = useMemo(() => egresosPorCategoria(state.egresos), [state.egresos]);
   const egresosTotal = useMemo(() => sumEgresos(state.egresos), [state.egresos]);
@@ -75,13 +87,7 @@ export default function Reportes() {
     exportToCSV(
       'ingresos-por-fuente.csv',
       ['Fuente', 'Monto', '% del total'],
-      [
-        ['Cuotas de socios', fuentes.ingresoSocios, fuentes.pctIngresoSocios],
-        ['Reserva de canchas', fuentes.ingresoCanchas, fuentes.pctIngresoCanchas],
-        ['Ventas del shop', fuentes.ingresoVentas, fuentes.pctIngresoVentas],
-        ['Ventas de buffet', fuentes.ingresoBuffet, fuentes.pctIngresoBuffet],
-        ['Inscripciones a torneos', fuentes.ingresoTorneos, fuentes.pctIngresoTorneos],
-      ]
+      fuentesOrdenadas.map((f) => [f.label, f.monto, f.pct])
     );
   };
 
@@ -153,11 +159,9 @@ export default function Reportes() {
           </div>
         </div>
         <div>
-          <MetaRow meta={FUENTE_META['Cuotas de socios']} label="Cuotas de socios" monto={fuentes.ingresoSocios} pct={fuentes.pctIngresoSocios} detalle={fuentes.ingresoSociosDetalle} />
-          <MetaRow meta={FUENTE_META['Reserva de canchas']} label="Reserva de canchas" monto={fuentes.ingresoCanchas} pct={fuentes.pctIngresoCanchas} detalle={fuentes.ingresoCanchasDetalle} />
-          <MetaRow meta={FUENTE_META['Ventas del shop']} label="Ventas del shop" monto={fuentes.ingresoVentas} pct={fuentes.pctIngresoVentas} detalle={fuentes.ingresoVentasDetalle} />
-          <MetaRow meta={FUENTE_META['Ventas de buffet']} label="Ventas de buffet" monto={fuentes.ingresoBuffet} pct={fuentes.pctIngresoBuffet} detalle={fuentes.ingresoBuffetDetalle} />
-          <MetaRow meta={FUENTE_META['Inscripciones a torneos']} label="Inscripciones a torneos" monto={fuentes.ingresoTorneos} pct={fuentes.pctIngresoTorneos} detalle={fuentes.ingresoTorneosDetalle} ultima />
+          {fuentesOrdenadas.map((f, i) => (
+            <MetaRow key={f.label} meta={FUENTE_META[f.label]} label={f.label} monto={f.monto} pct={f.pct} detalle={f.detalle} ultima={i === fuentesOrdenadas.length - 1} />
+          ))}
         </div>
       </div>
 
@@ -308,6 +312,11 @@ const FUENTE_META: Record<string, FilaMeta> = {
     color: '#a15c00',
     bg: '#fdf0dc',
     icon: <svg {...iconCommon}><path d="M8 4h8v5a4 4 0 0 1-8 0V4z" /><path d="M8 5H5a3 3 0 0 0 3 5" /><path d="M16 5h3a3 3 0 0 1-3 5" /><line x1="12" y1="13" x2="12" y2="17" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="17" x2="12" y2="20" /></svg>,
+  },
+  Sponsors: {
+    color: '#0f7d8b',
+    bg: '#e3f3f5',
+    icon: <svg {...iconCommon}><path d="M12 3 4 6.5v5c0 4.5 3.2 7.9 8 9 4.8-1.1 8-4.5 8-9v-5L12 3Z" /><path d="m9 12 2 2 4-4" /></svg>,
   },
 };
 

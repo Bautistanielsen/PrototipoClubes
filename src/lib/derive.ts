@@ -1,4 +1,4 @@
-import type { EstadoSocio, Socio, Reserva, VentaShop, VentaBuffet, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago, Categoria, Cancha, Pago, InscripcionTorneo, Comunicado } from '../types';
+import type { EstadoSocio, Socio, Reserva, VentaShop, VentaBuffet, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago, Categoria, Cancha, Pago, InscripcionTorneo, Comunicado, Sponsor } from '../types';
 import { formatMoney } from './format';
 
 const DESTINATARIO_ESTADO: Record<string, EstadoSocio> = {
@@ -130,17 +130,20 @@ export interface IngresosPorFuente {
   ingresoVentas: number;
   ingresoBuffet: number;
   ingresoTorneos: number;
+  ingresoSponsors: number;
   totalIngresos: number;
   pctIngresoSocios: number;
   pctIngresoCanchas: number;
   pctIngresoVentas: number;
   pctIngresoBuffet: number;
   pctIngresoTorneos: number;
+  pctIngresoSponsors: number;
   ingresoSociosDetalle: string;
   ingresoCanchasDetalle: string;
   ingresoVentasDetalle: string;
   ingresoBuffetDetalle: string;
   ingresoTorneosDetalle: string;
+  ingresoSponsorsDetalle: string;
 }
 
 export function ingresosPorFuente(
@@ -149,32 +152,39 @@ export function ingresosPorFuente(
   reservas: Reserva[],
   ventasShop: VentaShop[],
   ventasBuffet: VentaBuffet[],
-  inscripcionesTorneo: InscripcionTorneo[]
+  inscripcionesTorneo: InscripcionTorneo[],
+  sponsors: Sponsor[],
+  hoyIso: string
 ): IngresosPorFuente {
   const ingresoSocios = recaudadoMes;
   const ingresoCanchas = reservas.reduce((a, r) => a + r.monto, 0);
   const ingresoVentas = ventasShop.reduce((a, v) => a + v.precio, 0);
   const ingresoBuffet = ventasBuffet.reduce((a, v) => a + v.precio, 0);
   const ingresoTorneos = inscripcionesTorneo.reduce((a, i) => a + i.monto, 0);
-  const totalIngresos = ingresoSocios + ingresoCanchas + ingresoVentas + ingresoBuffet + ingresoTorneos;
+  const ingresoSponsors = ingresoMensualSponsors(sponsors, hoyIso);
+  const totalIngresos = ingresoSocios + ingresoCanchas + ingresoVentas + ingresoBuffet + ingresoTorneos + ingresoSponsors;
   const totalFuentes = totalIngresos || 1;
+  const sponsorsVigentes = sponsors.filter((s) => estadoSponsor(s, hoyIso) !== 'Vencido').length;
   return {
     ingresoSocios,
     ingresoCanchas,
     ingresoVentas,
     ingresoBuffet,
     ingresoTorneos,
+    ingresoSponsors,
     totalIngresos,
     pctIngresoSocios: Math.round((ingresoSocios / totalFuentes) * 100),
     pctIngresoCanchas: Math.round((ingresoCanchas / totalFuentes) * 100),
     pctIngresoVentas: Math.round((ingresoVentas / totalFuentes) * 100),
     pctIngresoBuffet: Math.round((ingresoBuffet / totalFuentes) * 100),
     pctIngresoTorneos: Math.round((ingresoTorneos / totalFuentes) * 100),
+    pctIngresoSponsors: Math.round((ingresoSponsors / totalFuentes) * 100),
     ingresoSociosDetalle: `${countAlDia} socio${countAlDia === 1 ? '' : 's'} al día`,
     ingresoCanchasDetalle: `${reservas.length} turno${reservas.length === 1 ? '' : 's'} reservado${reservas.length === 1 ? '' : 's'}`,
     ingresoVentasDetalle: `${ventasShop.length} venta${ventasShop.length === 1 ? '' : 's'} registrada${ventasShop.length === 1 ? '' : 's'}`,
     ingresoBuffetDetalle: `${ventasBuffet.length} venta${ventasBuffet.length === 1 ? '' : 's'} registrada${ventasBuffet.length === 1 ? '' : 's'}`,
     ingresoTorneosDetalle: `${inscripcionesTorneo.length} inscripción${inscripcionesTorneo.length === 1 ? '' : 'es'}`,
+    ingresoSponsorsDetalle: `${sponsorsVigentes} sponsor${sponsorsVigentes === 1 ? '' : 's'} vigente${sponsorsVigentes === 1 ? '' : 's'}`,
   };
 }
 
@@ -184,14 +194,17 @@ export function balanceMes(
   ventasShop: VentaShop[],
   ventasBuffet: VentaBuffet[],
   inscripcionesTorneo: InscripcionTorneo[],
-  egresos: Egreso[]
+  egresos: Egreso[],
+  sponsors: Sponsor[],
+  hoyIso: string
 ): number {
   return (
     recaudadoMes +
     reservas.reduce((a, r) => a + r.monto, 0) +
     ventasShop.reduce((a, v) => a + v.precio, 0) +
     ventasBuffet.reduce((a, v) => a + v.precio, 0) +
-    inscripcionesTorneo.reduce((a, i) => a + i.monto, 0) -
+    inscripcionesTorneo.reduce((a, i) => a + i.monto, 0) +
+    ingresoMensualSponsors(sponsors, hoyIso) -
     egresos.reduce((a, e) => a + e.monto, 0)
   );
 }
@@ -385,6 +398,33 @@ export const TENDENCIA_BASE = [
   { mes: 'Jun', monto: 216000 },
 ];
 export const TENDENCIA_MAX = 216000;
+
+export type EstadoSponsor = 'Activo' | 'Por vencer' | 'Vencido';
+
+const DIAS_AVISO_VENCIMIENTO_SPONSOR = 30;
+
+function diasEntre(desdeIso: string, hastaIso: string): number {
+  const msPorDia = 24 * 60 * 60 * 1000;
+  return Math.round((new Date(hastaIso).getTime() - new Date(desdeIso).getTime()) / msPorDia);
+}
+
+/** Un sponsor está "Por vencer" cuando le quedan 30 días o menos de vigencia, y "Vencido" cuando ya pasó su fecha de fin. */
+export function estadoSponsor(sponsor: Sponsor, hoyIso: string): EstadoSponsor {
+  if (hoyIso > sponsor.fechaFin) return 'Vencido';
+  if (diasEntre(hoyIso, sponsor.fechaFin) <= DIAS_AVISO_VENCIMIENTO_SPONSOR) return 'Por vencer';
+  return 'Activo';
+}
+
+export const estadoSponsorMeta: Record<EstadoSponsor, { bg: string; color: string }> = {
+  Activo: { bg: '#e5f6ea', color: '#1a7d43' },
+  'Por vencer': { bg: '#fdf0dc', color: '#a15c00' },
+  Vencido: { bg: '#fbe6e9', color: '#c1293c' },
+};
+
+/** Ingreso mensual comprometido por sponsors vigentes (Activo o Por vencer, no Vencido). */
+export function ingresoMensualSponsors(sponsors: Sponsor[], hoyIso: string): number {
+  return sponsors.filter((s) => estadoSponsor(s, hoyIso) !== 'Vencido').reduce((a, s) => a + s.monto, 0);
+}
 
 export function estadoTorneo(t: Torneo, hoyIso: string): EstadoTorneo {
   if (hoyIso < t.fechaInicio) return 'Próximo';

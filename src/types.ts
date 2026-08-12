@@ -56,7 +56,9 @@ export interface ProductoShop {
   precio: number;
   categoria: 'Indumentaria' | 'Accesorio';
   stock: number;
+  stockMin: number;
   variantes?: VarianteShop[];
+  foto?: string;
 }
 
 export interface ProductoBuffet {
@@ -66,6 +68,7 @@ export interface ProductoBuffet {
   precioNoSocio: number;
   stock: number;
   stockMin: number;
+  foto?: string;
 }
 
 export type TipoCliente = 'Socio' | 'No socio';
@@ -88,6 +91,20 @@ export interface Egreso {
   hora: string;
   medioPago: MedioPago;
   detalle?: string;
+}
+
+export type UbicacionSponsor = 'Cancha' | 'Camiseta' | 'Portal del Hincha' | 'Buffet';
+
+export interface Sponsor {
+  id: number;
+  nombre: string;
+  rubro: string;
+  monto: number;
+  ubicacion: UbicacionSponsor;
+  fechaInicio: string;
+  fechaFin: string;
+  contacto?: string;
+  logo?: string;
 }
 
 export type CanalEnvio = 'app' | 'whatsapp' | 'ambos';
@@ -201,6 +218,7 @@ export type AdminScreen =
   | 'torneos'
   | 'reportes'
   | 'egresos'
+  | 'sponsors'
   | 'comunicados'
   | 'config';
 

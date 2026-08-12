@@ -124,13 +124,24 @@ export default function Buffet() {
         </div>
       </div>
 
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
+        <button
+          onClick={actions.openNuevoProductoBuffet}
+          style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 8, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+        >
+          + Nuevo producto
+        </button>
+      </div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosBuffet.map((p) => {
           const bajo = p.stock <= p.stockMin;
           return (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: '#f5f7fb', border: '1px solid #e3e7ef', overflow: 'hidden', flexShrink: 0 }}>
+                  {p.foto && <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
                 <CategoriaBadge nombre={p.nombre} />
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
               </div>

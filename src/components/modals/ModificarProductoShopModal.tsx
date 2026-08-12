@@ -1,5 +1,6 @@
 import { useApp } from '../../state/AppContext';
 import ModalOverlay from './ModalOverlay';
+import FotoUploadInput from './FotoUploadInput';
 
 const inputStyle = { height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 14px', fontSize: 14, color: '#16203a', background: '#fff' };
 const sectionTitle = { fontSize: 12.5, fontWeight: 700, color: '#8b93a5', textTransform: 'uppercase' as const, letterSpacing: '.03em', marginBottom: 10 };
@@ -13,6 +14,8 @@ export default function ModificarProductoShopModal() {
     <ModalOverlay onClose={actions.closeModificarProductoShop} maxWidth={420} ariaLabel={`Modificar ${producto.nombre}`}>
       <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Modificar producto</div>
       <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 20 }}>{producto.nombre} · {producto.stock} en stock</div>
+
+      <FotoUploadInput foto={producto.foto || ''} onFotoChange={(dataUrl) => actions.setFotoProductoShop(producto.id, dataUrl)} onQuitar={() => actions.setFotoProductoShop(producto.id, '')} />
 
       <div style={sectionTitle}>Precio</div>
       <div style={{ fontSize: 12, color: '#8b93a5', marginBottom: 10 }}>

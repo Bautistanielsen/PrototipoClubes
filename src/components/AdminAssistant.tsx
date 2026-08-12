@@ -70,6 +70,7 @@ export default function AdminAssistant({ assistantService = localAdminAssistantS
       productosBuffet: state.productosBuffet,
       productosShop: state.productosShop,
       comunicados: state.comunicados,
+      sponsors: state.sponsors,
       hoyIso: HOY_ISO,
     };
     const requestId = ++requestIdRef.current;

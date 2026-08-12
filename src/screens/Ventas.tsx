@@ -51,6 +51,7 @@ export default function Ventas() {
     [state.ventasShop]
   );
   const productoSeleccionado = state.productosShop.find((p) => String(p.id) === state.nuevaVentaProductoId);
+  const stockBajo = useMemo(() => state.productosShop.filter((p) => p.stock <= p.stockMin), [state.productosShop]);
 
   return (
     <div style={{ animation: 'fadeIn .3s ease' }}>
@@ -58,6 +59,13 @@ export default function Ventas() {
         <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Ventas del shop</div>
         <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Registro manual de ventas de mercadería del club</div>
       </div>
+
+      {stockBajo.length > 0 && (
+        <div style={{ background: '#fdf0dc', border: '1px solid #f3ddb3', borderRadius: 14, padding: '14px 18px', marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#a15c00', marginBottom: 4 }}>Stock bajo</div>
+          <div style={{ fontSize: 13, color: '#6b7488' }}>{stockBajo.map((p) => `${p.nombre} (${p.stock})`).join(', ')}</div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ flex: 1, minWidth: 180, background: '#172a54', borderRadius: 14, padding: '20px 22px' }}>
@@ -126,14 +134,25 @@ export default function Ventas() {
         </div>
       </div>
 
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
+        <button
+          onClick={actions.openNuevoProductoShop}
+          style={{ height: 36, padding: '0 16px', border: 'none', borderRadius: 8, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+        >
+          + Nuevo producto
+        </button>
+      </div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosShop.map((p) => {
-          const bajo = p.stock <= 3;
+          const bajo = p.stock <= p.stockMin;
           return (
             <div key={p.id} style={{ padding: '12px 20px', borderBottom: '1px solid #f0f1f5' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 8, background: '#f5f7fb', border: '1px solid #e3e7ef', overflow: 'hidden', flexShrink: 0 }}>
+                    {p.foto && <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                  </div>
                   <CategoriaBadge categoria={p.categoria} />
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
                 </div>

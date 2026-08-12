@@ -40,6 +40,7 @@ export default function MoreSheet() {
         <div style={{ width: 36, height: 4, background: '#e3e7ef', borderRadius: 4, margin: '0 auto 18px' }}></div>
         <div style={itemStyle} onClick={go('reportes')}>Resumen financiero</div>
         <div style={itemStyle} onClick={go('egresos')}>Egresos</div>
+        <div style={itemStyle} onClick={go('sponsors')}>Sponsors</div>
         <div style={itemStyle} onClick={go('comunicados')}>Comunicaciones</div>
         <div style={itemStyle} onClick={go('ventas')}>Tienda del club</div>
         <div style={itemStyle} onClick={go('buffet')}>Buffet</div>

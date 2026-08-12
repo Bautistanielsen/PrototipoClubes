@@ -13,10 +13,13 @@ import SportsAssistant from './components/SportsAssistant';
 import AdminAssistant from './components/AdminAssistant';
 import MediosPagoModal from './components/modals/MediosPagoModal';
 import SocioModal from './components/modals/SocioModal';
+import SponsorModal from './components/modals/SponsorModal';
 import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import AjustarPreciosCanchasModal from './components/modals/AjustarPreciosCanchasModal';
 import ModificarProductoBuffetModal from './components/modals/ModificarProductoBuffetModal';
 import ModificarProductoShopModal from './components/modals/ModificarProductoShopModal';
+import NuevoProductoBuffetModal from './components/modals/NuevoProductoBuffetModal';
+import NuevoProductoShopModal from './components/modals/NuevoProductoShopModal';
 import VerPartidoModal from './components/modals/VerPartidoModal';
 import AgregarPartidoModal from './components/modals/AgregarPartidoModal';
 import ReservaModal from './components/modals/ReservaModal';
@@ -33,6 +36,7 @@ import Calendario from './screens/Calendario';
 import Torneos from './screens/Torneos';
 import Reportes from './screens/Reportes';
 import Egresos from './screens/Egresos';
+import Sponsors from './screens/Sponsors';
 import Comunicados from './screens/Comunicados';
 import Config from './screens/Config';
 import DeportivoInicio from './screens/DeportivoInicio';
@@ -56,6 +60,7 @@ function ScreenContent() {
     case 'torneos': return <Torneos />;
     case 'reportes': return <Reportes />;
     case 'egresos': return <Egresos />;
+    case 'sponsors': return <Sponsors />;
     case 'comunicados': return <Comunicados />;
     case 'config': return <Config />;
     case 'deportivo_inicio': return <DeportivoInicio />;
@@ -138,7 +143,7 @@ function PortalLayout() {
   </div>;
 }
 
-function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><AjustarPreciosCanchasModal /><ReservaModal /><MediosPagoModal /><ModificarProductoBuffetModal /><ModificarProductoShopModal /><DifundirTorneoModal /><SocioModal /></>; }
+function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><AjustarPreciosCanchasModal /><ReservaModal /><MediosPagoModal /><ModificarProductoBuffetModal /><ModificarProductoShopModal /><NuevoProductoBuffetModal /><NuevoProductoShopModal /><DifundirTorneoModal /><SocioModal /><SponsorModal /></>; }
 
 function Shell() {
   const { state } = useApp();

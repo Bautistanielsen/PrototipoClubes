@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
-import { cuotasResumen, balanceMes, ingresosPorFuente, estadoMeta } from '../lib/derive';
+import { cuotasResumen, balanceMes, ingresosPorFuente, estadoMeta, HOY_ISO } from '../lib/derive';
 import { formatMoney } from '../lib/format';
 import { CATEGORIA_META, MEDIO_META, iconCommon, type FilaMeta } from '../lib/movimientoMeta';
 
@@ -35,13 +35,13 @@ export default function Dashboard() {
 
   const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
   const balance = useMemo(
-    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos),
-    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos]
+    () => balanceMes(resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos, state.sponsors, HOY_ISO),
+    [resumen.recaudadoMes, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.egresos, state.sponsors]
   );
   const totalEgresos = useMemo(() => state.egresos.reduce((a, e) => a + e.monto, 0), [state.egresos]);
   const fuentes = useMemo(
-    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo),
-    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo]
+    () => ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.sponsors, HOY_ISO),
+    [resumen.recaudadoMes, resumen.countAlDia, state.reservas, state.ventasShop, state.ventasBuffet, state.inscripcionesTorneo, state.sponsors]
   );
 
   const actividadReciente = useMemo(() => {

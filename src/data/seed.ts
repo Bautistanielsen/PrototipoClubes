@@ -9,6 +9,7 @@ import type {
   ProductoBuffet,
   VentaBuffet,
   Egreso,
+  Sponsor,
   Comunicado,
   Categoria,
   EquipoDeportivo,
@@ -111,6 +112,7 @@ export const seedProductosShop: ProductoShop[] = [
     precio: 36000,
     categoria: 'Indumentaria',
     stock: 8,
+    stockMin: 3,
     variantes: [
       { id: 1, talle: 'M', color: 'Negro', stock: 5 },
       { id: 2, talle: 'L', color: 'Azul', stock: 3 },
@@ -122,17 +124,18 @@ export const seedProductosShop: ProductoShop[] = [
     precio: 18000,
     categoria: 'Indumentaria',
     stock: 12,
+    stockMin: 3,
     variantes: [
       { id: 3, talle: 'S', color: 'Blanco', stock: 4 },
       { id: 4, talle: 'M', color: 'Blanco', stock: 5 },
       { id: 5, talle: 'L', color: 'Negro', stock: 3 },
     ],
   },
-  { id: 3, nombre: 'Gorra', precio: 12000, categoria: 'Accesorio', stock: 3 },
-  { id: 4, nombre: 'Botella deportiva', precio: 12000, categoria: 'Accesorio', stock: 20 },
-  { id: 5, nombre: 'Bufanda', precio: 10000, categoria: 'Accesorio', stock: 2 },
-  { id: 6, nombre: 'Llavero', precio: 5000, categoria: 'Accesorio', stock: 15 },
-  { id: 7, nombre: 'Mochila', precio: 30000, categoria: 'Accesorio', stock: 5 },
+  { id: 3, nombre: 'Gorra', precio: 12000, categoria: 'Accesorio', stock: 3, stockMin: 3 },
+  { id: 4, nombre: 'Botella deportiva', precio: 12000, categoria: 'Accesorio', stock: 20, stockMin: 3 },
+  { id: 5, nombre: 'Bufanda', precio: 10000, categoria: 'Accesorio', stock: 2, stockMin: 3 },
+  { id: 6, nombre: 'Llavero', precio: 5000, categoria: 'Accesorio', stock: 15, stockMin: 3 },
+  { id: 7, nombre: 'Mochila', precio: 30000, categoria: 'Accesorio', stock: 5, stockMin: 3 },
 ];
 
 export const seedVentasShop: VentaShop[] = [
@@ -159,6 +162,12 @@ export const seedEgresos: Egreso[] = [
   { id: 3, categoria: 'Mantenimiento de predio', monto: 45000, fecha: '2026-07-05', hora: '11:30', medioPago: 'Efectivo', detalle: 'Corte de césped y pintura de vestuarios' },
   { id: 4, categoria: 'Servicios (luz, agua, gas)', monto: 28000, fecha: '2026-07-10', hora: '08:45', medioPago: 'Transferencia', detalle: 'Factura de luz y gas' },
   { id: 5, categoria: 'Insumos y equipamiento', monto: 15000, fecha: '2026-07-18', hora: '16:20', medioPago: 'Efectivo', detalle: 'Pelotas y conos de entrenamiento' },
+];
+
+export const seedSponsors: Sponsor[] = [
+  { id: 1, nombre: 'Farmacia San Martín', rubro: 'Salud', monto: 25000, ubicacion: 'Cancha', fechaInicio: '2026-03-01', fechaFin: '2026-12-31', contacto: '11-4455-6677' },
+  { id: 2, nombre: 'Distribuidora El Sol', rubro: 'Alimentos', monto: 40000, ubicacion: 'Camiseta', fechaInicio: '2026-01-01', fechaFin: '2026-08-15', contacto: '11-2233-4455' },
+  { id: 3, nombre: 'Inmobiliaria Rivas', rubro: 'Inmobiliaria', monto: 18000, ubicacion: 'Portal del Hincha', fechaInicio: '2026-06-01', fechaFin: '2027-05-31', contacto: 'contacto@rivas.com' },
 ];
 
 export const seedComunicados: Comunicado[] = [

@@ -14,6 +14,8 @@ import type {
   ProductoBuffet,
   VentaBuffet,
   Egreso,
+  Sponsor,
+  UbicacionSponsor,
   Comunicado,
   Categoria,
   MedioPago,
@@ -47,6 +49,7 @@ import {
   seedProductosBuffet,
   seedVentasBuffet,
   seedEgresos,
+  seedSponsors,
   seedComunicados,
   seedCategorias,
   seedEquiposDeportivos,
@@ -202,12 +205,26 @@ export interface AppState {
   nuevoStockShopCantidad: string;
   nuevoStockShopTalle: string;
   nuevoStockShopColor: string;
+  showNuevoProductoShopModal: boolean;
+  nuevoProductoShopNombre: string;
+  nuevoProductoShopPrecio: string;
+  nuevoProductoShopCategoria: 'Indumentaria' | 'Accesorio';
+  nuevoProductoShopStock: string;
+  nuevoProductoShopStockMin: string;
+  nuevoProductoShopFoto: string;
   productosBuffet: ProductoBuffet[];
   ventasBuffet: VentaBuffet[];
   nuevaVentaBuffetProductoId: string;
   nuevaVentaBuffetTipo: TipoCliente;
   nuevaVentaBuffetMedio: MedioPago;
   nuevoStockBuffetCantidad: string;
+  showNuevoProductoBuffetModal: boolean;
+  nuevoProductoBuffetNombre: string;
+  nuevoProductoBuffetPrecioSocio: string;
+  nuevoProductoBuffetPrecioNoSocio: string;
+  nuevoProductoBuffetStock: string;
+  nuevoProductoBuffetStockMin: string;
+  nuevoProductoBuffetFoto: string;
   egresos: Egreso[];
   nuevoEgresoCategoria: string;
   nuevoEgresoDetalle: string;
@@ -217,6 +234,17 @@ export interface AppState {
   cajaFiltroTipo: 'todos' | 'ingreso' | 'egreso';
   cajaFiltroMedio: 'todos' | MedioPago;
   cajaFiltroFuente: string;
+  sponsors: Sponsor[];
+  showSponsorModal: boolean;
+  sponsorEditandoId: number | null;
+  nuevoSponsorNombre: string;
+  nuevoSponsorRubro: string;
+  nuevoSponsorMonto: string;
+  nuevoSponsorUbicacion: UbicacionSponsor;
+  nuevoSponsorFechaInicio: string;
+  nuevoSponsorFechaFin: string;
+  nuevoSponsorContacto: string;
+  nuevoSponsorLogo: string;
   comunicados: Comunicado[];
   comunicadosLeidos: number[];
   nuevoTitulo: string;
@@ -329,12 +357,26 @@ const initialState: AppState = {
   nuevoStockShopCantidad: '',
   nuevoStockShopTalle: '',
   nuevoStockShopColor: '',
+  showNuevoProductoShopModal: false,
+  nuevoProductoShopNombre: '',
+  nuevoProductoShopPrecio: '',
+  nuevoProductoShopCategoria: 'Indumentaria',
+  nuevoProductoShopStock: '',
+  nuevoProductoShopStockMin: '',
+  nuevoProductoShopFoto: '',
   productosBuffet: seedProductosBuffet,
   ventasBuffet: seedVentasBuffet,
   nuevaVentaBuffetProductoId: '',
   nuevaVentaBuffetTipo: 'Socio',
   nuevaVentaBuffetMedio: 'Efectivo',
   nuevoStockBuffetCantidad: '',
+  showNuevoProductoBuffetModal: false,
+  nuevoProductoBuffetNombre: '',
+  nuevoProductoBuffetPrecioSocio: '',
+  nuevoProductoBuffetPrecioNoSocio: '',
+  nuevoProductoBuffetStock: '',
+  nuevoProductoBuffetStockMin: '',
+  nuevoProductoBuffetFoto: '',
   egresos: seedEgresos,
   nuevoEgresoCategoria: 'Jugadores',
   nuevoEgresoDetalle: '',
@@ -344,6 +386,17 @@ const initialState: AppState = {
   cajaFiltroTipo: 'todos',
   cajaFiltroMedio: 'todos',
   cajaFiltroFuente: 'todas',
+  sponsors: seedSponsors,
+  showSponsorModal: false,
+  sponsorEditandoId: null,
+  nuevoSponsorNombre: '',
+  nuevoSponsorRubro: '',
+  nuevoSponsorMonto: '',
+  nuevoSponsorUbicacion: 'Cancha',
+  nuevoSponsorFechaInicio: HOY_ISO,
+  nuevoSponsorFechaFin: HOY_ISO,
+  nuevoSponsorContacto: '',
+  nuevoSponsorLogo: '',
   comunicados: seedComunicados,
   comunicadosLeidos: [],
   nuevoTitulo: '',
@@ -441,10 +494,30 @@ export interface AppActions {
   setPrecioBuffetSocio: (id: number, precio: number) => void;
   setPrecioBuffetNoSocio: (id: number, precio: number) => void;
   eliminarProductoBuffet: (id: number) => void;
+  openNuevoProductoBuffet: () => void;
+  closeNuevoProductoBuffet: () => void;
+  setNuevoProductoBuffetNombre: (v: string) => void;
+  setNuevoProductoBuffetPrecioSocio: (v: string) => void;
+  setNuevoProductoBuffetPrecioNoSocio: (v: string) => void;
+  setNuevoProductoBuffetStock: (v: string) => void;
+  setNuevoProductoBuffetStockMin: (v: string) => void;
+  setNuevoProductoBuffetFoto: (v: string) => void;
+  guardarNuevoProductoBuffet: () => void;
+  setFotoProductoBuffet: (id: number, foto: string) => void;
   openModificarProductoShop: (id: number) => void;
   closeModificarProductoShop: () => void;
   setPrecioShop: (id: number, precio: number) => void;
   eliminarProductoShop: (id: number) => void;
+  openNuevoProductoShop: () => void;
+  closeNuevoProductoShop: () => void;
+  setNuevoProductoShopNombre: (v: string) => void;
+  setNuevoProductoShopPrecio: (v: string) => void;
+  setNuevoProductoShopCategoria: (v: 'Indumentaria' | 'Accesorio') => void;
+  setNuevoProductoShopStock: (v: string) => void;
+  setNuevoProductoShopStockMin: (v: string) => void;
+  setNuevoProductoShopFoto: (v: string) => void;
+  guardarNuevoProductoShop: () => void;
+  setFotoProductoShop: (id: number, foto: string) => void;
   selectCancha: (id: number) => void;
   onDiaChange: (v: string) => void;
   openReservar: (hora: string) => void;
@@ -521,6 +594,19 @@ export interface AppActions {
   setCajaFiltroFuente: (v: string) => void;
   agregarEgreso: () => void;
   quitarEgreso: (id: number) => void;
+  openNuevoSponsor: () => void;
+  openEditarSponsor: (id: number) => void;
+  closeSponsorModal: () => void;
+  setNuevoSponsorNombre: (v: string) => void;
+  setNuevoSponsorRubro: (v: string) => void;
+  setNuevoSponsorMonto: (v: string) => void;
+  setNuevoSponsorUbicacion: (v: UbicacionSponsor) => void;
+  setNuevoSponsorFechaInicio: (v: string) => void;
+  setNuevoSponsorFechaFin: (v: string) => void;
+  setNuevoSponsorContacto: (v: string) => void;
+  setNuevoSponsorLogo: (v: string) => void;
+  guardarSponsor: () => void;
+  eliminarSponsor: (id: number) => void;
   setNuevoTitulo: (v: string) => void;
   setNuevoCuerpo: (v: string) => void;
   setNuevoDestinatario: (v: string) => void;
@@ -680,6 +766,48 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }));
       showToast('Producto eliminado');
     },
+    openNuevoProductoBuffet: () => update({
+      showNuevoProductoBuffetModal: true,
+      nuevoProductoBuffetNombre: '',
+      nuevoProductoBuffetPrecioSocio: '',
+      nuevoProductoBuffetPrecioNoSocio: '',
+      nuevoProductoBuffetStock: '',
+      nuevoProductoBuffetStockMin: '',
+      nuevoProductoBuffetFoto: '',
+    }),
+    closeNuevoProductoBuffet: () => update({ showNuevoProductoBuffetModal: false }),
+    setNuevoProductoBuffetNombre: (v) => update({ nuevoProductoBuffetNombre: v }),
+    setNuevoProductoBuffetPrecioSocio: (v) => update({ nuevoProductoBuffetPrecioSocio: v }),
+    setNuevoProductoBuffetPrecioNoSocio: (v) => update({ nuevoProductoBuffetPrecioNoSocio: v }),
+    setNuevoProductoBuffetStock: (v) => update({ nuevoProductoBuffetStock: v }),
+    setNuevoProductoBuffetStockMin: (v) => update({ nuevoProductoBuffetStockMin: v }),
+    setNuevoProductoBuffetFoto: (v) => update({ nuevoProductoBuffetFoto: v }),
+    guardarNuevoProductoBuffet: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoProductoBuffetNombre.trim();
+        const precioSocio = parseInt(prev.nuevoProductoBuffetPrecioSocio, 10);
+        const precioNoSocio = parseInt(prev.nuevoProductoBuffetPrecioNoSocio, 10);
+        const stock = parseInt(prev.nuevoProductoBuffetStock, 10);
+        const stockMin = parseInt(prev.nuevoProductoBuffetStockMin, 10);
+        if (!nombre || !precioSocio || !precioNoSocio || isNaN(stock) || isNaN(stockMin)) {
+          showToast('Completá nombre, precios, stock y stock mínimo');
+          return prev;
+        }
+        const nuevoProducto: ProductoBuffet = {
+          id: Date.now(),
+          nombre,
+          precioSocio,
+          precioNoSocio,
+          stock,
+          stockMin,
+          foto: prev.nuevoProductoBuffetFoto || undefined,
+        };
+        showToast('Producto agregado — ' + nombre);
+        return { ...prev, productosBuffet: [...prev.productosBuffet, nuevoProducto], showNuevoProductoBuffetModal: false };
+      });
+    },
+    setFotoProductoBuffet: (id, foto) =>
+      update((s) => ({ productosBuffet: s.productosBuffet.map((p) => (p.id === id ? { ...p, foto } : p)) })),
     openModificarProductoShop: (id) => update({ modificarProductoShopId: id, nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
     closeModificarProductoShop: () => update({ modificarProductoShopId: null, nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
     setPrecioShop: (id, precio) => update((s) => ({ productosShop: s.productosShop.map((p) => (p.id === id ? { ...p, precio } : p)) })),
@@ -690,6 +818,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }));
       showToast('Producto eliminado');
     },
+    openNuevoProductoShop: () => update({
+      showNuevoProductoShopModal: true,
+      nuevoProductoShopNombre: '',
+      nuevoProductoShopPrecio: '',
+      nuevoProductoShopCategoria: 'Indumentaria',
+      nuevoProductoShopStock: '',
+      nuevoProductoShopStockMin: '',
+      nuevoProductoShopFoto: '',
+    }),
+    closeNuevoProductoShop: () => update({ showNuevoProductoShopModal: false }),
+    setNuevoProductoShopNombre: (v) => update({ nuevoProductoShopNombre: v }),
+    setNuevoProductoShopPrecio: (v) => update({ nuevoProductoShopPrecio: v }),
+    setNuevoProductoShopCategoria: (v) => update({ nuevoProductoShopCategoria: v }),
+    setNuevoProductoShopStock: (v) => update({ nuevoProductoShopStock: v }),
+    setNuevoProductoShopStockMin: (v) => update({ nuevoProductoShopStockMin: v }),
+    setNuevoProductoShopFoto: (v) => update({ nuevoProductoShopFoto: v }),
+    guardarNuevoProductoShop: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoProductoShopNombre.trim();
+        const precio = parseInt(prev.nuevoProductoShopPrecio, 10);
+        const esIndumentaria = prev.nuevoProductoShopCategoria === 'Indumentaria';
+        const stock = esIndumentaria ? 0 : parseInt(prev.nuevoProductoShopStock, 10);
+        const stockMin = parseInt(prev.nuevoProductoShopStockMin, 10);
+        if (!nombre || !precio || isNaN(stock) || isNaN(stockMin)) {
+          showToast('Completá nombre, precio, stock y stock mínimo');
+          return prev;
+        }
+        const nuevoProducto: ProductoShop = {
+          id: Date.now(),
+          nombre,
+          precio,
+          categoria: prev.nuevoProductoShopCategoria,
+          stock,
+          stockMin,
+          variantes: esIndumentaria ? [] : undefined,
+          foto: prev.nuevoProductoShopFoto || undefined,
+        };
+        showToast(esIndumentaria ? 'Producto agregado — sumale talle y color con el lápiz' : 'Producto agregado — ' + nombre);
+        return { ...prev, productosShop: [...prev.productosShop, nuevoProducto], showNuevoProductoShopModal: false };
+      });
+    },
+    setFotoProductoShop: (id, foto) =>
+      update((s) => ({ productosShop: s.productosShop.map((p) => (p.id === id ? { ...p, foto } : p)) })),
 
     selectCancha: (id) => update({ selectedCanchaId: id }),
     onDiaChange: (v) => update({ selectedDia: v }),
@@ -1198,6 +1369,106 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     quitarEgreso: (id) => {
       update((s) => ({ egresos: s.egresos.filter((e) => e.id !== id) }));
       showToast('Egreso eliminado');
+    },
+
+    openNuevoSponsor: () => update({
+      showSponsorModal: true,
+      sponsorEditandoId: null,
+      nuevoSponsorNombre: '',
+      nuevoSponsorRubro: '',
+      nuevoSponsorMonto: '',
+      nuevoSponsorUbicacion: 'Cancha',
+      nuevoSponsorFechaInicio: HOY_ISO,
+      nuevoSponsorFechaFin: HOY_ISO,
+      nuevoSponsorContacto: '',
+      nuevoSponsorLogo: '',
+    }),
+    openEditarSponsor: (id) => {
+      setState((prev) => {
+        const sponsor = prev.sponsors.find((s) => s.id === id);
+        if (!sponsor) return prev;
+        return {
+          ...prev,
+          showSponsorModal: true,
+          sponsorEditandoId: id,
+          nuevoSponsorNombre: sponsor.nombre,
+          nuevoSponsorRubro: sponsor.rubro,
+          nuevoSponsorMonto: String(sponsor.monto),
+          nuevoSponsorUbicacion: sponsor.ubicacion,
+          nuevoSponsorFechaInicio: sponsor.fechaInicio,
+          nuevoSponsorFechaFin: sponsor.fechaFin,
+          nuevoSponsorContacto: sponsor.contacto || '',
+          nuevoSponsorLogo: sponsor.logo || '',
+        };
+      });
+    },
+    closeSponsorModal: () => update({ showSponsorModal: false, sponsorEditandoId: null }),
+    setNuevoSponsorNombre: (v) => update({ nuevoSponsorNombre: v }),
+    setNuevoSponsorRubro: (v) => update({ nuevoSponsorRubro: v }),
+    setNuevoSponsorMonto: (v) => update({ nuevoSponsorMonto: v }),
+    setNuevoSponsorUbicacion: (v) => update({ nuevoSponsorUbicacion: v }),
+    setNuevoSponsorFechaInicio: (v) => update({ nuevoSponsorFechaInicio: v }),
+    setNuevoSponsorFechaFin: (v) => update({ nuevoSponsorFechaFin: v }),
+    setNuevoSponsorContacto: (v) => update({ nuevoSponsorContacto: v }),
+    setNuevoSponsorLogo: (v) => update({ nuevoSponsorLogo: v }),
+    guardarSponsor: () => {
+      setState((prev) => {
+        const nombre = prev.nuevoSponsorNombre.trim();
+        const rubro = prev.nuevoSponsorRubro.trim();
+        const monto = parseInt(prev.nuevoSponsorMonto, 10);
+        const contacto = prev.nuevoSponsorContacto.trim();
+        if (!nombre || !rubro || !monto || !prev.nuevoSponsorFechaInicio || !prev.nuevoSponsorFechaFin) {
+          showToast('Completá nombre, rubro, monto y vigencia');
+          return prev;
+        }
+        if (prev.nuevoSponsorFechaFin < prev.nuevoSponsorFechaInicio) {
+          showToast('La fecha de fin no puede ser anterior al inicio');
+          return prev;
+        }
+
+        if (prev.sponsorEditandoId) {
+          const id = prev.sponsorEditandoId;
+          showToast('Sponsor actualizado');
+          return {
+            ...prev,
+            sponsors: prev.sponsors.map((s) =>
+              s.id === id
+                ? {
+                    ...s,
+                    nombre,
+                    rubro,
+                    monto,
+                    ubicacion: prev.nuevoSponsorUbicacion,
+                    fechaInicio: prev.nuevoSponsorFechaInicio,
+                    fechaFin: prev.nuevoSponsorFechaFin,
+                    contacto: contacto || undefined,
+                    logo: prev.nuevoSponsorLogo || undefined,
+                  }
+                : s
+            ),
+            showSponsorModal: false,
+            sponsorEditandoId: null,
+          };
+        }
+
+        const nuevoSponsor: Sponsor = {
+          id: Date.now(),
+          nombre,
+          rubro,
+          monto,
+          ubicacion: prev.nuevoSponsorUbicacion,
+          fechaInicio: prev.nuevoSponsorFechaInicio,
+          fechaFin: prev.nuevoSponsorFechaFin,
+          contacto: contacto || undefined,
+          logo: prev.nuevoSponsorLogo || undefined,
+        };
+        showToast('Sponsor agregado — ' + nombre);
+        return { ...prev, sponsors: [...prev.sponsors, nuevoSponsor], showSponsorModal: false };
+      });
+    },
+    eliminarSponsor: (id) => {
+      update((s) => ({ sponsors: s.sponsors.filter((sp) => sp.id !== id) }));
+      showToast('Sponsor eliminado');
     },
 
     setNuevoTitulo: (v) => update({ nuevoTitulo: v }),

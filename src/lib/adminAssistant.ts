@@ -1,5 +1,5 @@
-import type { Socio, Categoria, Pago, Egreso, Reserva, Cancha, VentaShop, VentaBuffet, InscripcionTorneo, ProductoBuffet, ProductoShop, Comunicado } from '../types';
-import { cuotasResumen, ingresosPorFuente, balanceMes, totalEgresos, topEgreso, TURNO_HORAS } from './derive';
+import type { Socio, Categoria, Pago, Egreso, Reserva, Cancha, VentaShop, VentaBuffet, InscripcionTorneo, ProductoBuffet, ProductoShop, Comunicado, Sponsor } from '../types';
+import { cuotasResumen, ingresosPorFuente, balanceMes, totalEgresos, topEgreso, TURNO_HORAS, estadoSponsor, ingresoMensualSponsors } from './derive';
 import { formatMoney } from './format';
 
 export type AdminAssistantContext = {
@@ -16,6 +16,7 @@ export type AdminAssistantContext = {
   productosBuffet: ProductoBuffet[];
   productosShop: ProductoShop[];
   comunicados: Comunicado[];
+  sponsors: Sponsor[];
   hoyIso: string;
 };
 
@@ -32,9 +33,8 @@ export type AdminAssistantIntent =
   | 'stock-bajo'
   | 'turnos-libres'
   | 'ultimo-comunicado'
+  | 'sponsors-resumen'
   | 'fallback';
-
-const SHOP_STOCK_BAJO = 3;
 
 function normalizeQuery(value: string) {
   return value
@@ -57,6 +57,7 @@ function bulletList(introduction: string, items: string[]) {
 function resolveIntent(query: string): AdminAssistantIntent {
   const normalized = normalizeQuery(query);
 
+  if (hasAny(normalized, ['sponsor', 'sponsors', 'patrocinador', 'patrocinadores', 'auspiciante', 'auspiciantes'])) return 'sponsors-resumen';
   if (hasAny(normalized, ['comunicado', 'aviso', 'novedad', 'ultimo mensaje'])) return 'ultimo-comunicado';
   if (hasAny(normalized, ['turno libre', 'turnos libres', 'cancha libre', 'canchas libres', 'hay cancha', 'reserva libre', 'disponibilidad de cancha'])) return 'turnos-libres';
   if (hasAny(normalized, ['stock bajo', 'falta stock', 'que falta', 'reponer', 'sin stock', 'poco stock'])) return 'stock-bajo';
@@ -82,9 +83,9 @@ function cobranzaHoy(context: AdminAssistantContext) {
 
 function balanceMesResumen(context: AdminAssistantContext) {
   const resumen = cuotasResumen(context.socios, context.categorias);
-  const fuentes = ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, context.reservas, context.ventasShop, context.ventasBuffet, context.inscripcionesTorneo);
+  const fuentes = ingresosPorFuente(resumen.recaudadoMes, resumen.countAlDia, context.reservas, context.ventasShop, context.ventasBuffet, context.inscripcionesTorneo, context.sponsors, context.hoyIso);
   const egresosTotal = totalEgresos(context.egresos);
-  const balance = balanceMes(resumen.recaudadoMes, context.reservas, context.ventasShop, context.ventasBuffet, context.inscripcionesTorneo, context.egresos);
+  const balance = balanceMes(resumen.recaudadoMes, context.reservas, context.ventasShop, context.ventasBuffet, context.inscripcionesTorneo, context.egresos, context.sponsors, context.hoyIso);
   return `Este mes: ingresos ${formatMoney(fuentes.totalIngresos)}, egresos ${formatMoney(egresosTotal)}, balance ${balance >= 0 ? 'positivo' : 'negativo'} de ${formatMoney(Math.abs(balance))}.`;
 }
 
@@ -96,7 +97,7 @@ function mayorGasto(context: AdminAssistantContext) {
 
 function stockBajo(context: AdminAssistantContext) {
   const buffetBajo = context.productosBuffet.filter((p) => p.stock <= p.stockMin);
-  const shopBajo = context.productosShop.filter((p) => p.stock <= SHOP_STOCK_BAJO);
+  const shopBajo = context.productosShop.filter((p) => p.stock <= p.stockMin);
   if (!buffetBajo.length && !shopBajo.length) return 'No hay productos con stock bajo por ahora.';
 
   const items = [
@@ -120,8 +121,20 @@ function ultimoComunicado(context: AdminAssistantContext) {
   return `El último comunicado fue "${ultimo.titulo}" (${ultimo.fecha}), enviado a ${ultimo.destinatario}.`;
 }
 
+function sponsorsResumen(context: AdminAssistantContext) {
+  if (!context.sponsors.length) return 'Todavía no hay sponsors cargados.';
+  const vigentes = context.sponsors.filter((s) => estadoSponsor(s, context.hoyIso) !== 'Vencido');
+  const porVencer = context.sponsors.filter((s) => estadoSponsor(s, context.hoyIso) === 'Por vencer');
+  const ingresoMensual = ingresoMensualSponsors(context.sponsors, context.hoyIso);
+  let texto = `Hay ${vigentes.length} sponsor${vigentes.length === 1 ? '' : 's'} vigente${vigentes.length === 1 ? '' : 's'}, que suman ${formatMoney(ingresoMensual)} por mes.`;
+  if (porVencer.length) {
+    texto += ` ${porVencer.length} está${porVencer.length === 1 ? '' : 'n'} por vencer: ${porVencer.map((s) => s.nombre).join(', ')}.`;
+  }
+  return texto;
+}
+
 function fallback(context: AdminAssistantContext) {
-  return `Puedo consultar los datos registrados de ${context.clubNombre}: resumen de socios, cobranza de hoy, balance del mes, mayor gasto, stock bajo, turnos libres de cancha y el último comunicado. Probá una de las sugerencias.`;
+  return `Puedo consultar los datos registrados de ${context.clubNombre}: resumen de socios, cobranza de hoy, balance del mes, mayor gasto, stock bajo, turnos libres de cancha, sponsors y el último comunicado. Probá una de las sugerencias.`;
 }
 
 export function answerAdminAssistant(query: string, context: AdminAssistantContext): AdminAssistantReply {
@@ -134,6 +147,7 @@ export function answerAdminAssistant(query: string, context: AdminAssistantConte
     'stock-bajo': stockBajo,
     'turnos-libres': turnosLibres,
     'ultimo-comunicado': ultimoComunicado,
+    'sponsors-resumen': sponsorsResumen,
     fallback,
   };
   return { intent, text: replies[intent](context) };

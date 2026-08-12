@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { answerAdminAssistant } from './adminAssistant';
 import type { AdminAssistantContext } from './adminAssistant';
-import type { Socio, Categoria, Pago, Egreso, Reserva, Cancha, ProductoBuffet, ProductoShop, Comunicado } from '../types';
+import type { Socio, Categoria, Pago, Egreso, Reserva, Cancha, ProductoBuffet, ProductoShop, Comunicado, Sponsor } from '../types';
 
 function socio(overrides: Partial<Socio> = {}): Socio {
   return { id: 1, numero: 101, nombre: 'Ana', apellido: 'Pérez', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: false, telefono: '111', categoriaId: 1, ...overrides };
@@ -25,6 +25,7 @@ function context(overrides: Partial<AdminAssistantContext> = {}): AdminAssistant
     productosBuffet: [],
     productosShop: [],
     comunicados: [],
+    sponsors: [],
     hoyIso: '2026-07-29',
     ...overrides,
   };
@@ -80,7 +81,7 @@ describe('admin assistant responses', () => {
 
   it('lists low-stock buffet and shop products', () => {
     const productosBuffet: ProductoBuffet[] = [{ id: 1, nombre: 'Gaseosa', precioSocio: 1000, precioNoSocio: 1300, stock: 2, stockMin: 10 }];
-    const productosShop: ProductoShop[] = [{ id: 1, nombre: 'Gorra', precio: 6000, categoria: 'Accesorio', stock: 2 }];
+    const productosShop: ProductoShop[] = [{ id: 1, nombre: 'Gorra', precio: 6000, categoria: 'Accesorio', stock: 2, stockMin: 3 }];
     const reply = answerAdminAssistant('¿hay stock bajo?', context({ productosBuffet, productosShop }));
     expect(reply.intent).toBe('stock-bajo');
     expect(reply.text).toContain('Gaseosa');
@@ -106,6 +107,26 @@ describe('admin assistant responses', () => {
     const reply = answerAdminAssistant('¿cuál fue el último comunicado?', context({ comunicados }));
     expect(reply.intent).toBe('ultimo-comunicado');
     expect(reply.text).toContain('Corte de luz');
+  });
+
+  it('summarizes sponsors and flags the ones about to expire', () => {
+    const sponsors: Sponsor[] = [
+      { id: 1, nombre: 'Farmacia San Martín', rubro: 'Salud', monto: 25000, ubicacion: 'Cancha', fechaInicio: '2026-03-01', fechaFin: '2026-12-31' },
+      { id: 2, nombre: 'Distribuidora El Sol', rubro: 'Alimentos', monto: 40000, ubicacion: 'Camiseta', fechaInicio: '2026-01-01', fechaFin: '2026-08-15' },
+      { id: 3, nombre: 'Óptica vencida', rubro: 'Salud', monto: 10000, ubicacion: 'Buffet', fechaInicio: '2025-01-01', fechaFin: '2026-06-01' },
+    ];
+    const reply = answerAdminAssistant('¿cómo estamos de sponsors?', context({ sponsors }));
+    expect(reply.intent).toBe('sponsors-resumen');
+    expect(reply.text).toContain('2 sponsors vigentes');
+    expect(reply.text).toContain('$65.000');
+    expect(reply.text).toContain('Distribuidora El Sol');
+    expect(reply.text).not.toContain('Óptica vencida');
+  });
+
+  it('reports no sponsors loaded yet', () => {
+    const reply = answerAdminAssistant('¿tenemos patrocinadores?', context());
+    expect(reply.intent).toBe('sponsors-resumen');
+    expect(reply.text).toBe('Todavía no hay sponsors cargados.');
   });
 
   it('falls back on an unrecognized question', () => {

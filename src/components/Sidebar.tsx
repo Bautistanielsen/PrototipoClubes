@@ -16,6 +16,8 @@ function NavIcon({ screen }: { screen: Screen }) {
       return <svg {...common}><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>;
     case 'egresos':
       return <svg {...common}><path d="M12 4v15M6 13l6 6 6-6" /><path d="M5 4h14" /></svg>;
+    case 'sponsors':
+      return <svg {...common}><path d="M12 3 4 6.5v5c0 4.5 3.2 7.9 8 9 4.8-1.1 8-4.5 8-9v-5L12 3Z" /><path d="m9 12 2 2 4-4" /></svg>;
     case 'buffet':
       return <svg {...common}><path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M16 3v18M16 3c3 2 4 5 4 8h-4" /></svg>;
     case 'ventas':
@@ -36,7 +38,7 @@ function NavIcon({ screen }: { screen: Screen }) {
 const groups: Array<{ title?: string; items: Array<{ screen: Screen; label: string }> }> = [
   { items: [{ screen: 'dashboard', label: 'Inicio' }] },
   { title: 'SOCIOS', items: [{ screen: 'socios', label: 'Padrón' }, { screen: 'cobranza', label: 'Cuotas y pagos' }] },
-  { title: 'FINANZAS', items: [{ screen: 'reportes', label: 'Resumen financiero' }, { screen: 'egresos', label: 'Egresos' }] },
+  { title: 'FINANZAS', items: [{ screen: 'reportes', label: 'Resumen financiero' }, { screen: 'egresos', label: 'Egresos' }, { screen: 'sponsors', label: 'Sponsors' }] },
   { title: 'VENTAS', items: [{ screen: 'buffet', label: 'Buffet' }, { screen: 'ventas', label: 'Tienda del club' }, { screen: 'torneos', label: 'Torneos' }] },
   { title: 'OPERACIÓN', items: [{ screen: 'canchas', label: 'Reservas' }, { screen: 'comunicados', label: 'Comunicaciones' }] },
   { title: 'SISTEMA', items: [{ screen: 'config', label: 'Configuración' }] },
