@@ -1,9 +1,11 @@
 export function exportToCSV(filename: string, headers: string[], rows: (string | number)[][]): void {
   const escape = (v: string | number) => {
     const s = String(v);
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
-  const csv = [headers, ...rows].map((row) => row.map(escape).join(',')).join('\n');
+  // Excel en configuración regional Argentina (es-AR) usa "," como separador decimal,
+  // así que espera ";" como separador de columnas en el CSV — si no, amontona todo en una sola columna.
+  const csv = [headers, ...rows].map((row) => row.map(escape).join(';')).join('\n');
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

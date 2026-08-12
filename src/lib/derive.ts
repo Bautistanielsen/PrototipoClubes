@@ -1,5 +1,23 @@
-import type { EstadoSocio, Socio, Reserva, VentaShop, VentaBuffet, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago, Categoria, Cancha, Pago, InscripcionTorneo } from '../types';
+import type { EstadoSocio, Socio, Reserva, VentaShop, VentaBuffet, Egreso, Partido, TipoPartido, Torneo, EstadoTorneo, EquipoTorneo, PartidoTorneo, MedioPago, Categoria, Cancha, Pago, InscripcionTorneo, Comunicado } from '../types';
 import { formatMoney } from './format';
+
+const DESTINATARIO_ESTADO: Record<string, EstadoSocio> = {
+  'Socios al día': 'al_dia',
+  'Socios por vencer': 'por_vencer',
+  'Socios morosos': 'moroso',
+};
+
+/** Un comunicado le llega a un socio si se envió por la app (o ambos canales) y fue dirigido a "Todos" o a su segmento de estado de cuota. */
+export function comunicadoAlcanzaSocio(comunicado: Comunicado, socio: Socio): boolean {
+  if (comunicado.canal === 'whatsapp') return false;
+  const estadoObjetivo = DESTINATARIO_ESTADO[comunicado.destinatario];
+  return !estadoObjetivo || estadoObjetivo === socio.estado;
+}
+
+/** Comunicados que le corresponden a un socio según a quién fueron dirigidos. */
+export function comunicadosParaSocio(comunicados: Comunicado[], socio: Socio): Comunicado[] {
+  return comunicados.filter((c) => comunicadoAlcanzaSocio(c, socio));
+}
 
 export const CUOTA = 12000;
 export const HOY_ISO = '2026-07-29';

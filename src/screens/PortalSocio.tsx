@@ -2,19 +2,21 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney, formatFechaCorta } from '../lib/format';
-import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, estadoMeta, historialPagosSocio } from '../lib/derive';
+import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, estadoMeta, historialPagosSocio, comunicadosParaSocio } from '../lib/derive';
 import { readSportsCalendarData, parseFinalizedResult } from '../lib/sportsCalendar';
 import type { SportsCalendarData } from '../lib/sportsCalendar';
 import type { MedioPago, Comunicado, Torneo } from '../types';
 import ModalOverlay from '../components/modals/ModalOverlay';
+import HinchaAssistant from '../components/HinchaAssistant';
 
 export default function PortalSocio() {
   const { state, actions } = useApp();
   const active = state.screen;
   const firstSocio = state.socios[0];
   const memberName = `${firstSocio.nombre} ${firstSocio.apellido}`;
-  const latestNews = state.comunicados.slice(0, 2);
-  const novedadesNoLeidas = state.comunicados.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
+  const comunicadosSocio = comunicadosParaSocio(state.comunicados, firstSocio);
+  const latestNews = comunicadosSocio.slice(0, 2);
+  const novedadesNoLeidas = comunicadosSocio.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
   const nextReservation = useMemo(() => state.reservas.find((r) => r.nombre === memberName), [memberName, state.reservas]);
 
   const content = () => {
@@ -45,7 +47,7 @@ export default function PortalSocio() {
       <div className="portal-content">
         <div className="portal-topbar">
           <div className="portal-topbar-brand">
-            <div className="portal-topbar-crest">CAM</div>
+            <div className="portal-topbar-crest">{firstSocio.fotoPerfil ? <img src={firstSocio.fotoPerfil} alt="" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover', display: 'block' }} /> : 'CAM'}</div>
             <span className="portal-topbar-greeting">HOLA, {memberName.toUpperCase()}</span>
           </div>
         </div>
@@ -59,6 +61,7 @@ export default function PortalSocio() {
         <PortalNav active={active === 'portal_mis_reservas'} label="Mis reservas" onClick={() => actions.navigate('portal_mis_reservas')} />
         <PortalNav active={active === 'portal_perfil'} label="Mi perfil" onClick={() => actions.navigate('portal_perfil')} />
       </nav>
+      <HinchaAssistant />
     </div>
   );
 }
@@ -1290,6 +1293,7 @@ function NovedadImagen({ src, alt, style }: { src: string; alt: string; style?: 
 function Novedades() {
   const { state, actions } = useApp();
   const [abiertos, setAbiertos] = useState<Set<number>>(new Set());
+  const comunicadosVisibles = useMemo(() => comunicadosParaSocio(state.comunicados, state.socios[0]), [state.comunicados, state.socios]);
 
   const toggle = (id: number) => {
     setAbiertos((actual) => {
@@ -1301,7 +1305,7 @@ function Novedades() {
   };
 
   const abrirTodas = () => {
-    setAbiertos(new Set(state.comunicados.map((c) => c.id)));
+    setAbiertos(new Set(comunicadosVisibles.map((c) => c.id)));
     actions.marcarTodosComunicadosLeidos();
   };
 
@@ -1310,23 +1314,23 @@ function Novedades() {
     actions.eliminarComunicado(id);
   };
 
-  const noLeidas = state.comunicados.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
+  const noLeidas = comunicadosVisibles.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
 
   return <>
     <h1>Novedades</h1>
     <p className="portal-page-sub">{noLeidas > 0 ? `${noLeidas} sin leer` : 'Estás al día con las novedades del club'}</p>
 
-    {state.comunicados.length > 0 && (
+    {comunicadosVisibles.length > 0 && (
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <button className="portal-text-button" onClick={abrirTodas}>Abrir todas</button>
       </div>
     )}
 
-    {state.comunicados.length === 0 && (
+    {comunicadosVisibles.length === 0 && (
       <section className="portal-card"><p>No hay novedades por el momento.</p></section>
     )}
 
-    {state.comunicados.map((item) => {
+    {comunicadosVisibles.map((item) => {
       const leido = state.comunicadosLeidos.includes(item.id);
       const abierto = abiertos.has(item.id);
       return (

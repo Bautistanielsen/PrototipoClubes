@@ -2,8 +2,24 @@ import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { estadoTorneo, estadoTorneoMeta, HOY_ISO, tablaPosiciones } from '../lib/derive';
 import { formatFechaCorta, formatMoney } from '../lib/format';
+import { MEDIO_META } from '../lib/movimientoMeta';
+import type { EstadoTorneoFilter } from '../types';
 
 const inputStyle = { height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 12px', fontSize: 14, color: '#16203a', background: '#fff' };
+const statCard = { flex: 1, minWidth: 150, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px' };
+const FILTROS_ESTADO: EstadoTorneoFilter[] = ['todos', 'Próximo', 'En curso', 'Finalizado'];
+const filterChipStyle = (active: boolean) => ({
+  height: 36,
+  padding: '0 14px',
+  borderRadius: 20,
+  border: `1px solid ${active ? '#172a54' : '#e3e7ef'}`,
+  background: active ? '#172a54' : '#fff',
+  color: active ? '#fff' : '#16203a',
+  fontSize: 12.5,
+  fontWeight: 600 as const,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap' as const,
+});
 
 export default function Torneos() {
   const { state, actions } = useApp();
@@ -15,6 +31,18 @@ export default function Torneos() {
   const enCurso = useMemo(
     () => state.torneos.filter((t) => estadoTorneo(t, HOY_ISO) === 'En curso').length,
     [state.torneos]
+  );
+  const finalizados = useMemo(
+    () => state.torneos.filter((t) => estadoTorneo(t, HOY_ISO) === 'Finalizado').length,
+    [state.torneos]
+  );
+  const recaudadoInscripciones = useMemo(
+    () => state.inscripcionesTorneo.reduce((a, i) => a + i.monto, 0),
+    [state.inscripcionesTorneo]
+  );
+  const torneosFiltrados = useMemo(
+    () => state.torneos.filter((t) => state.torneoFiltroEstado === 'todos' || estadoTorneo(t, HOY_ISO) === state.torneoFiltroEstado),
+    [state.torneos, state.torneoFiltroEstado]
   );
 
   return (
@@ -29,13 +57,21 @@ export default function Torneos() {
           <div style={{ fontSize: 13, color: '#aeb8d6', fontWeight: 600 }}>Torneos totales</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginTop: 6 }}>{state.torneos.length}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
-          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Próximos</div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: estadoTorneoMeta['Próximo'].color, fontWeight: 600 }}>Próximos</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{proximos}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
-          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>En curso</div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: estadoTorneoMeta['En curso'].color, fontWeight: 600 }}>En curso</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{enCurso}</div>
+        </div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: estadoTorneoMeta['Finalizado'].color, fontWeight: 600 }}>Finalizados</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{finalizados}</div>
+        </div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Recaudado por inscripciones</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(recaudadoInscripciones)}</div>
         </div>
       </div>
 
@@ -116,16 +152,31 @@ export default function Torneos() {
         </button>
       </div>
 
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Torneos organizados</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Torneos organizados</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {FILTROS_ESTADO.map((f) => (
+            <button key={f} onClick={() => actions.setTorneoFiltroEstado(f)} style={filterChipStyle(state.torneoFiltroEstado === f)}>
+              {f === 'todos' ? 'Todos' : f === 'Próximo' ? 'Próximos' : f === 'En curso' ? 'En curso' : 'Finalizados'}
+            </button>
+          ))}
+        </div>
+      </div>
       {state.torneos.length === 0 ? (
         <div style={{ background: '#fff', border: '1px dashed #d7dce6', borderRadius: 14, padding: '40px 24px', textAlign: 'center', fontSize: 13.5, color: '#6b7488' }}>
           Todavía no organizaste ningún torneo.
         </div>
+      ) : torneosFiltrados.length === 0 ? (
+        <div style={{ background: '#fff', border: '1px dashed #d7dce6', borderRadius: 14, padding: '40px 24px', textAlign: 'center', fontSize: 13.5, color: '#6b7488' }}>
+          No hay torneos con ese filtro.
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {state.torneos.map((t) => {
+          {torneosFiltrados.map((t) => {
             const estado = estadoTorneo(t, HOY_ISO);
             const meta = estadoTorneoMeta[estado];
+            const inscripcion = state.inscripcionesTorneo.find((i) => i.torneoId === t.id);
+            const medioMeta = inscripcion ? MEDIO_META[inscripcion.medioPago] : undefined;
             return (
               <div key={t.id} style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
@@ -141,6 +192,32 @@ export default function Torneos() {
                     🏆 {t.premio}
                   </div>
                 )}
+
+                <div style={{ background: '#f7f8fb', border: '1px solid #eef0f5', borderRadius: 10, padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  {inscripcion ? (
+                    <>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#16203a' }}>Anotado desde el portal: {inscripcion.nombreEquipo}</div>
+                        <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2 }}>{inscripcion.integrantes}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ fontSize: 12.5, color: '#6b7488', display: 'flex', alignItems: 'center', gap: 5 }}>
+                          {medioMeta && <span style={{ width: 7, height: 7, borderRadius: '50%', background: medioMeta.color, display: 'inline-block', flexShrink: 0 }} />}
+                          {inscripcion.medioPago} · <strong style={{ color: '#1a7d43' }}>{formatMoney(inscripcion.monto)}</strong>
+                        </div>
+                        <button
+                          onClick={() => actions.cancelarInscripcionTorneo(t.id)}
+                          style={{ height: 30, padding: '0 12px', borderRadius: 7, border: '1px solid #d7dce6', background: '#fff', color: '#c1293c', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Cancelar inscripción
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 12.5, color: '#8b93a5' }}>Todavía no se anotó ningún equipo desde el Portal del Hincha.</div>
+                  )}
+                </div>
+
                 <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
                   <button
                     onClick={() => actions.openDifundirTorneo(t.id)}

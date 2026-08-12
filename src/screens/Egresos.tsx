@@ -3,6 +3,8 @@ import { useApp } from '../state/AppContext';
 import { totalEgresos as sumEgresos, egresosPorCategoria, topEgreso } from '../lib/derive';
 import { formatMoney } from '../lib/format';
 import { exportToCSV } from '../lib/export';
+import { CATEGORIA_META, MEDIO_META } from '../lib/movimientoMeta';
+import MetaRow from '../components/MetaRow';
 
 const CATEGORIAS = ['Jugadores', 'Cuerpo técnico', 'Mantenimiento de predio', 'Servicios (luz, agua, gas)', 'Insumos y equipamiento', 'Otros'];
 
@@ -63,7 +65,7 @@ export default function Egresos() {
           onClick={exportar}
           style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
         >
-          Exportar CSV
+          Exportar Excel
         </button>
       </div>
 
@@ -122,6 +124,7 @@ export default function Egresos() {
           >
             <option value="Efectivo">Efectivo</option>
             <option value="Transferencia">Transferencia</option>
+            <option value="MercadoPago">MercadoPago</option>
             <option value="Tarjeta">Tarjeta</option>
           </select>
           <button
@@ -144,18 +147,18 @@ export default function Egresos() {
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: 22, marginBottom: 16 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 14 }}>Por categoría</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {porCategoria.map((eg) => (
-            <div key={eg.categoria}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13.5, marginBottom: 6, gap: 10 }}>
-                <span style={{ fontWeight: 600, color: '#16203a' }}>{eg.categoria}</span>
-                <span style={{ color: '#16203a', fontWeight: 700 }}>{eg.montoLabel}</span>
-              </div>
-              <div style={{ height: 10, background: '#eef0f5', borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${eg.pct}%`, background: '#c1293c' }} />
-              </div>
-            </div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 4 }}>Por categoría</div>
+        <div>
+          {porCategoria.map((eg, i) => (
+            <MetaRow
+              key={eg.categoria}
+              meta={CATEGORIA_META[eg.categoria] ?? CATEGORIA_META.Otros}
+              label={eg.categoria}
+              monto={eg.monto}
+              pct={eg.pct}
+              detalle=""
+              ultima={i === porCategoria.length - 1}
+            />
           ))}
         </div>
       </div>
@@ -180,26 +183,36 @@ export default function Egresos() {
         </div>
       ) : (
         <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden' }}>
-          {movimientos.map((eg) => (
-            <div key={eg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{eg.categoria}</div>
-                <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2 }}>
-                  {eg.detalle ? eg.detalle + ' · ' : ''}
-                  {eg.medioPago} · {eg.hora}
+          {movimientos.map((eg) => {
+            const meta = CATEGORIA_META[eg.categoria] ?? CATEGORIA_META.Otros;
+            const medioMeta = MEDIO_META[eg.medioPago];
+            return (
+              <div key={eg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9, background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {meta.icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{eg.categoria}</div>
+                    <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {eg.detalle ? eg.detalle + ' · ' : ''}
+                      {medioMeta && <span style={{ width: 7, height: 7, borderRadius: '50%', background: medioMeta.color, display: 'inline-block', flexShrink: 0 }} />}
+                      {eg.medioPago} · {eg.hora}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>{formatMoney(eg.monto)}</div>
+                  <button
+                    onClick={() => actions.quitarEgreso(eg.id)}
+                    style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#c1293c', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Quitar
+                  </button>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>{formatMoney(eg.monto)}</div>
-                <button
-                  onClick={() => actions.quitarEgreso(eg.id)}
-                  style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#c1293c', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Quitar
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

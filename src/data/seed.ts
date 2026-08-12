@@ -17,6 +17,7 @@ import type {
   EquipoTorneo,
   PartidoTorneo,
 } from '../types';
+import martinaGomez from '../assets/socios/martina-gomez.jpeg';
 import brunoFernandez from '../assets/players/bruno-fernandez.jpg';
 import facundoHerrera from '../assets/players/facundo-herrera.jpg';
 import joaquinLopez from '../assets/players/joaquin-lopez.jpg';
@@ -46,22 +47,22 @@ export const CUOTA = 12000;
 export const HOY_ISO = '2026-07-29';
 
 export const seedSocios: Socio[] = [
-  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1201', categoriaId: 1 },
-  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1202', categoriaId: 1 },
-  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1203', categoriaId: 1 },
+  { id: 1, numero: 101, nombre: 'Martina', apellido: 'Gómez', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1201', categoriaId: 1, fotoPerfil: martinaGomez, medioPago: 'Tarjeta' },
+  { id: 2, numero: 102, nombre: 'Lucas', apellido: 'Fernández', estado: 'al_dia', deuda: 0, ultimoPago: '03/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1202', categoriaId: 1, medioPago: 'Tarjeta' },
+  { id: 3, numero: 103, nombre: 'Sofía', apellido: 'Rodríguez', estado: 'al_dia', deuda: 0, ultimoPago: '07/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1203', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 4, numero: 104, nombre: 'Mateo', apellido: 'Álvarez', estado: 'al_dia', deuda: 0, ultimoPago: '02/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1204', categoriaId: 1 },
   { id: 5, numero: 105, nombre: 'Valentina', apellido: 'Torres', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1205', categoriaId: 1 },
-  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1206', categoriaId: 1 },
+  { id: 6, numero: 106, nombre: 'Benjamín', apellido: 'Sosa', estado: 'al_dia', deuda: 0, ultimoPago: '10/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1206', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 7, numero: 107, nombre: 'Catalina', apellido: 'Romero', estado: 'al_dia', deuda: 0, ultimoPago: '08/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1207', categoriaId: 1 },
   { id: 8, numero: 108, nombre: 'Thiago', apellido: 'Díaz', estado: 'moroso', deuda: 24000, ultimoPago: '12/05/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1208', categoriaId: 1 },
-  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1209', categoriaId: 1 },
+  { id: 9, numero: 109, nombre: 'Emma', apellido: 'Acosta', estado: 'al_dia', deuda: 0, ultimoPago: '04/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1209', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 10, numero: 110, nombre: 'Joaquín', apellido: 'Medina', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1210', categoriaId: 1 },
-  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1211', categoriaId: 1 },
+  { id: 11, numero: 111, nombre: 'Isabella', apellido: 'Herrera', estado: 'al_dia', deuda: 0, ultimoPago: '06/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1211', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 12, numero: 112, nombre: 'Santino', apellido: 'Molina', estado: 'moroso', deuda: 36000, ultimoPago: '20/04/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1212', categoriaId: 1 },
-  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1213', categoriaId: 1 },
-  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1214', categoriaId: 1 },
+  { id: 13, numero: 113, nombre: 'Renata', apellido: 'Ortiz', estado: 'al_dia', deuda: 0, ultimoPago: '09/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1213', categoriaId: 1, medioPago: 'Tarjeta' },
+  { id: 14, numero: 114, nombre: 'Bautista', apellido: 'Castro', estado: 'al_dia', deuda: 0, ultimoPago: '01/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1214', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 15, numero: 115, nombre: 'Delfina', apellido: 'Núñez', estado: 'por_vencer', deuda: 0, ultimoPago: '05/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1215', categoriaId: 1 },
-  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1216', categoriaId: 1 },
+  { id: 16, numero: 116, nombre: 'Facundo', apellido: 'Ríos', estado: 'al_dia', deuda: 0, ultimoPago: '11/07/2026', debitoAutomatico: true, telefono: '+54 9 223 455-1216', categoriaId: 1, medioPago: 'Tarjeta' },
   { id: 17, numero: 117, nombre: 'Pilar', apellido: 'Vega', estado: 'al_dia', deuda: 0, ultimoPago: '05/07/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1217', categoriaId: 1 },
   { id: 18, numero: 118, nombre: 'Agustín', apellido: 'Paz', estado: 'moroso', deuda: 12000, ultimoPago: '15/06/2026', debitoAutomatico: false, telefono: '+54 9 223 455-1218', categoriaId: 1 },
 ];
@@ -99,15 +100,15 @@ export const seedRecordatorios: Record<number, 'enviado' | 'pendiente'> = {
 };
 
 export const seedPagosHoy: Pago[] = [
-  { id: 1, nombre: 'Facundo Ríos', monto: 12000, medio: 'Efectivo', hora: '09:15' },
-  { id: 2, nombre: 'Pilar Vega', monto: 12000, medio: 'Transferencia', hora: '10:40' },
+  { id: 1, socioId: 16, nombre: 'Facundo Ríos', monto: 12000, medio: 'Efectivo', hora: '09:15', estadoAnterior: 'por_vencer', deudaAnterior: 0, ultimoPagoAnterior: '11/06/2026' },
+  { id: 2, socioId: 17, nombre: 'Pilar Vega', monto: 12000, medio: 'Transferencia', hora: '10:40', estadoAnterior: 'por_vencer', deudaAnterior: 0, ultimoPagoAnterior: '05/06/2026' },
 ];
 
 export const seedProductosShop: ProductoShop[] = [
   {
     id: 1,
     nombre: 'Buzo oficial',
-    precio: 18000,
+    precio: 36000,
     categoria: 'Indumentaria',
     stock: 8,
     variantes: [
@@ -118,7 +119,7 @@ export const seedProductosShop: ProductoShop[] = [
   {
     id: 2,
     nombre: 'Remera oficial',
-    precio: 9000,
+    precio: 18000,
     categoria: 'Indumentaria',
     stock: 12,
     variantes: [
@@ -127,16 +128,16 @@ export const seedProductosShop: ProductoShop[] = [
       { id: 5, talle: 'L', color: 'Negro', stock: 3 },
     ],
   },
-  { id: 3, nombre: 'Gorra', precio: 6000, categoria: 'Accesorio', stock: 3 },
-  { id: 4, nombre: 'Botella deportiva', precio: 6000, categoria: 'Accesorio', stock: 20 },
-  { id: 5, nombre: 'Bufanda', precio: 5000, categoria: 'Accesorio', stock: 2 },
-  { id: 6, nombre: 'Llavero', precio: 2500, categoria: 'Accesorio', stock: 15 },
-  { id: 7, nombre: 'Mochila', precio: 15000, categoria: 'Accesorio', stock: 5 },
+  { id: 3, nombre: 'Gorra', precio: 12000, categoria: 'Accesorio', stock: 3 },
+  { id: 4, nombre: 'Botella deportiva', precio: 12000, categoria: 'Accesorio', stock: 20 },
+  { id: 5, nombre: 'Bufanda', precio: 10000, categoria: 'Accesorio', stock: 2 },
+  { id: 6, nombre: 'Llavero', precio: 5000, categoria: 'Accesorio', stock: 15 },
+  { id: 7, nombre: 'Mochila', precio: 30000, categoria: 'Accesorio', stock: 5 },
 ];
 
 export const seedVentasShop: VentaShop[] = [
-  { id: 1, producto: 'Buzo oficial', precio: 18000, medio: 'Efectivo', hora: '10:20' },
-  { id: 2, producto: 'Botella deportiva', precio: 6000, medio: 'Transferencia', hora: '11:05' },
+  { id: 1, productoId: 1, producto: 'Buzo oficial', precio: 36000, medio: 'Efectivo', hora: '10:20' },
+  { id: 2, productoId: 4, producto: 'Botella deportiva', precio: 12000, medio: 'Transferencia', hora: '11:05' },
 ];
 
 export const seedProductosBuffet: ProductoBuffet[] = [

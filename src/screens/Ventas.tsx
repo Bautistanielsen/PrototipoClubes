@@ -1,12 +1,55 @@
 import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney } from '../lib/format';
+import type { MedioPago } from '../types';
 
 const selectStyle = { height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 12px', fontSize: 14, color: '#16203a', background: '#fff' };
+const iconCommon = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+const MEDIOS: MedioPago[] = ['Efectivo', 'Transferencia', 'MercadoPago', 'Tarjeta'];
+const iconBtnStyle = { width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: '1px solid #d7dce6', background: '#fff', cursor: 'pointer', flexShrink: 0 };
+
+function PencilIcon() {
+  return (
+    <svg {...iconCommon}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg {...iconCommon}>
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+function CategoriaBadge({ categoria }: { categoria: 'Indumentaria' | 'Accesorio' }) {
+  const indumentaria = categoria === 'Indumentaria';
+  const color = indumentaria ? '#6c4fa1' : '#0f7d8b';
+  const bg = indumentaria ? '#f1ecf9' : '#e3f3f5';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color, background: bg, padding: '4px 9px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      {indumentaria
+        ? <svg {...iconCommon}><path d="M8 3 4 6l1 4h2v11h10V10h2l1-4-4-3-3 2-3-2Z" /></svg>
+        : <svg {...iconCommon}><path d="M4 8h16l-1 13H5L4 8Z" /><path d="M8 8a4 4 0 0 1 8 0" /></svg>}
+      {categoria}
+    </div>
+  );
+}
 
 export default function Ventas() {
   const { state, actions } = useApp();
   const totalVentasShop = useMemo(() => state.ventasShop.reduce((a, v) => a + v.precio, 0), [state.ventasShop]);
+  const totalesPorMedio = useMemo(
+    () => MEDIOS.map((medio) => ({ medio, total: state.ventasShop.filter((v) => v.medio === medio).reduce((a, v) => a + v.precio, 0) })).filter((m) => m.total > 0),
+    [state.ventasShop]
+  );
   const productoSeleccionado = state.productosShop.find((p) => String(p.id) === state.nuevaVentaProductoId);
 
   return (
@@ -25,6 +68,18 @@ export default function Ventas() {
           <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Ventas registradas</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{state.ventasShop.length}</div>
         </div>
+        {totalesPorMedio.length === 0 ? (
+          <div style={{ flex: 2, minWidth: 220, background: '#fff', border: '1px dashed #d7dce6', borderRadius: 14, padding: '20px 22px', display: 'flex', alignItems: 'center', color: '#8b93a5', fontSize: 13.5 }}>
+            Todavía no hay ventas registradas hoy.
+          </div>
+        ) : (
+          totalesPorMedio.map((m) => (
+            <div key={m.medio} style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
+              <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>{m.medio}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(m.total)}</div>
+            </div>
+          ))
+        )}
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px', marginBottom: 16 }}>
@@ -59,6 +114,8 @@ export default function Ventas() {
           <select value={state.nuevaVentaMedio} onChange={(e) => actions.setNuevaVentaMedio(e.target.value as any)} style={{ ...selectStyle, flex: 1, minWidth: 150 }}>
             <option value="Efectivo">Efectivo</option>
             <option value="Transferencia">Transferencia</option>
+            <option value="MercadoPago">MercadoPago</option>
+            <option value="Tarjeta">Tarjeta</option>
           </select>
           <button
             onClick={actions.registrarVentaShop}
@@ -69,23 +126,18 @@ export default function Ventas() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
-        <button
-          onClick={actions.openReponerStockShop}
-          style={{ height: 42, padding: '0 20px', border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', boxShadow: '0 2px 8px rgba(23,42,84,0.25)' }}
-        >
-          + Reponer stock
-        </button>
-      </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosShop.map((p) => {
           const bajo = p.stock <= 3;
           return (
             <div key={p.id} style={{ padding: '12px 20px', borderBottom: '1px solid #f0f1f5' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <CategoriaBadge categoria={p.categoria} />
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ fontSize: 12.5, color: '#6b7488' }}>{formatMoney(p.precio)}</div>
                   <div
                     style={{
@@ -100,6 +152,20 @@ export default function Ventas() {
                   >
                     {p.stock} en stock
                   </div>
+                  <button
+                    onClick={() => actions.openModificarProductoShop(p.id)}
+                    aria-label={`Modificar ${p.nombre}`}
+                    style={{ ...iconBtnStyle, color: '#16203a' }}
+                  >
+                    <PencilIcon />
+                  </button>
+                  <button
+                    onClick={() => actions.eliminarProductoShop(p.id)}
+                    aria-label={`Eliminar ${p.nombre}`}
+                    style={{ ...iconBtnStyle, border: '1px solid #f3d3d8', color: '#c1293c' }}
+                  >
+                    <TrashIcon />
+                  </button>
                 </div>
               </div>
               {p.variantes && p.variantes.length > 0 && (
@@ -131,7 +197,15 @@ export default function Ventas() {
                   {v.medio} · {v.hora}
                 </div>
               </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1a7d43' }}>{formatMoney(v.precio)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#1a7d43' }}>{formatMoney(v.precio)}</div>
+                <button
+                  onClick={() => actions.quitarVentaShop(v.id)}
+                  style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#c1293c', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
           ))}
         </div>

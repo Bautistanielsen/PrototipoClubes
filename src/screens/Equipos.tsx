@@ -111,7 +111,7 @@ export default function Equipos() {
               <button aria-pressed={vista === 'lista'} className={vista === 'lista' ? 'active' : ''} onClick={() => setVista('lista')}>Lista</button>
               <button aria-pressed={vista === 'grilla'} className={vista === 'grilla' ? 'active' : ''} onClick={() => setVista('grilla')}>Grilla</button>
             </div>
-            <button type="button" disabled={!jugadores.length} onClick={descargarCsv} className="roster-utility">Exportar CSV</button>
+            <button type="button" disabled={!jugadores.length} onClick={descargarCsv} className="roster-utility">Exportar Excel</button>
             <button type="button" disabled={!jugadoresFiltrados.length} onClick={() => window.print()} className="roster-utility">Imprimir / PDF</button>
           </div>
         </div>}

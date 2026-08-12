@@ -32,6 +32,8 @@ import type {
   PartidoTorneo,
   InscripcionTorneo,
   StatisticsView,
+  EstadoTorneoFilter,
+  CanalEnvio,
 } from '../types';
 import {
   seedSocios,
@@ -149,9 +151,11 @@ export interface AppState {
   showMediosPago: boolean;
   cobranzaMediosPagoVisto: boolean;
   showInfoCanchas: boolean;
+  canchasInfoVisto: boolean;
+  showAjustarPreciosCanchas: boolean;
+  modificarProductoBuffetId: number | null;
+  modificarProductoShopId: number | null;
   showAgregarPartido: boolean;
-  showReponerStockBuffet: boolean;
-  showReponerStockShop: boolean;
   showVerPartido: boolean;
   verPartidoId: number | null;
   toast: string | null;
@@ -179,6 +183,7 @@ export interface AppState {
   searchQuery: string;
   estadoFilter: EstadoFilter;
   showSocioModal: boolean;
+  socioEditandoId: number | null;
   nuevoSocioNombre: string;
   nuevoSocioApellido: string;
   nuevoSocioTelefono: string;
@@ -194,7 +199,6 @@ export interface AppState {
   nuevaVentaProductoId: string;
   nuevaVentaVarianteId: string;
   nuevaVentaMedio: MedioPago;
-  nuevoStockShopProductoId: string;
   nuevoStockShopCantidad: string;
   nuevoStockShopTalle: string;
   nuevoStockShopColor: string;
@@ -203,7 +207,6 @@ export interface AppState {
   nuevaVentaBuffetProductoId: string;
   nuevaVentaBuffetTipo: TipoCliente;
   nuevaVentaBuffetMedio: MedioPago;
-  nuevoStockBuffetProductoId: string;
   nuevoStockBuffetCantidad: string;
   egresos: Egreso[];
   nuevoEgresoCategoria: string;
@@ -219,6 +222,7 @@ export interface AppState {
   nuevoTitulo: string;
   nuevoCuerpo: string;
   nuevoDestinatario: string;
+  nuevoCanalEnvio: CanalEnvio;
   clubNombre: string;
   clubDireccion: string;
   diaVencimiento: string;
@@ -240,6 +244,7 @@ export interface AppState {
   equiposTorneo: EquipoTorneo[];
   partidosTorneo: PartidoTorneo[];
   torneoExpandidoId: number | null;
+  torneoFiltroEstado: EstadoTorneoFilter;
   inscripcionesTorneo: InscripcionTorneo[];
   nuevoEquipoNombre: string;
   nuevoPartidoEquipoLocalId: string;
@@ -273,9 +278,11 @@ const initialState: AppState = {
   showMediosPago: false,
   cobranzaMediosPagoVisto: false,
   showInfoCanchas: false,
+  canchasInfoVisto: false,
+  showAjustarPreciosCanchas: false,
+  modificarProductoBuffetId: null,
+  modificarProductoShopId: null,
   showAgregarPartido: false,
-  showReponerStockBuffet: false,
-  showReponerStockShop: false,
   showVerPartido: false,
   verPartidoId: null,
   toast: null,
@@ -303,6 +310,7 @@ const initialState: AppState = {
   searchQuery: '',
   estadoFilter: 'todos',
   showSocioModal: false,
+  socioEditandoId: null,
   nuevoSocioNombre: '',
   nuevoSocioApellido: '',
   nuevoSocioTelefono: '',
@@ -318,7 +326,6 @@ const initialState: AppState = {
   nuevaVentaProductoId: '',
   nuevaVentaVarianteId: '',
   nuevaVentaMedio: 'Efectivo',
-  nuevoStockShopProductoId: '',
   nuevoStockShopCantidad: '',
   nuevoStockShopTalle: '',
   nuevoStockShopColor: '',
@@ -327,7 +334,6 @@ const initialState: AppState = {
   nuevaVentaBuffetProductoId: '',
   nuevaVentaBuffetTipo: 'Socio',
   nuevaVentaBuffetMedio: 'Efectivo',
-  nuevoStockBuffetProductoId: '',
   nuevoStockBuffetCantidad: '',
   egresos: seedEgresos,
   nuevoEgresoCategoria: 'Jugadores',
@@ -343,6 +349,7 @@ const initialState: AppState = {
   nuevoTitulo: '',
   nuevoCuerpo: '',
   nuevoDestinatario: 'Todos los socios',
+  nuevoCanalEnvio: 'app',
   clubNombre: 'Club Atlético Modelo',
   clubDireccion: 'Av. Colón 1234, Mar del Plata',
   diaVencimiento: '5',
@@ -364,6 +371,7 @@ const initialState: AppState = {
   equiposTorneo: seedEquiposTorneo,
   partidosTorneo: seedPartidosTorneo,
   torneoExpandidoId: null,
+  torneoFiltroEstado: 'todos',
   inscripcionesTorneo: [],
   nuevoEquipoNombre: '',
   nuevoPartidoEquipoLocalId: '',
@@ -424,8 +432,19 @@ export interface AppActions {
   stopClick: (e: React.MouseEvent) => void;
   openMediosPago: () => void;
   closeMediosPago: () => void;
-  openInfoCanchas: () => void;
   closeInfoCanchas: () => void;
+  openAjustarPreciosCanchas: () => void;
+  closeAjustarPreciosCanchas: () => void;
+  setPrecioCancha: (id: number, precio: number) => void;
+  openModificarProductoBuffet: (id: number) => void;
+  closeModificarProductoBuffet: () => void;
+  setPrecioBuffetSocio: (id: number, precio: number) => void;
+  setPrecioBuffetNoSocio: (id: number, precio: number) => void;
+  eliminarProductoBuffet: (id: number) => void;
+  openModificarProductoShop: (id: number) => void;
+  closeModificarProductoShop: () => void;
+  setPrecioShop: (id: number, precio: number) => void;
+  eliminarProductoShop: (id: number) => void;
   selectCancha: (id: number) => void;
   onDiaChange: (v: string) => void;
   openReservar: (hora: string) => void;
@@ -445,10 +464,6 @@ export interface AppActions {
   eliminarComunicado: (id: number) => void;
   openAgregarPartido: (fecha?: string) => void;
   closeAgregarPartido: () => void;
-  openReponerStockBuffet: () => void;
-  closeReponerStockBuffet: () => void;
-  openReponerStockShop: () => void;
-  closeReponerStockShop: () => void;
   setNuevoPartidoFecha: (v: string) => void;
   setNuevoPartidoHora: (v: string) => void;
   setNuevoPartidoTipo: (v: TipoPartido) => void;
@@ -466,6 +481,7 @@ export interface AppActions {
   enviarRecordatorioWhatsapp: (id: number) => void;
   cobrarMoroso: (id: number) => void;
   openAgregarSocio: () => void;
+  openEditarSocio: (id: number) => void;
   closeSocioModal: () => void;
   setNuevoSocioNombre: (v: string) => void;
   setNuevoSocioApellido: (v: string) => void;
@@ -474,14 +490,16 @@ export interface AppActions {
   setNuevoSocioMedioPago: (v: MedioPago) => void;
   toggleNuevoSocioDebitoAutomatico: () => void;
   guardarSocio: () => void;
+  eliminarSocio: (id: number) => void;
   setNuevoPagoSocioId: (v: string) => void;
   setNuevoPagoMedio: (v: MedioPago) => void;
   registrarPago: () => void;
+  quitarPago: (id: number) => void;
   setNuevaVentaProductoId: (v: string) => void;
   setNuevaVentaVarianteId: (v: string) => void;
   setNuevaVentaMedio: (v: MedioPago) => void;
   registrarVentaShop: () => void;
-  setNuevoStockShopProductoId: (v: string) => void;
+  quitarVentaShop: (id: number) => void;
   setNuevoStockShopCantidad: (v: string) => void;
   setNuevoStockShopTalle: (v: string) => void;
   setNuevoStockShopColor: (v: string) => void;
@@ -490,7 +508,7 @@ export interface AppActions {
   setNuevaVentaBuffetTipo: (v: TipoCliente) => void;
   setNuevaVentaBuffetMedio: (v: MedioPago) => void;
   registrarVentaBuffet: () => void;
-  setNuevoStockBuffetProductoId: (v: string) => void;
+  quitarVentaBuffet: (id: number) => void;
   setNuevoStockBuffetCantidad: (v: string) => void;
   reponerStockBuffet: () => void;
   setNuevoEgresoCategoria: (v: string) => void;
@@ -506,6 +524,7 @@ export interface AppActions {
   setNuevoTitulo: (v: string) => void;
   setNuevoCuerpo: (v: string) => void;
   setNuevoDestinatario: (v: string) => void;
+  setNuevoCanalEnvio: (v: CanalEnvio) => void;
   enviarComunicado: () => void;
   setClubNombre: (v: string) => void;
   setClubDireccion: (v: string) => void;
@@ -530,6 +549,7 @@ export interface AppActions {
   enviarWhatsappTorneo: () => void;
   copiarMensajeTorneo: () => void;
   toggleTorneoFixture: (id: number) => void;
+  setTorneoFiltroEstado: (v: EstadoTorneoFilter) => void;
   setNuevoEquipoNombre: (v: string) => void;
   agregarEquipoTorneo: (torneoId: number) => void;
   quitarEquipoTorneo: (id: number) => void;
@@ -626,6 +646,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ingresosMenuOpen: opensIngresos ? true : s.ingresosMenuOpen,
         showMediosPago: screen === 'cobranza' && !s.cobranzaMediosPagoVisto ? true : s.showMediosPago,
         cobranzaMediosPagoVisto: screen === 'cobranza' ? true : s.cobranzaMediosPagoVisto,
+        showInfoCanchas: screen === 'canchas' && !s.canchasInfoVisto ? true : s.showInfoCanchas,
+        canchasInfoVisto: screen === 'canchas' ? true : s.canchasInfoVisto,
       }));
     },
     toggleIngresosMenu: (e) => {
@@ -638,8 +660,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     openMediosPago: () => update({ showMediosPago: true }),
     closeMediosPago: () => update({ showMediosPago: false }),
-    openInfoCanchas: () => update({ showInfoCanchas: true }),
     closeInfoCanchas: () => update({ showInfoCanchas: false }),
+    openAjustarPreciosCanchas: () => update({ showAjustarPreciosCanchas: true }),
+    closeAjustarPreciosCanchas: () => {
+      update({ showAjustarPreciosCanchas: false });
+      showToast('Precios de canchas actualizados');
+    },
+    setPrecioCancha: (id, precio) => update((s) => ({ canchas: s.canchas.map((c) => (c.id === id ? { ...c, precio } : c)) })),
+    openModificarProductoBuffet: (id) => update({ modificarProductoBuffetId: id, nuevoStockBuffetCantidad: '' }),
+    closeModificarProductoBuffet: () => update({ modificarProductoBuffetId: null, nuevoStockBuffetCantidad: '' }),
+    setPrecioBuffetSocio: (id, precio) =>
+      update((s) => ({ productosBuffet: s.productosBuffet.map((p) => (p.id === id ? { ...p, precioSocio: precio } : p)) })),
+    setPrecioBuffetNoSocio: (id, precio) =>
+      update((s) => ({ productosBuffet: s.productosBuffet.map((p) => (p.id === id ? { ...p, precioNoSocio: precio } : p)) })),
+    eliminarProductoBuffet: (id) => {
+      update((s) => ({
+        productosBuffet: s.productosBuffet.filter((p) => p.id !== id),
+        modificarProductoBuffetId: s.modificarProductoBuffetId === id ? null : s.modificarProductoBuffetId,
+      }));
+      showToast('Producto eliminado');
+    },
+    openModificarProductoShop: (id) => update({ modificarProductoShopId: id, nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
+    closeModificarProductoShop: () => update({ modificarProductoShopId: null, nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
+    setPrecioShop: (id, precio) => update((s) => ({ productosShop: s.productosShop.map((p) => (p.id === id ? { ...p, precio } : p)) })),
+    eliminarProductoShop: (id) => {
+      update((s) => ({
+        productosShop: s.productosShop.filter((p) => p.id !== id),
+        modificarProductoShopId: s.modificarProductoShopId === id ? null : s.modificarProductoShopId,
+      }));
+      showToast('Producto eliminado');
+    },
 
     selectCancha: (id) => update({ selectedCanchaId: id }),
     onDiaChange: (v) => update({ selectedDia: v }),
@@ -735,11 +785,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       });
     },
-    openReponerStockBuffet: () => update({ showReponerStockBuffet: true }),
-    closeReponerStockBuffet: () => update({ showReponerStockBuffet: false, nuevoStockBuffetProductoId: '', nuevoStockBuffetCantidad: '' }),
-    openReponerStockShop: () => update({ showReponerStockShop: true }),
-    closeReponerStockShop: () => update({ showReponerStockShop: false, nuevoStockShopProductoId: '', nuevoStockShopCantidad: '', nuevoStockShopTalle: '', nuevoStockShopColor: '' }),
-
     openVerPartido: (id) => update({ showVerPartido: true, verPartidoId: id }),
     closeVerPartido: () => update({ showVerPartido: false, verPartidoId: null }),
     quitarVerPartido: () => {
@@ -799,13 +844,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return {
           ...prev,
           socios: prev.socios.map((x) => (x.id === id ? { ...x, estado: 'al_dia', deuda: 0, ultimoPago: '29/07/2026' } : x)),
-          pagosHoy: [{ id: Date.now(), nombre: s.nombre + ' ' + s.apellido, monto, medio: 'Efectivo', hora: 'ahora' }, ...prev.pagosHoy],
+          pagosHoy: [
+            { id: Date.now(), socioId: s.id, nombre: s.nombre + ' ' + s.apellido, monto, medio: 'Efectivo', hora: 'ahora', estadoAnterior: s.estado, deudaAnterior: s.deuda, ultimoPagoAnterior: s.ultimoPago },
+            ...prev.pagosHoy,
+          ],
         };
       });
     },
 
     openAgregarSocio: () => update({
       showSocioModal: true,
+      socioEditandoId: null,
       nuevoSocioNombre: '',
       nuevoSocioApellido: '',
       nuevoSocioTelefono: '',
@@ -813,12 +862,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       nuevoSocioMedioPago: 'Efectivo',
       nuevoSocioDebitoAutomatico: false,
     }),
-    closeSocioModal: () => update({ showSocioModal: false }),
+    openEditarSocio: (id) => {
+      setState((prev) => {
+        const socio = prev.socios.find((s) => s.id === id);
+        if (!socio) return prev;
+        return {
+          ...prev,
+          showSocioModal: true,
+          socioEditandoId: id,
+          nuevoSocioNombre: socio.nombre,
+          nuevoSocioApellido: socio.apellido,
+          nuevoSocioTelefono: socio.telefono,
+          nuevoSocioCategoriaId: String(socio.categoriaId),
+          nuevoSocioMedioPago: socio.medioPago ?? 'Efectivo',
+          nuevoSocioDebitoAutomatico: socio.debitoAutomatico,
+        };
+      });
+    },
+    closeSocioModal: () => update({ showSocioModal: false, socioEditandoId: null }),
     setNuevoSocioNombre: (v) => update({ nuevoSocioNombre: v }),
     setNuevoSocioApellido: (v) => update({ nuevoSocioApellido: v }),
     setNuevoSocioTelefono: (v) => update({ nuevoSocioTelefono: v }),
     setNuevoSocioCategoriaId: (v) => update({ nuevoSocioCategoriaId: v }),
-    setNuevoSocioMedioPago: (v) => update({ nuevoSocioMedioPago: v }),
+    setNuevoSocioMedioPago: (v) => update((s) => ({ nuevoSocioMedioPago: v, nuevoSocioDebitoAutomatico: v === 'Tarjeta' ? s.nuevoSocioDebitoAutomatico : false })),
     toggleNuevoSocioDebitoAutomatico: () => update((s) => ({ nuevoSocioDebitoAutomatico: !s.nuevoSocioDebitoAutomatico })),
     guardarSocio: () => {
       setState((prev) => {
@@ -830,6 +896,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           showToast('Completá nombre, apellido, teléfono y categoría');
           return prev;
         }
+        const debitoAutomatico = prev.nuevoSocioMedioPago === 'Tarjeta' && prev.nuevoSocioDebitoAutomatico;
+
+        if (prev.socioEditandoId) {
+          const id = prev.socioEditandoId;
+          showToast('Socio actualizado');
+          return {
+            ...prev,
+            socios: prev.socios.map((s) =>
+              s.id === id ? { ...s, nombre, apellido, telefono, categoriaId, medioPago: prev.nuevoSocioMedioPago, debitoAutomatico } : s
+            ),
+            showSocioModal: false,
+            socioEditandoId: null,
+          };
+        }
+
         const numero = prev.socios.reduce((max, s) => Math.max(max, s.numero), 100) + 1;
         const nuevoSocio: Socio = {
           id: Date.now(),
@@ -839,13 +920,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           estado: 'al_dia',
           deuda: 0,
           ultimoPago: '29/07/2026',
-          debitoAutomatico: prev.nuevoSocioDebitoAutomatico,
+          debitoAutomatico,
           telefono,
           medioPago: prev.nuevoSocioMedioPago,
           categoriaId,
         };
         showToast('Socio agregado — #' + numero);
         return { ...prev, socios: [...prev.socios, nuevoSocio], showSocioModal: false };
+      });
+    },
+    eliminarSocio: (id) => {
+      setState((prev) => {
+        const socio = prev.socios.find((s) => s.id === id);
+        if (!socio) return prev;
+        if (prev.socios[0]?.id === id) {
+          showToast('No se puede dar de baja a ' + socio.nombre + ' — es la cuenta activa del Portal del Hincha en esta demo');
+          return prev;
+        }
+        const { [id]: _quitado, ...recordatorios } = prev.recordatorios;
+        showToast('Socio dado de baja — ' + socio.nombre + ' ' + socio.apellido);
+        return { ...prev, socios: prev.socios.filter((s) => s.id !== id), recordatorios };
       });
     },
 
@@ -861,9 +955,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('Cuota marcada como pagada');
         return {
           ...prev,
-          pagosHoy: [{ id: Date.now(), nombre: s.nombre + ' ' + s.apellido, monto: cuotaDeSocio(s, prev.categorias), medio: prev.nuevoPagoMedio, hora: 'ahora' }, ...prev.pagosHoy],
+          pagosHoy: [
+            {
+              id: Date.now(),
+              socioId: s.id,
+              nombre: s.nombre + ' ' + s.apellido,
+              monto: cuotaDeSocio(s, prev.categorias),
+              medio: prev.nuevoPagoMedio,
+              hora: 'ahora',
+              estadoAnterior: s.estado,
+              deudaAnterior: s.deuda,
+              ultimoPagoAnterior: s.ultimoPago,
+            },
+            ...prev.pagosHoy,
+          ],
           socios: prev.socios.map((x) => (x.id === s.id ? { ...x, estado: 'al_dia', deuda: 0, ultimoPago: '29/07/2026' } : x)),
           nuevoPagoSocioId: '',
+        };
+      });
+    },
+    quitarPago: (id) => {
+      setState((prev) => {
+        const pago = prev.pagosHoy.find((p) => p.id === id);
+        if (!pago) return prev;
+        showToast('Pago eliminado — se restauró el estado anterior de ' + pago.nombre);
+        return {
+          ...prev,
+          pagosHoy: prev.pagosHoy.filter((p) => p.id !== id),
+          socios: prev.socios.map((x) =>
+            x.id === pago.socioId
+              ? { ...x, estado: pago.estadoAnterior, deuda: pago.deudaAnterior, ultimoPago: pago.ultimoPagoAnterior }
+              : x
+          ),
         };
       });
     },
@@ -892,7 +1015,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return {
             ...prev,
             ventasShop: [
-              { id: Date.now(), producto: p.nombre + ' (Talle ' + variante.talle + ' · ' + variante.color + ')', precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' },
+              { id: Date.now(), productoId: p.id, varianteId: variante.id, producto: p.nombre + ' (Talle ' + variante.talle + ' · ' + variante.color + ')', precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' },
               ...prev.ventasShop,
             ],
             productosShop: prev.productosShop.map((x) =>
@@ -915,23 +1038,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('Venta registrada');
         return {
           ...prev,
-          ventasShop: [{ id: Date.now(), producto: p.nombre, precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' }, ...prev.ventasShop],
+          ventasShop: [{ id: Date.now(), productoId: p.id, producto: p.nombre, precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' }, ...prev.ventasShop],
           productosShop: prev.productosShop.map((x) => (x.id === p.id ? { ...x, stock: x.stock - 1 } : x)),
           nuevaVentaProductoId: '',
         };
       });
     },
+    quitarVentaShop: (id) => {
+      setState((prev) => {
+        const venta = prev.ventasShop.find((v) => v.id === id);
+        if (!venta) return prev;
+        showToast('Venta eliminada — stock repuesto');
+        return {
+          ...prev,
+          ventasShop: prev.ventasShop.filter((v) => v.id !== id),
+          productosShop: prev.productosShop.map((x) =>
+            x.id === venta.productoId
+              ? {
+                  ...x,
+                  stock: x.stock + 1,
+                  variantes: venta.varianteId ? (x.variantes || []).map((v) => (v.id === venta.varianteId ? { ...v, stock: v.stock + 1 } : v)) : x.variantes,
+                }
+              : x
+          ),
+        };
+      });
+    },
 
-    setNuevoStockShopProductoId: (v) => update({ nuevoStockShopProductoId: v }),
     setNuevoStockShopCantidad: (v) => update({ nuevoStockShopCantidad: v }),
     setNuevoStockShopTalle: (v) => update({ nuevoStockShopTalle: v }),
     setNuevoStockShopColor: (v) => update({ nuevoStockShopColor: v }),
     reponerStockShop: () => {
       setState((prev) => {
-        const p = prev.productosShop.find((x) => String(x.id) === String(prev.nuevoStockShopProductoId));
+        const p = prev.productosShop.find((x) => x.id === prev.modificarProductoShopId);
         const cantidad = parseInt(prev.nuevoStockShopCantidad, 10);
         if (!p || !cantidad || cantidad <= 0) {
-          showToast('Elegí un producto y una cantidad válida');
+          showToast('Ingresá una cantidad válida');
           return prev;
         }
         if (p.categoria === 'Indumentaria') {
@@ -952,20 +1094,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             productosShop: prev.productosShop.map((x) =>
               x.id === p.id ? { ...x, stock: x.stock + cantidad, variantes: nuevasVariantes } : x
             ),
-            nuevoStockShopProductoId: '',
             nuevoStockShopCantidad: '',
             nuevoStockShopTalle: '',
             nuevoStockShopColor: '',
-            showReponerStockShop: false,
           };
         }
         showToast('Stock actualizado — ' + p.nombre);
         return {
           ...prev,
           productosShop: prev.productosShop.map((x) => (x.id === p.id ? { ...x, stock: x.stock + cantidad } : x)),
-          nuevoStockShopProductoId: '',
           nuevoStockShopCantidad: '',
-          showReponerStockShop: false,
         };
       });
     },
@@ -997,24 +1135,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       });
     },
+    quitarVentaBuffet: (id) => {
+      setState((prev) => {
+        const venta = prev.ventasBuffet.find((v) => v.id === id);
+        if (!venta) return prev;
+        showToast('Venta eliminada — stock repuesto');
+        return {
+          ...prev,
+          ventasBuffet: prev.ventasBuffet.filter((v) => v.id !== id),
+          productosBuffet: prev.productosBuffet.map((x) => (x.id === venta.productoId ? { ...x, stock: x.stock + 1 } : x)),
+        };
+      });
+    },
 
-    setNuevoStockBuffetProductoId: (v) => update({ nuevoStockBuffetProductoId: v }),
     setNuevoStockBuffetCantidad: (v) => update({ nuevoStockBuffetCantidad: v }),
     reponerStockBuffet: () => {
       setState((prev) => {
-        const p = prev.productosBuffet.find((x) => String(x.id) === String(prev.nuevoStockBuffetProductoId));
+        const p = prev.productosBuffet.find((x) => x.id === prev.modificarProductoBuffetId);
         const cantidad = parseInt(prev.nuevoStockBuffetCantidad, 10);
         if (!p || !cantidad || cantidad <= 0) {
-          showToast('Elegí un producto y una cantidad válida');
+          showToast('Ingresá una cantidad válida');
           return prev;
         }
         showToast('Stock actualizado — ' + p.nombre);
         return {
           ...prev,
           productosBuffet: prev.productosBuffet.map((x) => (x.id === p.id ? { ...x, stock: x.stock + cantidad } : x)),
-          nuevoStockBuffetProductoId: '',
           nuevoStockBuffetCantidad: '',
-          showReponerStockBuffet: false,
         };
       });
     },
@@ -1056,17 +1203,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNuevoTitulo: (v) => update({ nuevoTitulo: v }),
     setNuevoCuerpo: (v) => update({ nuevoCuerpo: v }),
     setNuevoDestinatario: (v) => update({ nuevoDestinatario: v }),
+    setNuevoCanalEnvio: (v) => update({ nuevoCanalEnvio: v }),
     enviarComunicado: () => {
       setState((prev) => {
         if (!prev.nuevoTitulo.trim() || !prev.nuevoCuerpo.trim()) {
           showToast('Completá título y mensaje');
           return prev;
         }
-        showToast('Comunicado enviado a ' + prev.nuevoDestinatario);
+        const canal = prev.nuevoCanalEnvio;
+        if (canal === 'whatsapp' || canal === 'ambos') {
+          const mensaje = '📢 ' + prev.nuevoTitulo + '\n\n' + prev.nuevoCuerpo;
+          window.open('https://wa.me/?text=' + encodeURIComponent(mensaje), '_blank');
+        }
+        const mensajeToast =
+          canal === 'whatsapp'
+            ? 'Abriendo WhatsApp...'
+            : canal === 'ambos'
+              ? 'Comunicado enviado a ' + prev.nuevoDestinatario + ' y por WhatsApp'
+              : 'Comunicado enviado a ' + prev.nuevoDestinatario;
+        showToast(mensajeToast);
         return {
           ...prev,
           comunicados: [
-            { id: Date.now(), titulo: prev.nuevoTitulo, cuerpo: prev.nuevoCuerpo, destinatario: prev.nuevoDestinatario, fecha: '29/07/2026', hora: 'ahora' },
+            { id: Date.now(), titulo: prev.nuevoTitulo, cuerpo: prev.nuevoCuerpo, destinatario: prev.nuevoDestinatario, fecha: '29/07/2026', hora: 'ahora', canal },
             ...prev.comunicados,
           ],
           nuevoTitulo: '',
@@ -1149,6 +1308,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         torneos: s.torneos.filter((t) => t.id !== id),
         equiposTorneo: s.equiposTorneo.filter((e) => e.torneoId !== id),
         partidosTorneo: s.partidosTorneo.filter((p) => p.torneoId !== id),
+        inscripcionesTorneo: s.inscripcionesTorneo.filter((i) => i.torneoId !== id),
         torneoExpandidoId: s.torneoExpandidoId === id ? null : s.torneoExpandidoId,
       }));
       showToast('Torneo eliminado');
@@ -1179,6 +1339,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .catch(() => showToast('No se pudo copiar el mensaje'));
     },
     toggleTorneoFixture: (id) => update((s) => ({ torneoExpandidoId: s.torneoExpandidoId === id ? null : id })),
+    setTorneoFiltroEstado: (v) => update({ torneoFiltroEstado: v }),
     setNuevoEquipoNombre: (v) => update({ nuevoEquipoNombre: v }),
     agregarEquipoTorneo: (torneoId) => {
       setState((prev) => {

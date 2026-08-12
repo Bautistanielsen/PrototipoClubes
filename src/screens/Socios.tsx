@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
-import { estadoMeta } from '../lib/derive';
+import { estadoMeta, cuotasResumen } from '../lib/derive';
 import { formatMoney } from '../lib/format';
 import { exportToCSV } from '../lib/export';
+import { iconCommon } from '../lib/movimientoMeta';
 import type { EstadoFilter } from '../types';
 
 const filterBtnStyle = (active: boolean) => ({
@@ -17,6 +18,31 @@ const filterBtnStyle = (active: boolean) => ({
   cursor: 'pointer',
 });
 
+const statCard = { flex: 1, minWidth: 150, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14 };
+const iconBadge = (meta: { color: string; bg: string }) => ({ width: 40, height: 40, borderRadius: 10, background: meta.bg, color: meta.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 });
+
+const socioIcon = <svg {...iconCommon}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" /></svg>;
+const estadoIcon: Record<string, React.ReactNode> = {
+  al_dia: <svg {...iconCommon}><path d="M20 6 9 17l-5-5" /></svg>,
+  por_vencer: <svg {...iconCommon}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>,
+  moroso: <svg {...iconCommon}><path d="M12 9v4M12 17h.01" /><path d="m10.3 3.9-8 14A1.7 1.7 0 0 0 3.7 20.5h16.6a1.7 1.7 0 0 0 1.4-2.6l-8-14a1.7 1.7 0 0 0-2.9 0Z" /></svg>,
+};
+const pencilIcon = (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+const trashIcon = (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+  </svg>
+);
+
 export default function Socios() {
   const { state, actions } = useApp();
 
@@ -26,6 +52,8 @@ export default function Socios() {
       .filter((x) => state.estadoFilter === 'todos' || x.estado === state.estadoFilter)
       .filter((x) => !q || (x.nombre + ' ' + x.apellido).toLowerCase().includes(q) || String(x.numero).includes(q));
   }, [state.socios, state.estadoFilter, state.searchQuery]);
+
+  const resumen = useMemo(() => cuotasResumen(state.socios, state.categorias), [state.socios, state.categorias]);
 
   const filters: { key: EstadoFilter; label: string }[] = [
     { key: 'todos', label: 'Todos' },
@@ -55,8 +83,39 @@ export default function Socios() {
           onClick={exportarPadron}
           style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
         >
-          Exportar CSV
+          Exportar Excel
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={statCard}>
+          <div style={iconBadge({ color: '#172a54', bg: '#eaeefb' })}>{socioIcon}</div>
+          <div>
+            <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Socios totales</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 2 }}>{resumen.totalSocios}</div>
+          </div>
+        </div>
+        <div style={statCard}>
+          <div style={iconBadge(estadoMeta.al_dia)}>{estadoIcon.al_dia}</div>
+          <div>
+            <div style={{ fontSize: 13, color: estadoMeta.al_dia.color, fontWeight: 600 }}>Al día</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 2 }}>{resumen.countAlDia}</div>
+          </div>
+        </div>
+        <div style={statCard}>
+          <div style={iconBadge(estadoMeta.por_vencer)}>{estadoIcon.por_vencer}</div>
+          <div>
+            <div style={{ fontSize: 13, color: estadoMeta.por_vencer.color, fontWeight: 600 }}>Por vencer</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 2 }}>{resumen.countPorVencer}</div>
+          </div>
+        </div>
+        <div style={statCard}>
+          <div style={iconBadge(estadoMeta.moroso)}>{estadoIcon.moroso}</div>
+          <div>
+            <div style={{ fontSize: 13, color: estadoMeta.moroso.color, fontWeight: 600 }}>Morosos</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 2 }}>{resumen.countMoroso}</div>
+          </div>
+        </div>
       </div>
 
       <button
@@ -65,7 +124,7 @@ export default function Socios() {
         style={{
           position: 'fixed',
           right: 28,
-          bottom: state.isMobile ? 92 : 28,
+          bottom: state.isMobile ? 152 : 96,
           zIndex: 30,
           display: 'flex',
           alignItems: 'center',
@@ -137,6 +196,20 @@ export default function Socios() {
                     <div style={{ fontSize: 12.5, fontWeight: 700, padding: '6px 12px', borderRadius: 20, background: meta.bg, color: meta.color, whiteSpace: 'nowrap' }}>
                       {meta.label}
                     </div>
+                    <button
+                      onClick={() => actions.openEditarSocio(s.id)}
+                      aria-label={`Editar ${s.nombre} ${s.apellido}`}
+                      style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', cursor: 'pointer', flexShrink: 0 }}
+                    >
+                      {pencilIcon}
+                    </button>
+                    <button
+                      onClick={() => actions.eliminarSocio(s.id)}
+                      aria-label={`Dar de baja a ${s.nombre} ${s.apellido}`}
+                      style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: '1px solid #f3d3d8', background: '#fff', color: '#c1293c', cursor: 'pointer', flexShrink: 0 }}
+                    >
+                      {trashIcon}
+                    </button>
                   </div>
                 </div>
                 {esMoroso && (

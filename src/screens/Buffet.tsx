@@ -1,15 +1,60 @@
 import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney } from '../lib/format';
+import type { MedioPago } from '../types';
 
 const selectStyle = { height: 46, border: '1px solid #e3e7ef', borderRadius: 9, padding: '0 12px', fontSize: 14, color: '#16203a', background: '#fff' };
+const iconCommon = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+const MEDIOS: MedioPago[] = ['Efectivo', 'Transferencia', 'MercadoPago', 'Tarjeta'];
+const iconBtnStyle = { width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: '1px solid #d7dce6', background: '#fff', cursor: 'pointer', flexShrink: 0 };
+
+function PencilIcon() {
+  return (
+    <svg {...iconCommon}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg {...iconCommon}>
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+function esBebida(nombre: string) {
+  return /gaseosa|agua|caf[eé]|jugo|limonada/i.test(nombre);
+}
+
+function CategoriaBadge({ nombre }: { nombre: string }) {
+  const bebida = esBebida(nombre);
+  const color = bebida ? '#2f6fb0' : '#a15c00';
+  const bg = bebida ? '#eaf2fa' : '#fdf0dc';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color, background: bg, padding: '4px 9px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      {bebida
+        ? <svg {...iconCommon}><path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11" /></svg>
+        : <svg {...iconCommon}><path d="M6 2v20M6 2c-2 2-2 6 0 8M6 2c2 2 2 6 0 8M18 2v20M18 2a3 3 0 0 0-3 3v4a3 3 0 0 0 3 3" /></svg>}
+      {bebida ? 'Bebida' : 'Comida'}
+    </div>
+  );
+}
 
 export default function Buffet() {
   const { state, actions } = useApp();
 
   const totalBuffet = useMemo(() => state.ventasBuffet.reduce((a, v) => a + v.precio, 0), [state.ventasBuffet]);
-  const totalEfectivo = useMemo(() => state.ventasBuffet.filter((v) => v.medio === 'Efectivo').reduce((a, v) => a + v.precio, 0), [state.ventasBuffet]);
-  const totalTransferencia = useMemo(() => state.ventasBuffet.filter((v) => v.medio === 'Transferencia').reduce((a, v) => a + v.precio, 0), [state.ventasBuffet]);
+  const totalesPorMedio = useMemo(
+    () => MEDIOS.map((medio) => ({ medio, total: state.ventasBuffet.filter((v) => v.medio === medio).reduce((a, v) => a + v.precio, 0) })).filter((m) => m.total > 0),
+    [state.ventasBuffet]
+  );
   const stockBajo = useMemo(() => state.productosBuffet.filter((p) => p.stock <= p.stockMin), [state.productosBuffet]);
 
   return (
@@ -31,14 +76,18 @@ export default function Buffet() {
           <div style={{ fontSize: 13, color: '#aeb8d6', fontWeight: 600 }}>Total vendido hoy</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginTop: 6 }}>{formatMoney(totalBuffet)}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
-          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Efectivo</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(totalEfectivo)}</div>
-        </div>
-        <div style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
-          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Transferencia</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(totalTransferencia)}</div>
-        </div>
+        {totalesPorMedio.length === 0 ? (
+          <div style={{ flex: 2, minWidth: 220, background: '#fff', border: '1px dashed #d7dce6', borderRadius: 14, padding: '20px 22px', display: 'flex', alignItems: 'center', color: '#8b93a5', fontSize: 13.5 }}>
+            Todavía no hay ventas registradas hoy.
+          </div>
+        ) : (
+          totalesPorMedio.map((m) => (
+            <div key={m.medio} style={{ flex: 1, minWidth: 180, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px' }}>
+              <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>{m.medio}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(m.total)}</div>
+            </div>
+          ))
+        )}
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '20px 22px', marginBottom: 16 }}>
@@ -63,6 +112,8 @@ export default function Buffet() {
           <select value={state.nuevaVentaBuffetMedio} onChange={(e) => actions.setNuevaVentaBuffetMedio(e.target.value as any)} style={{ ...selectStyle, flex: 1, minWidth: 140 }}>
             <option value="Efectivo">Efectivo</option>
             <option value="Transferencia">Transferencia</option>
+            <option value="MercadoPago">MercadoPago</option>
+            <option value="Tarjeta">Tarjeta</option>
           </select>
           <button
             onClick={actions.registrarVentaBuffet}
@@ -73,22 +124,17 @@ export default function Buffet() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a' }}>Menú y stock</div>
-        <button
-          onClick={actions.openReponerStockBuffet}
-          style={{ height: 42, padding: '0 20px', border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', boxShadow: '0 2px 8px rgba(23,42,84,0.25)' }}
-        >
-          + Reponer stock
-        </button>
-      </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#16203a', marginBottom: 10 }}>Menú y stock</div>
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
         {state.productosBuffet.map((p) => {
           const bajo = p.stock <= p.stockMin;
           return (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap', gap: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <CategoriaBadge nombre={p.nombre} />
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#16203a' }}>{p.nombre}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ fontSize: 12.5, color: '#6b7488' }}>
                   {formatMoney(p.precioSocio)} socio · {formatMoney(p.precioNoSocio)} no socio
                 </div>
@@ -105,6 +151,20 @@ export default function Buffet() {
                 >
                   {p.stock} en stock
                 </div>
+                <button
+                  onClick={() => actions.openModificarProductoBuffet(p.id)}
+                  aria-label={`Modificar ${p.nombre}`}
+                  style={{ ...iconBtnStyle, color: '#16203a' }}
+                >
+                  <PencilIcon />
+                </button>
+                <button
+                  onClick={() => actions.eliminarProductoBuffet(p.id)}
+                  aria-label={`Eliminar ${p.nombre}`}
+                  style={{ ...iconBtnStyle, border: '1px solid #f3d3d8', color: '#c1293c' }}
+                >
+                  <TrashIcon />
+                </button>
               </div>
             </div>
           );
@@ -126,7 +186,15 @@ export default function Buffet() {
                   {v.tipoCliente} · {v.medio} · {v.hora}
                 </div>
               </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1a7d43' }}>{formatMoney(v.precio)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#1a7d43' }}>{formatMoney(v.precio)}</div>
+                <button
+                  onClick={() => actions.quitarVentaBuffet(v.id)}
+                  style={{ height: 34, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#c1293c', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
           ))}
         </div>

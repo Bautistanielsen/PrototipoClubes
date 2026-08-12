@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useApp } from '../state/AppContext';
 import { HOY_ISO, TURNO_HORAS } from '../lib/derive';
-import { formatFechaLarga } from '../lib/format';
+import { formatFechaLarga, formatMoney } from '../lib/format';
+import { MEDIO_META } from '../lib/movimientoMeta';
+
+const statCard = { flex: 1, minWidth: 170, background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, padding: '18px 20px' };
 
 export default function Canchas() {
   const { state, actions } = useApp();
@@ -13,6 +16,17 @@ export default function Canchas() {
     });
   }, [state.reservas, state.selectedCanchaId, state.selectedDia]);
 
+  const libres = useMemo(() => turnos.filter((t) => !t.reserva).length, [turnos]);
+  const reservados = turnos.length - libres;
+  const recaudadoCancha = useMemo(
+    () => turnos.reduce((a, t) => a + (t.reserva?.monto ?? 0), 0),
+    [turnos]
+  );
+  const recaudadoDia = useMemo(
+    () => state.reservas.filter((r) => r.dia === state.selectedDia).reduce((a, r) => a + r.monto, 0),
+    [state.reservas, state.selectedDia]
+  );
+
   return (
     <div style={{ animation: 'fadeIn .3s ease' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -21,11 +35,30 @@ export default function Canchas() {
           <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>Turnos disponibles para los socios</div>
         </div>
         <button
-          onClick={actions.openInfoCanchas}
-          style={{ height: 44, padding: '0 16px', borderRadius: 9, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          onClick={actions.openAjustarPreciosCanchas}
+          style={{ height: 44, padding: '0 20px', borderRadius: 9, border: 'none', background: '#172a54', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
         >
-          ¿Los socios pueden reservar solos?
+          Ajustar precios
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ ...statCard, background: '#172a54', border: 'none' }}>
+          <div style={{ fontSize: 13, color: '#aeb8d6', fontWeight: 600 }}>Recaudado ese día — todas las canchas</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginTop: 6 }}>{formatMoney(recaudadoDia)}</div>
+        </div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: '#1a7d43', fontWeight: 600 }}>Turnos libres</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{libres}</div>
+        </div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: '#a15c00', fontWeight: 600 }}>Turnos reservados</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{reservados}</div>
+        </div>
+        <div style={statCard}>
+          <div style={{ fontSize: 13, color: '#6b7488', fontWeight: 600 }}>Recaudado en esta cancha</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginTop: 6 }}>{formatMoney(recaudadoCancha)}</div>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -47,7 +80,7 @@ export default function Canchas() {
                 cursor: 'pointer',
               }}
             >
-              {c.nombre} #{c.numero}
+              {c.nombre} #{c.numero} · {formatMoney(c.precio)}
             </button>
           );
         })}
@@ -65,35 +98,44 @@ export default function Canchas() {
       </div>
 
       <div style={{ background: '#fff', border: '1px solid #e3e7ef', borderRadius: 14, overflow: 'hidden' }}>
-        {turnos.map((t) => (
-          <div key={t.hora} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: '#16203a', width: 56 }}>{t.hora}</div>
+        {turnos.map((t) => {
+          const medioMeta = t.reserva ? MEDIO_META[t.reserva.medioPago || 'Efectivo'] : undefined;
+          return (
+            <div key={t.hora} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 20px', borderBottom: '1px solid #f0f1f5', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ fontSize: 14.5, fontWeight: 700, color: '#16203a', width: 56 }}>{t.hora}</div>
+                {t.reserva ? (
+                  <div>
+                    <div style={{ fontSize: 13, color: '#6b7488' }}>
+                      Reservado por <span style={{ fontWeight: 600, color: '#16203a' }}>{t.reserva.nombre}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+                      {medioMeta && <span style={{ width: 7, height: 7, borderRadius: '50%', background: medioMeta.color, display: 'inline-block', flexShrink: 0 }} />}
+                      {t.reserva.medioPago || 'Efectivo'} · {formatMoney(t.reserva.monto)}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12.5, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#e5f6ea', color: '#1a7d43' }}>Libre</div>
+                )}
+              </div>
               {t.reserva ? (
-                <div style={{ fontSize: 13, color: '#6b7488' }}>
-                  Reservado por <span style={{ fontWeight: 600, color: '#16203a' }}>{t.reserva.nombre}</span>
-                </div>
+                <button
+                  onClick={() => actions.liberarReserva(t.reserva!.id)}
+                  style={{ height: 38, padding: '0 16px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Liberar
+                </button>
               ) : (
-                <div style={{ fontSize: 12.5, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#e5f6ea', color: '#1a7d43' }}>Libre</div>
+                <button
+                  onClick={() => actions.openReservar(t.hora)}
+                  style={{ height: 38, padding: '0 16px', borderRadius: 8, border: 'none', background: '#172a54', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Reservar
+                </button>
               )}
             </div>
-            {t.reserva ? (
-              <button
-                onClick={() => actions.liberarReserva(t.reserva!.id)}
-                style={{ height: 38, padding: '0 16px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-              >
-                Liberar
-              </button>
-            ) : (
-              <button
-                onClick={() => actions.openReservar(t.hora)}
-                style={{ height: 38, padding: '0 16px', borderRadius: 8, border: 'none', background: '#172a54', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-              >
-                Reservar
-              </button>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

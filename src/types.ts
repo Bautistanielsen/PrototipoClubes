@@ -23,14 +23,20 @@ export interface Socio {
 
 export interface Pago {
   id: number;
+  socioId: number;
   nombre: string;
   monto: number;
   medio: MedioPago;
   hora: string;
+  estadoAnterior: EstadoSocio;
+  deudaAnterior: number;
+  ultimoPagoAnterior: string;
 }
 
 export interface VentaShop {
   id: number;
+  productoId: number;
+  varianteId?: number;
   producto: string;
   precio: number;
   medio: MedioPago;
@@ -84,6 +90,8 @@ export interface Egreso {
   detalle?: string;
 }
 
+export type CanalEnvio = 'app' | 'whatsapp' | 'ambos';
+
 export interface Comunicado {
   id: number;
   titulo: string;
@@ -92,6 +100,7 @@ export interface Comunicado {
   fecha: string;
   hora: string;
   imagen?: string;
+  canal?: CanalEnvio;
 }
 
 export interface Cancha {
@@ -179,6 +188,7 @@ export interface Formacion {
 }
 
 export type EstadoFilter = 'todos' | EstadoSocio;
+export type EstadoTorneoFilter = 'todos' | EstadoTorneo;
 
 export type AdminScreen =
   | 'dashboard'
