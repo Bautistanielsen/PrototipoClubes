@@ -37,6 +37,15 @@ export function proximoVencimientoCuota(hoyIso: string): string {
   return `${anioVencimiento}-${String(mes).padStart(2, '0')}-${String(DIA_VENCIMIENTO_CUOTA).padStart(2, '0')}`;
 }
 
+/** Último vencimiento de cuota ya pasado en formato ISO — el ciclo que un socio moroso dejó impago. */
+export function ultimoVencimientoCuotaVencido(hoyIso: string): string {
+  const [year, month, day] = hoyIso.split('-').map(Number);
+  const mesVencimiento = day <= DIA_VENCIMIENTO_CUOTA ? month - 1 : month;
+  const anioVencimiento = mesVencimiento < 1 ? year - 1 : year;
+  const mes = ((mesVencimiento - 1 + 12) % 12) + 1;
+  return `${anioVencimiento}-${String(mes).padStart(2, '0')}-${String(DIA_VENCIMIENTO_CUOTA).padStart(2, '0')}`;
+}
+
 export interface PagoHistorial {
   fecha: string;
   monto: number;
@@ -62,7 +71,9 @@ export function historialPagosSocio(socio: Socio, categorias: Categoria[], canti
       mes += 12;
       anio -= 1;
     }
-    historial.push({ fecha: `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`, monto, medioPago });
+    const diasEnMes = new Date(anio, mes, 0).getDate();
+    const diaAjustado = Math.min(dia, diasEnMes);
+    historial.push({ fecha: `${String(diaAjustado).padStart(2, '0')}/${String(mes).padStart(2, '0')}/${anio}`, monto, medioPago });
   }
   return historial;
 }
@@ -146,6 +157,11 @@ export interface IngresosPorFuente {
   ingresoSponsorsDetalle: string;
 }
 
+/** Compara si dos fechas ISO (aaaa-mm-dd) caen en el mismo año y mes. */
+function mismoMes(iso: string, hoyIso: string): boolean {
+  return iso.slice(0, 7) === hoyIso.slice(0, 7);
+}
+
 export function ingresosPorFuente(
   recaudadoMes: number,
   countAlDia: number,
@@ -156,8 +172,9 @@ export function ingresosPorFuente(
   sponsors: Sponsor[],
   hoyIso: string
 ): IngresosPorFuente {
+  const reservasDelMes = reservas.filter((r) => mismoMes(r.dia, hoyIso));
   const ingresoSocios = recaudadoMes;
-  const ingresoCanchas = reservas.reduce((a, r) => a + r.monto, 0);
+  const ingresoCanchas = reservasDelMes.reduce((a, r) => a + r.monto, 0);
   const ingresoVentas = ventasShop.reduce((a, v) => a + v.precio, 0);
   const ingresoBuffet = ventasBuffet.reduce((a, v) => a + v.precio, 0);
   const ingresoTorneos = inscripcionesTorneo.reduce((a, i) => a + i.monto, 0);
@@ -180,7 +197,7 @@ export function ingresosPorFuente(
     pctIngresoTorneos: Math.round((ingresoTorneos / totalFuentes) * 100),
     pctIngresoSponsors: Math.round((ingresoSponsors / totalFuentes) * 100),
     ingresoSociosDetalle: `${countAlDia} socio${countAlDia === 1 ? '' : 's'} al día`,
-    ingresoCanchasDetalle: `${reservas.length} turno${reservas.length === 1 ? '' : 's'} reservado${reservas.length === 1 ? '' : 's'}`,
+    ingresoCanchasDetalle: `${reservasDelMes.length} turno${reservasDelMes.length === 1 ? '' : 's'} reservado${reservasDelMes.length === 1 ? '' : 's'}`,
     ingresoVentasDetalle: `${ventasShop.length} venta${ventasShop.length === 1 ? '' : 's'} registrada${ventasShop.length === 1 ? '' : 's'}`,
     ingresoBuffetDetalle: `${ventasBuffet.length} venta${ventasBuffet.length === 1 ? '' : 's'} registrada${ventasBuffet.length === 1 ? '' : 's'}`,
     ingresoTorneosDetalle: `${inscripcionesTorneo.length} inscripción${inscripcionesTorneo.length === 1 ? '' : 'es'}`,
@@ -200,12 +217,12 @@ export function balanceMes(
 ): number {
   return (
     recaudadoMes +
-    reservas.reduce((a, r) => a + r.monto, 0) +
+    reservas.filter((r) => mismoMes(r.dia, hoyIso)).reduce((a, r) => a + r.monto, 0) +
     ventasShop.reduce((a, v) => a + v.precio, 0) +
     ventasBuffet.reduce((a, v) => a + v.precio, 0) +
     inscripcionesTorneo.reduce((a, i) => a + i.monto, 0) +
     ingresoMensualSponsors(sponsors, hoyIso) -
-    egresos.reduce((a, e) => a + e.monto, 0)
+    egresos.filter((e) => mismoMes(e.fecha, hoyIso)).reduce((a, e) => a + e.monto, 0)
   );
 }
 
@@ -319,13 +336,13 @@ export interface EgresoCategoriaPct {
   pct: number;
 }
 
-/** Total gastado por categoría (sumando todos los movimientos de cada una), de mayor a menor. */
+/** Total gastado por categoría (sumando todos los movimientos de cada una), de mayor a menor. `pct` es el % que representa sobre el total de egresos. */
 export function egresosPorCategoria(egresos: Egreso[]): EgresoCategoriaPct[] {
   const agrupado = agruparEgresosPorCategoria(egresos);
-  const maxEgreso = Math.max(...agrupado.map((e) => e.monto), 1);
+  const totalEgresosMonto = totalEgresos(egresos) || 1;
   return agrupado
     .sort((a, b) => b.monto - a.monto)
-    .map((e) => ({ ...e, montoLabel: formatMoney(e.monto), pct: Math.round((e.monto / maxEgreso) * 100) }));
+    .map((e) => ({ ...e, montoLabel: formatMoney(e.monto), pct: Math.round((e.monto / totalEgresosMonto) * 100) }));
 }
 
 export function topEgreso(egresos: Egreso[]): { categoria: string; montoLabel: string; pct: number } | null {

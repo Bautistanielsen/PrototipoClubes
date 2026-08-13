@@ -45,9 +45,21 @@ export default function ModalOverlay({ onClose, maxWidth, children, cardStyle, a
           borderRadius: 16,
           padding: '26px 24px',
           animation: 'fadeIn .2s ease',
+          position: 'relative',
           ...cardStyle,
         }}
       >
+        <button
+          onClick={onClose}
+          aria-label="Cerrar"
+          style={{
+            position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: '50%',
+            border: 'none', background: '#f2f3f7', color: '#6b7488', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, lineHeight: 1,
+          }}
+        >
+          ✕
+        </button>
         {children}
       </div>
     </div>

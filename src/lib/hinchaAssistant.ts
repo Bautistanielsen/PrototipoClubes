@@ -1,6 +1,6 @@
 import type { Socio, Reserva, Torneo, InscripcionTorneo, Comunicado, EquipoDeportivo } from '../types';
 import type { Evento, SportsCalendarData } from './sportsCalendar';
-import { proximoVencimientoCuota, estadoTorneo } from './derive';
+import { proximoVencimientoCuota, estadoTorneo, comunicadosParaSocio } from './derive';
 import { formatMoney, formatFechaCorta } from './format';
 
 export type HinchaAssistantContext = {
@@ -83,11 +83,17 @@ function misReservas(context: HinchaAssistantContext) {
   return bulletList(propias.length === 1 ? 'Tenés una reserva:' : 'Tenés estas reservas:', items);
 }
 
-function novedades(context: HinchaAssistantContext) {
-  const ultimo = context.comunicados[0];
-  if (!ultimo) return 'No hay novedades publicadas todavía.';
+function fechaOrdenable(fechaDdMmAaaa: string) {
+  const [d, m, y] = fechaDdMmAaaa.split('/');
+  return `${y}${m}${d}`;
+}
 
-  const noLeidas = context.comunicados.filter((c) => !context.comunicadosLeidos.includes(c.id)).length;
+function novedades(context: HinchaAssistantContext) {
+  const visibles = comunicadosParaSocio(context.comunicados, context.socio);
+  if (!visibles.length) return 'No hay novedades publicadas todavía.';
+
+  const ultimo = [...visibles].sort((a, b) => fechaOrdenable(b.fecha).localeCompare(fechaOrdenable(a.fecha)))[0];
+  const noLeidas = visibles.filter((c) => !context.comunicadosLeidos.includes(c.id)).length;
   const prefijo = noLeidas > 0 ? `Tenés ${noLeidas} novedad${noLeidas === 1 ? '' : 'es'} sin leer. ` : '';
   return `${prefijo}La última es "${ultimo.titulo}" (${ultimo.fecha}).`;
 }

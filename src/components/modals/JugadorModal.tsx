@@ -21,14 +21,23 @@ export default function JugadorModal() {
         <input type="date" max={new Date().toISOString().slice(0, 10)} value={state.nuevoJugadorFechaNacimiento} onChange={(e) => actions.setNuevoJugadorFechaNacimiento(e.target.value)} style={inputStyle} aria-label="Fecha de nacimiento" />
         <input type="tel" value={state.nuevoJugadorTelefono} onChange={(e) => actions.setNuevoJugadorTelefono(e.target.value)} placeholder="Teléfono con WhatsApp" aria-label="Teléfono con WhatsApp" style={inputStyle} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-        <select value={state.nuevoJugadorEstado} onChange={(e) => actions.setNuevoJugadorEstado(e.target.value as 'disponible' | 'lesionado')} style={inputStyle} aria-label="Estado del jugador">
-          <option value="disponible">Disponible</option>
-          <option value="lesionado">Lesionado</option>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+        <select value={state.nuevoJugadorPosicion} onChange={(e) => actions.setNuevoJugadorPosicion(e.target.value)} style={inputStyle} aria-label="Posición">
+          <option value="">Posición (opcional)</option>
+          <option value="Arquero">Arquero</option>
+          <option value="Defensor">Defensor</option>
+          <option value="Mediocampista">Mediocampista</option>
+          <option value="Delantero">Delantero</option>
         </select>
         <select value={state.nuevoJugadorFoto} onChange={(e) => actions.setNuevoJugadorFoto(e.target.value)} style={inputStyle} aria-label="Foto opcional">
           <option value="">Sin foto</option>
           {fotosJugadoresDemo.map((foto, index) => <option key={foto} value={foto}>Foto demo {index + 1}</option>)}
+        </select>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <select value={state.nuevoJugadorEstado} onChange={(e) => actions.setNuevoJugadorEstado(e.target.value as 'disponible' | 'lesionado')} style={inputStyle} aria-label="Estado del jugador">
+          <option value="disponible">Disponible</option>
+          <option value="lesionado">Lesionado</option>
         </select>
       </div>
       {state.nuevoJugadorEstado === 'lesionado' && <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>

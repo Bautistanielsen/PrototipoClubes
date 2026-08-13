@@ -61,6 +61,8 @@ import {
 } from '../data/seed';
 import { cuotaDeSocio } from '../lib/derive';
 import { formatFechaCorta, formatMoney } from '../lib/format';
+import { interpretarCSVSocios } from '../lib/importSocios';
+import type { ResultadoImportacionSocios } from '../lib/importSocios';
 import {
   CANONICAL_DEMO_FORMATIONS_SEED_VERSION,
   cloneCanonicalPrimeraFormations,
@@ -187,6 +189,9 @@ export interface AppState {
   estadoFilter: EstadoFilter;
   showSocioModal: boolean;
   socioEditandoId: number | null;
+  showImportarSociosModal: boolean;
+  importarSociosNombreArchivo: string;
+  importarSociosResultado: ResultadoImportacionSocios | null;
   nuevoSocioNombre: string;
   nuevoSocioApellido: string;
   nuevoSocioTelefono: string;
@@ -288,6 +293,7 @@ export interface AppState {
   nuevoJugadorApellido: string;
   nuevoJugadorFechaNacimiento: string;
   nuevoJugadorTelefono: string;
+  nuevoJugadorPosicion: string;
   nuevoJugadorEstado: EstadoJugador;
   nuevoJugadorMotivoLesion: string;
   nuevoJugadorFechaEstimadaRecuperacion: string;
@@ -339,6 +345,9 @@ const initialState: AppState = {
   estadoFilter: 'todos',
   showSocioModal: false,
   socioEditandoId: null,
+  showImportarSociosModal: false,
+  importarSociosNombreArchivo: '',
+  importarSociosResultado: null,
   nuevoSocioNombre: '',
   nuevoSocioApellido: '',
   nuevoSocioTelefono: '',
@@ -440,6 +449,7 @@ const initialState: AppState = {
   nuevoJugadorApellido: '',
   nuevoJugadorFechaNacimiento: '',
   nuevoJugadorTelefono: '',
+  nuevoJugadorPosicion: '',
   nuevoJugadorEstado: 'disponible',
   nuevoJugadorMotivoLesion: '',
   nuevoJugadorFechaEstimadaRecuperacion: '',
@@ -563,6 +573,10 @@ export interface AppActions {
   setNuevoSocioMedioPago: (v: MedioPago) => void;
   toggleNuevoSocioDebitoAutomatico: () => void;
   guardarSocio: () => void;
+  openImportarSocios: () => void;
+  closeImportarSociosModal: () => void;
+  procesarArchivoSocios: (texto: string, nombreArchivo: string) => void;
+  confirmarImportacionSocios: () => void;
   eliminarSocio: (id: number) => void;
   setNuevoPagoSocioId: (v: string) => void;
   setNuevoPagoMedio: (v: MedioPago) => void;
@@ -657,6 +671,7 @@ export interface AppActions {
   setNuevoJugadorApellido: (v: string) => void;
   setNuevoJugadorFechaNacimiento: (v: string) => void;
   setNuevoJugadorTelefono: (v: string) => void;
+  setNuevoJugadorPosicion: (v: string) => void;
   setNuevoJugadorEstado: (v: EstadoJugador) => void;
   setNuevoJugadorMotivoLesion: (v: string) => void;
   setNuevoJugadorFechaEstimadaRecuperacion: (v: string) => void;
@@ -908,7 +923,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     cerrarBienvenidaReservas: () => update({ reservaBienvenidaVista: true }),
     setPortalRol: (rol) => update({ portalRol: rol }),
-    iniciarSesionPortal: () => update({ portalLoggedIn: true, screen: 'portal_inicio' }),
+    iniciarSesionPortal: () => update({ portalLoggedIn: true, portalRol: 'socio', screen: 'portal_inicio' }),
     cerrarSesionPortal: () => update({ portalLoggedIn: false, screen: 'portal_login' }),
     marcarComunicadoLeido: (id) => update((s) => (
       s.comunicadosLeidos.includes(id) ? {} : { comunicadosLeidos: [...s.comunicadosLeidos, id] }
@@ -1067,6 +1082,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           showToast('Completá nombre, apellido, teléfono y categoría');
           return prev;
         }
+        if (telefono.replace(/\D/g, '').length < 8) {
+          showToast('Ingresá un teléfono válido (mínimo 8 dígitos)');
+          return prev;
+        }
         const debitoAutomatico = prev.nuevoSocioMedioPago === 'Tarjeta' && prev.nuevoSocioDebitoAutomatico;
 
         if (prev.socioEditandoId) {
@@ -1098,6 +1117,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
         showToast('Socio agregado — #' + numero);
         return { ...prev, socios: [...prev.socios, nuevoSocio], showSocioModal: false };
+      });
+    },
+    openImportarSocios: () => update({ showImportarSociosModal: true, importarSociosNombreArchivo: '', importarSociosResultado: null }),
+    closeImportarSociosModal: () => update({ showImportarSociosModal: false, importarSociosNombreArchivo: '', importarSociosResultado: null }),
+    procesarArchivoSocios: (texto, nombreArchivo) => {
+      setState((prev) => ({
+        ...prev,
+        importarSociosNombreArchivo: nombreArchivo,
+        importarSociosResultado: interpretarCSVSocios(texto, prev.categorias),
+      }));
+    },
+    confirmarImportacionSocios: () => {
+      setState((prev) => {
+        const resultado = prev.importarSociosResultado;
+        if (!resultado || resultado.filas.length === 0) return prev;
+        let numero = prev.socios.reduce((max, s) => Math.max(max, s.numero), 100);
+        const nuevos: Socio[] = resultado.filas.map((fila) => {
+          numero += 1;
+          return {
+            id: Date.now() + numero,
+            numero,
+            nombre: fila.nombre,
+            apellido: fila.apellido,
+            estado: 'al_dia',
+            deuda: 0,
+            ultimoPago: '29/07/2026',
+            debitoAutomatico: false,
+            telefono: fila.telefono,
+            medioPago: 'Efectivo',
+            categoriaId: fila.categoriaId,
+            dni: fila.dni,
+            domicilio: fila.domicilio,
+            email: fila.email,
+          };
+        });
+        showToast(`Se importaron ${nuevos.length} socio${nuevos.length === 1 ? '' : 's'}`);
+        return { ...prev, socios: [...prev.socios, ...nuevos], showImportarSociosModal: false, importarSociosNombreArchivo: '', importarSociosResultado: null };
       });
     },
     eliminarSocio: (id) => {
@@ -1694,6 +1750,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       nuevoJugadorApellido: '',
       nuevoJugadorFechaNacimiento: '',
       nuevoJugadorTelefono: '',
+      nuevoJugadorPosicion: '',
       nuevoJugadorEstado: 'disponible',
       nuevoJugadorMotivoLesion: '',
       nuevoJugadorFechaEstimadaRecuperacion: '',
@@ -1709,6 +1766,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         nuevoJugadorApellido: jugador.apellido,
         nuevoJugadorFechaNacimiento: jugador.fechaNacimiento,
         nuevoJugadorTelefono: jugador.telefono,
+        nuevoJugadorPosicion: jugador.posicion || '',
         nuevoJugadorEstado: jugador.estado,
         nuevoJugadorMotivoLesion: jugador.estado === 'lesionado' ? jugador.motivoLesion || '' : '',
         nuevoJugadorFechaEstimadaRecuperacion: jugador.estado === 'lesionado' ? jugador.fechaEstimadaRecuperacion || '' : '',
@@ -1720,6 +1778,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNuevoJugadorApellido: (v) => update({ nuevoJugadorApellido: v }),
     setNuevoJugadorFechaNacimiento: (v) => update({ nuevoJugadorFechaNacimiento: v }),
     setNuevoJugadorTelefono: (v) => update({ nuevoJugadorTelefono: v }),
+    setNuevoJugadorPosicion: (v) => update({ nuevoJugadorPosicion: v }),
     setNuevoJugadorEstado: (v) => update(v === 'disponible'
       ? { nuevoJugadorEstado: v, nuevoJugadorMotivoLesion: '', nuevoJugadorFechaEstimadaRecuperacion: '' }
       : { nuevoJugadorEstado: v }),
@@ -1754,6 +1813,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         apellido,
         fechaNacimiento: state.nuevoJugadorFechaNacimiento,
         telefono: state.nuevoJugadorTelefono.trim(),
+        posicion: state.nuevoJugadorPosicion || undefined,
         estado: state.nuevoJugadorEstado,
         motivoLesion: state.nuevoJugadorEstado === 'lesionado' ? motivoLesion : undefined,
         fechaEstimadaRecuperacion: state.nuevoJugadorEstado === 'lesionado' ? fechaEstimadaRecuperacion : undefined,

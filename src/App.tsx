@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './state/AppContext';
 import Sidebar from './components/Sidebar';
 import MobileTopBar from './components/MobileTopBar';
@@ -13,6 +13,7 @@ import SportsAssistant from './components/SportsAssistant';
 import AdminAssistant from './components/AdminAssistant';
 import MediosPagoModal from './components/modals/MediosPagoModal';
 import SocioModal from './components/modals/SocioModal';
+import ImportarSociosModal from './components/modals/ImportarSociosModal';
 import SponsorModal from './components/modals/SponsorModal';
 import InfoCanchasModal from './components/modals/InfoCanchasModal';
 import AjustarPreciosCanchasModal from './components/modals/AjustarPreciosCanchasModal';
@@ -112,7 +113,11 @@ function DeportivoLayout() {
   const nav = [{ screen: 'deportivo_inicio' as const, label: 'Inicio' }, { screen: 'equipos' as const, label: 'Plantel' }, { screen: 'formaciones' as const, label: 'Formaciones' }, { screen: 'partidos' as const, label: 'Partidos' }, { screen: 'calendario' as const, label: 'Calendario' }];
   const statisticsViews: Array<{ view: StatisticsView; label: string }> = [{ view: 'summary', label: 'Resumen' }, { view: 'players', label: 'Jugadores' }, { view: 'tactics', label: 'Táctica' }];
   const selectStatistics = (view: StatisticsView) => { actions.selectEstadisticasVista(view); actions.navigate('estadisticas'); };
-  const toggleStatistics = () => setStatisticsOpen((open) => !open);
+  useEffect(() => { if (state.screen === 'estadisticas') setStatisticsOpen(true); }, [state.screen]);
+  const toggleStatistics = () => {
+    if (state.screen !== 'estadisticas') selectStatistics(state.estadisticasVista);
+    else setStatisticsOpen((open) => !open);
+  };
   if (state.activeEquipoDeportivoId === null) return <><SportsSquadEntry /><EquipoDeportivoModal /><Toast /></>;
   return <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f7fb' }}>
     {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand"><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}><SportsNavIcon screen="estadisticas" /><span>Estadísticas</span><b aria-hidden="true">{statisticsOpen ? '−' : '+'}</b></button>{statisticsOpen && <div className="deportivo-statistics-children">{statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</div>}</div><SportsSquadSwitcher variant="sidebar" /><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
@@ -143,7 +148,7 @@ function PortalLayout() {
   </div>;
 }
 
-function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><AjustarPreciosCanchasModal /><ReservaModal /><MediosPagoModal /><ModificarProductoBuffetModal /><ModificarProductoShopModal /><NuevoProductoBuffetModal /><NuevoProductoShopModal /><DifundirTorneoModal /><SocioModal /><SponsorModal /></>; }
+function AdministrativeModals() { return <><VerPartidoModal /><AgregarPartidoModal /><InfoCanchasModal /><AjustarPreciosCanchasModal /><ReservaModal /><MediosPagoModal /><ModificarProductoBuffetModal /><ModificarProductoShopModal /><NuevoProductoBuffetModal /><NuevoProductoShopModal /><DifundirTorneoModal /><SocioModal /><ImportarSociosModal /><SponsorModal /></>; }
 
 function Shell() {
   const { state } = useApp();

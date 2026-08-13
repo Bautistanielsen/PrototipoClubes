@@ -79,12 +79,20 @@ export default function Socios() {
             {filteredSocios.length} de {state.socios.length} socios
           </div>
         </div>
-        <button
-          onClick={exportarPadron}
-          style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
-        >
-          Exportar Excel
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={actions.openImportarSocios}
+            style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            Importar Excel
+          </button>
+          <button
+            onClick={exportarPadron}
+            style={{ height: 42, padding: '0 18px', border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, fontSize: 13.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            Exportar Excel
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -174,6 +182,7 @@ export default function Socios() {
             const meta = estadoMeta[s.estado];
             const esMoroso = s.estado === 'moroso';
             const rec = state.recordatorios[s.id] || 'pendiente';
+            const esProtegido = state.socios[0]?.id === s.id;
             return (
               <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
@@ -205,8 +214,15 @@ export default function Socios() {
                     </button>
                     <button
                       onClick={() => actions.eliminarSocio(s.id)}
-                      aria-label={`Dar de baja a ${s.nombre} ${s.apellido}`}
-                      style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, border: '1px solid #f3d3d8', background: '#fff', color: '#c1293c', cursor: 'pointer', flexShrink: 0 }}
+                      disabled={esProtegido}
+                      aria-label={esProtegido ? `${s.nombre} ${s.apellido} es la cuenta demo del Portal del Hincha y no se puede dar de baja` : `Dar de baja a ${s.nombre} ${s.apellido}`}
+                      title={esProtegido ? 'Es la cuenta activa del Portal del Hincha en esta demo — no se puede dar de baja' : undefined}
+                      style={{
+                        width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7,
+                        border: `1px solid ${esProtegido ? '#e3e7ef' : '#f3d3d8'}`, background: '#fff',
+                        color: esProtegido ? '#c3cbe4' : '#c1293c',
+                        cursor: esProtegido ? 'not-allowed' : 'pointer', flexShrink: 0,
+                      }}
                     >
                       {trashIcon}
                     </button>

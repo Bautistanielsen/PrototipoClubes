@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChangeEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney, formatFechaCorta } from '../lib/format';
-import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, estadoMeta, historialPagosSocio, comunicadosParaSocio } from '../lib/derive';
+import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, ultimoVencimientoCuotaVencido, estadoMeta, estadoSponsor, historialPagosSocio, comunicadosParaSocio } from '../lib/derive';
 import { readSportsCalendarData, parseFinalizedResult } from '../lib/sportsCalendar';
 import type { SportsCalendarData } from '../lib/sportsCalendar';
 import type { MedioPago, Comunicado, Torneo } from '../types';
@@ -310,7 +310,39 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Contacto y ubicación</span>
     </button>
 
+    <SponsorsPortal />
+
     {showContacto && <ContactoClubModal onClose={() => setShowContacto(false)} />}
+  </>;
+}
+
+function SponsorsPortal() {
+  const { state } = useApp();
+  const sponsors = state.sponsors.filter((s) => s.ubicacion === 'Portal del Hincha' && estadoSponsor(s, HOY_ISO) !== 'Vencido');
+  if (sponsors.length === 0) return null;
+
+  return <>
+    <strong className="portal-label">Sponsors</strong>
+    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
+      {sponsors.map((s) => (
+        <div
+          key={s.id}
+          className="portal-card"
+          style={{ minWidth: 148, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8, padding: '16px 14px', position: 'relative' }}
+        >
+          <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: '#8b93a5', letterSpacing: '.04em' }}>PUBLICIDAD</span>
+          {s.logo ? (
+            <img src={s.logo} alt={s.nombre} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }} />
+          ) : (
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: '#eaeefb', color: '#2774b8', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 16 }}>
+              {s.nombre[0]?.toUpperCase()}
+            </div>
+          )}
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#16203a', lineHeight: 1.2 }}>{s.nombre}</div>
+          <div style={{ fontSize: 11.5, color: '#8b93a5' }}>{s.rubro}</div>
+        </div>
+      ))}
+    </div>
   </>;
 }
 
@@ -652,8 +684,21 @@ interface TarjetaFormState {
   cvvTarjeta: string; setCvvTarjeta: (v: string) => void;
 }
 
+function vencimientoTarjetaVigente(vencimiento: string): boolean {
+  const [mes, anio] = vencimiento.split('/').map(Number);
+  if (!mes || !anio) return false;
+  const anioCompleto = 2000 + anio;
+  const [hoyAnio, hoyMes] = HOY_ISO.split('-').map(Number);
+  return anioCompleto > hoyAnio || (anioCompleto === hoyAnio && mes >= hoyMes);
+}
+
 function tarjetaCompleta(t: TarjetaFormState) {
-  return Boolean(t.numeroTarjeta.trim() && t.titularTarjeta.trim() && t.vencimientoTarjeta.trim() && t.cvvTarjeta.trim());
+  const numeroValido = /^\d{13,19}$/.test(t.numeroTarjeta.replace(/\s/g, ''));
+  const titularValido = t.titularTarjeta.trim().length > 1;
+  const vencimiento = t.vencimientoTarjeta.trim();
+  const vencimientoValido = /^(0[1-9]|1[0-2])\/\d{2}$/.test(vencimiento) && vencimientoTarjetaVigente(vencimiento);
+  const cvvValido = /^\d{3,4}$/.test(t.cvvTarjeta.trim());
+  return numeroValido && titularValido && vencimientoValido && cvvValido;
 }
 
 function MedioPagoFields({ medioPago, tarjeta, debitoAutomatico }: {
@@ -947,7 +992,13 @@ function Cuota() {
     <section className="portal-card portal-card-primary">
       <div>{estado === 'al_dia' ? 'Cuota al día' : 'Cuota pendiente'}</div>
       <strong>{deuda > 0 ? formatMoney(deuda) : 'Sin deuda'}</strong>
-      <p>{deuda > 0 ? `Vence el ${formatFechaCorta(proximoVencimientoCuota(HOY_ISO))}` : `Último pago: ${ultimoPago}`}</p>
+      <p>
+        {estado === 'moroso'
+          ? `Venció el ${formatFechaCorta(ultimoVencimientoCuotaVencido(HOY_ISO))}`
+          : deuda > 0
+          ? `Vence el ${formatFechaCorta(proximoVencimientoCuota(HOY_ISO))}`
+          : `Último pago: ${ultimoPago}`}
+      </p>
     </section>
     <section className="portal-card">
       <strong>Método de pago</strong>
@@ -958,7 +1009,7 @@ function Cuota() {
       <p>
         {medioPago !== 'Tarjeta'
           ? 'Disponible solo pagando con tarjeta de crédito o débito.'
-          : debitoAutomatico ? 'Activo para el cobro de la cuota mensual.' : 'No activado. Podés gestionarlo desde tu perfil.'}
+          : debitoAutomatico ? 'Activo para el cobro de la cuota mensual.' : 'No activado. Pedilo en la administración del club para sumarlo a tu cuenta.'}
       </p>
     </section>
 
