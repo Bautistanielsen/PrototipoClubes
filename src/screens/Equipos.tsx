@@ -167,9 +167,9 @@ function VistaImpresion({ jugadores, plantel, filtro }: { jugadores: Jugador[]; 
 }
 
 const toolbar = { margin: '22px 0 18px', padding: '14px 16px', border: '1px solid #e3e7ef', borderRadius: 13, background: '#fff', display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap' as const };
-const addButton = { border: 'none', borderRadius: 9, padding: '11px 14px', background: '#64ba4f', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' };
+const addButton = { border: 'none', borderRadius: 9, padding: '11px 14px', background: '#087f75', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' };
 const statNumber = { color: '#16203a', fontSize: 20, fontWeight: 800, lineHeight: 1 };
 const statLabel = { color: '#8b93a5', fontSize: 10, fontWeight: 800, letterSpacing: '.06em', marginTop: 5 };
-const whatsappButton = { flex: 1, textAlign: 'center' as const, textDecoration: 'none', borderRadius: 8, padding: '9px 8px', background: '#e0f3f0', color: '#64ba4f', fontWeight: 800, fontSize: 12 };
+const whatsappButton = { flex: 1, textAlign: 'center' as const, textDecoration: 'none', borderRadius: 8, padding: '9px 8px', background: '#e0f3f0', color: '#087f75', fontWeight: 800, fontSize: 12 };
 const iconButton = { border: '1px solid #e3e7ef', borderRadius: 8, padding: '8px 8px', color: '#4b5468', background: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer' };
 const empty = { padding: 28, border: '1px dashed #cbd3df', borderRadius: 14, background: '#fff', textAlign: 'center' as const };
