@@ -19,7 +19,7 @@ const modules: Array<{ id: Modulo; title: string; description: string; features:
     title: 'Gestión Deportiva',
     description: 'Equipos, categorías, entrenamientos y partidos.',
     features: ['Inicio deportivo', 'Equipos y categorías', 'Agenda deportiva'],
-    color: '#087f75',
+    color: '#65c458',
     image: deportivoImage,
   },
   {

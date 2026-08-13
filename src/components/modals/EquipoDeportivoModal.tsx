@@ -27,4 +27,4 @@ export default function EquipoDeportivoModal() {
 }
 
 const secondaryButton = { flex: 1, height: 44, border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 700, cursor: 'pointer' };
-const primaryButton = { flex: 1, height: 44, border: 'none', borderRadius: 9, background: '#087f75', color: '#fff', fontWeight: 700, cursor: 'pointer' };
+const primaryButton = { flex: 1, height: 44, border: 'none', borderRadius: 9, background: '#65c458', color: '#fff', fontWeight: 700, cursor: 'pointer' };
