@@ -39,9 +39,11 @@ export default function ModuleSelector() {
     <main style={{ minHeight: '100vh', padding: '32px 24px', backgroundImage: `linear-gradient(rgba(255,255,255,.12), rgba(255,255,255,.12)), url(${stadiumBackground})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', display: 'grid', placeItems: 'center' }}>
       <div style={{ width: '100%', maxWidth: 1080 }}>
         <div style={{ textAlign: 'center', color: '#172a54', marginBottom: 36 }}>
-          <div style={{ color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: '.08em', marginBottom: 10, textShadow: '0 1px 4px rgba(0,0,0,.35)' }}>CLUBDESK</div>
-          <h1 style={{ fontWeight: 800, fontSize: 28, letterSpacing: '-0.03em', margin: 0 }}>Gestión integral del club</h1>
-          <div style={{ color: '#65708a', fontSize: 15, marginTop: 7 }}>Elegí el módulo que querés recorrer</div>
+          <img
+            src="/brand/clubdesk/export/clubdesk-logo-horizontal-transparent.png"
+            alt="ClubDesk"
+            style={{ display: 'block', width: 'min(320px, 78vw)', height: 'auto', margin: '28px auto 0' }}
+          />
         </div>
         <div className="module-grid">
           {modules.map((module, index) => (
