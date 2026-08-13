@@ -11,7 +11,6 @@ import SportsSquadEntry from './components/SportsSquadEntry';
 import SportsSquadSwitcher from './components/SportsSquadSwitcher';
 import SportsAssistant from './components/SportsAssistant';
 import ClubEscudo from './components/ClubEscudo';
-import DemoGuia from './components/DemoGuia';
 import AdminAssistant from './components/AdminAssistant';
 import MediosPagoModal from './components/modals/MediosPagoModal';
 import SocioModal from './components/modals/SocioModal';
@@ -160,4 +159,4 @@ function Shell() {
   return <AdministrativeLayout />;
 }
 
-export default function App() { return <AppProvider><Shell /><DemoGuia /></AppProvider>; }
+export default function App() { return <AppProvider><Shell /></AppProvider>; }
