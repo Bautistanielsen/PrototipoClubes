@@ -8,6 +8,7 @@ import type { SportsCalendarData } from '../lib/sportsCalendar';
 import type { MedioPago, Comunicado, Torneo } from '../types';
 import ModalOverlay from '../components/modals/ModalOverlay';
 import HinchaAssistant from '../components/HinchaAssistant';
+import ClubEscudo from '../components/ClubEscudo';
 
 export default function PortalSocio() {
   const { state, actions } = useApp();
@@ -82,11 +83,9 @@ function Login() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%', padding: '20px 4px' }}>
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
-        <div style={{
-          width: 60, height: 60, borderRadius: 17, background: 'linear-gradient(155deg, #172a54, #0c1830)',
-          border: `1.5px solid ${DORADO}`, display: 'grid', placeItems: 'center', margin: '0 auto 16px',
-          color: DORADO, fontWeight: 800, fontSize: 20, boxShadow: '0 8px 20px rgba(23,42,84,.25)',
-        }}>CAM</div>
+        <div style={{ display: 'grid', placeItems: 'center', margin: '0 auto 16px', filter: 'drop-shadow(0 8px 14px rgba(23,42,84,.3))' }}>
+          <ClubEscudo size={64} />
+        </div>
         <div style={{ fontSize: 22, fontWeight: 800, color: '#16203a', letterSpacing: '-.02em' }}>Club Atlético Modelo</div>
         <div style={{ fontSize: 13.5, color: '#6b7488', marginTop: 4 }}>Ingresá para ver tu portal</div>
       </div>
@@ -285,7 +284,7 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       <div style={{ width: 30, height: 30, borderRadius: '50%', background: ICONO_COLOR.tienda.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
         <BeneficioIcon tipo="tienda" />
       </div>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8', textDecoration: 'underline' }}>Tienda del club</span>
+      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Tienda del club</span>
       <EnlaceExternoIcon />
     </a>
     <button
@@ -296,7 +295,7 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       <div style={{ width: 30, height: 30, borderRadius: '50%', background: ICONO_COLOR.buffet.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
         <BeneficioIcon tipo="buffet" />
       </div>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8', textDecoration: 'underline' }}>Buffet · Pedidos por WhatsApp</span>
+      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Buffet · Pedidos por WhatsApp</span>
       <EnlaceExternoIcon />
     </button>
     <button
@@ -1484,7 +1483,7 @@ function CarnetSocioModal({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.7, fontWeight: 700 }}>CARNET DE SOCIO</div>
             <div style={{ fontSize: 16, fontWeight: 800 }}>Club Atlético Modelo</div>
           </div>
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,.12)', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>CAM</div>
+          <div style={{ display: 'grid', placeItems: 'center', flexShrink: 0 }}><ClubEscudo size={34} /></div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>

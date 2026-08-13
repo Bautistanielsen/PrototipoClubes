@@ -1,5 +1,6 @@
 import { useApp } from '../state/AppContext';
 import SidebarItem from './SidebarItem';
+import ClubEscudo from './ClubEscudo';
 import type { Screen } from '../types';
 
 function NavIcon({ screen }: { screen: Screen }) {
@@ -47,7 +48,10 @@ const groups: Array<{ title?: string; items: Array<{ screen: Screen; label: stri
 export default function Sidebar() {
   const { state, actions } = useApp();
   return <aside className="no-print" style={{ width: 264, flexShrink: 0, background: '#172a54', display: 'flex', flexDirection: 'column', padding: '20px 16px', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
-    <div style={{ padding: '0 8px 20px', borderBottom: '1px solid rgba(255,255,255,.12)', marginBottom: 12 }}><div style={{ color: '#7482ad', fontSize: 10.5, fontWeight: 800, letterSpacing: '.06em', marginBottom: 4 }}>CLUBDESK</div><div style={{ color: '#fff', fontWeight: 800, fontSize: 18 }}>Club Atlético Modelo</div><div style={{ color: '#8fa0cc', fontSize: 12, marginTop: 3 }}>Panel Administrativo</div></div>
+    <div style={{ padding: '0 8px 20px', borderBottom: '1px solid rgba(255,255,255,.12)', marginBottom: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <ClubEscudo size={48} />
+      <div style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Club Atlético Modelo</div>
+    </div>
     <div style={{ flex: 1 }}>{groups.map((group, index) => <div key={group.title || 'inicio'}>{group.title && <div style={{ color: '#7482ad', fontSize: 10.5, fontWeight: 800, letterSpacing: '.06em', padding: `${index === 1 ? 7 : 16}px 12px 6px` }}>{group.title}</div>}{group.items.map((item) => <SidebarItem key={item.screen} active={state.screen === item.screen} onClick={() => actions.navigate(item.screen)} icon={<NavIcon screen={item.screen} />} label={item.label} />)}</div>)}</div>
     <button onClick={actions.showModuleSelector} style={{ border: '1px solid rgba(255,255,255,.18)', background: 'transparent', color: '#c3cbe4', borderRadius: 9, padding: '10px', cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Cambiar módulo</button>
   </aside>;

@@ -1,4 +1,5 @@
 import { useApp } from '../state/AppContext';
+import ClubEscudo from './ClubEscudo';
 
 export default function SportsSquadEntry() {
   const { state, actions } = useApp();
@@ -6,7 +7,10 @@ export default function SportsSquadEntry() {
   return (
     <main className="sports-squad-entry">
       <header className="sports-squad-entry-brand">
-        <div><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ClubEscudo size={34} />
+          <div><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div>
+        </div>
         <button type="button" onClick={actions.showModuleSelector}>Cambiar módulo</button>
       </header>
       <section className="sports-squad-entry-card">

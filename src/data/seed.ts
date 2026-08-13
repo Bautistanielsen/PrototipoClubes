@@ -85,6 +85,9 @@ export const seedReservas: Reserva[] = [
   { id: 6, canchaId: 4, dia: '2026-07-30', hora: '09:00', nombre: 'Renata Ortiz', monto: 9000, medioPago: 'Transferencia' },
   { id: 7, canchaId: 5, dia: '2026-07-29', hora: '10:00', nombre: 'Lucas Fernández', monto: 7000, medioPago: 'Efectivo' },
   { id: 8, canchaId: 5, dia: '2026-08-02', hora: '11:00', nombre: 'Bautista Castro', monto: 7000, medioPago: 'Transferencia' },
+  { id: 9, canchaId: 1, dia: '2026-07-15', hora: '18:00', nombre: 'Martina Gómez', monto: 15000, medioPago: 'Tarjeta' },
+  { id: 10, canchaId: 3, dia: '2026-07-08', hora: '17:00', nombre: 'Martina Gómez', monto: 9000, medioPago: 'Tarjeta' },
+  { id: 11, canchaId: 5, dia: '2026-06-24', hora: '10:00', nombre: 'Martina Gómez', monto: 7000, medioPago: 'Tarjeta' },
 ];
 
 export const seedPartidos: Partido[] = [

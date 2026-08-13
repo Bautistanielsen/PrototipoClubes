@@ -151,8 +151,7 @@ a:hover {
 .portal-hero-chip { flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 20px; }
 .deportivo-sidebar { width: 264px; flex-shrink: 0; min-height: 100vh; position: sticky; top: 0; height: 100vh; padding: 20px 16px; background: #087f75; display: flex; flex-direction: column; }
 .deportivo-brand { padding: 0 8px 20px; border-bottom: 1px solid rgba(255,255,255,.18); }
-.deportivo-brand strong { display: block; color: #fff; font-size: 18px; }
-.deportivo-brand span { display: block; color: #bce2dd; font-size: 12px; margin-top: 3px; }
+.deportivo-brand strong { display: block; color: #fff; font-size: 15px; }
 .sports-squad-switcher { display: flex; align-items: end; gap: 8px; }
 .sports-squad-switcher label { display: grid; gap: 5px; min-width: 0; flex: 1; }
 .sports-squad-switcher label span { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
