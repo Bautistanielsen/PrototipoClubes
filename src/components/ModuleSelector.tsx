@@ -40,7 +40,7 @@ export default function ModuleSelector() {
       <div style={{ width: '100%', maxWidth: 1080 }}>
         <div style={{ textAlign: 'center', color: '#172a54', marginBottom: 36 }}>
           <img
-            src="/brand/clubdesk/export/clubdesk-logo-horizontal-transparent.png"
+            src="/brand/clubdesk/export/clubdesk-logo-horizontal-transparent.png?v=brand-green-2026-08"
             alt="ClubDesk"
             style={{ display: 'block', width: 'min(320px, 78vw)', height: 'auto', margin: '28px auto 0' }}
           />
