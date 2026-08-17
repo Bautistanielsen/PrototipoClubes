@@ -3,3 +3,7 @@ dist
 Clubes
 .claude
 .atl
+.agents
+.codegraph
+skills-lock.json
+prospectos-*.md
