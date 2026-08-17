@@ -50,7 +50,7 @@ const plans = [
     audience: 'Para la comisión directiva',
     price: '$49.900',
     tone: 'admin',
-    cta: 'Elegir Administrativo',
+    cta: 'Consultar por este plan',
     features: [
       'Socios, cuotas y cobranzas',
       'Finanzas y egresos unificados',
@@ -65,7 +65,7 @@ const plans = [
     audience: 'Para el cuerpo técnico',
     price: '$39.900',
     tone: 'deportivo',
-    cta: 'Elegir Deportivo',
+    cta: 'Consultar por este plan',
     features: [
       'Multi-plantel: todas las categorías',
       'Fichas de jugadores y estado físico',
@@ -80,7 +80,7 @@ const plans = [
     audience: 'La cara pública del club',
     price: '$19.900',
     tone: 'portal',
-    cta: 'Elegir Portal del Hincha',
+    cta: 'Consultar por este plan',
     requirement: 'Requiere plan Administrativo',
     features: [
       'App/portal para socios e hinchas',
@@ -97,7 +97,7 @@ const plans = [
     price: '$89.900',
     priceNote: 'Ahorrás ~18% vs. la suma individual',
     tone: 'full',
-    cta: 'Elegir Full Club',
+    cta: 'Consultar por este plan',
     featured: true,
     features: [
       'Administrativo + Deportivo + Portal del Hincha completos',
@@ -141,7 +141,7 @@ export default function ModuleSelector() {
     const telefono = String(formData.get('telefono') ?? '').trim();
     const consulta = String(formData.get('consulta') ?? '').trim();
     const message = [
-      'Hola, quiero consultar por ClubDesk.',
+      'Hola, quiero postular mi club al piloto de ClubDesk (30 días sin costo).',
       `Nombre: ${nombre}`,
       `Club: ${club}`,
       `Email: ${email}`,
@@ -172,6 +172,7 @@ export default function ModuleSelector() {
             <span aria-hidden="true" />
           </button>
           <nav className={`landing-navlinks${menuOpen ? ' landing-navlinks--open' : ''}`} id="landing-navigation" aria-label="Navegación principal">
+            <a href="#piloto" onClick={(event) => scrollToSection(event, 'piloto')}>Piloto</a>
             <a href="#demos" onClick={(event) => scrollToSection(event, 'demos')}>Demos</a>
             <a href="#planes" onClick={(event) => scrollToSection(event, 'planes')}>Planes</a>
             <a href="#ecommerce" onClick={(event) => scrollToSection(event, 'ecommerce')}>Caso real</a>
@@ -184,11 +185,12 @@ export default function ModuleSelector() {
         <section className="landing-hero" id="inicio" aria-labelledby="landing-title">
           <div className="landing-shell landing-hero-layout">
             <div className="landing-hero-content">
-              <h1 id="landing-title">Tu club, en un solo lugar.</h1>
-              <p className="landing-hero-copy">Administrá la institución, organizá la agenda deportiva y conectá con socios e hinchas desde una única plataforma.</p>
+              <p className="landing-eyebrow landing-hero-eyebrow">Programa Clubes Fundadores</p>
+              <h1 id="landing-title">Probá una nueva forma de gestionar tu club.</h1>
+              <p className="landing-hero-copy">ClubDesk reúne la gestión administrativa, deportiva y el vínculo con socios en una única plataforma. Probala durante 30 días sin costo y empezá a ordenar la gestión de tu club desde el primer día.</p>
               <div className="landing-hero-actions">
-                <a className="landing-button landing-button--primary" href="#demos" onClick={(event) => scrollToSection(event, 'demos')}>Explorar las demos</a>
-                <a className="landing-button landing-button--secondary" href="#planes" onClick={(event) => scrollToSection(event, 'planes')}>Ver planes</a>
+                <a className="landing-button landing-button--primary" href="#piloto" onClick={(event) => scrollToSection(event, 'piloto')}>Postular mi club</a>
+                <a className="landing-button landing-button--secondary" href="#demos" onClick={(event) => scrollToSection(event, 'demos')}>Ver las demos</a>
               </div>
             </div>
             <div className="landing-hero-art" aria-hidden="true">
@@ -217,11 +219,29 @@ export default function ModuleSelector() {
           </div>
         </section>
 
+        <section className="landing-pilot landing-shell" id="piloto" aria-labelledby="pilot-title">
+          <div className="landing-pilot-copy">
+            <p className="landing-eyebrow">Cupos limitados</p>
+            <h2 id="pilot-title">ClubDesk busca sus primeros clubes fundadores.</h2>
+            <p>Estamos incorporando clubes para probar la plataforma en situaciones reales durante 30 días sin costo, con acompañamiento directo de nuestro equipo.</p>
+          </div>
+          <div className="landing-pilot-details">
+            <ul>
+              <li>Configuración inicial acompañada.</li>
+              <li>Acceso a los módulos que el club necesita probar.</li>
+              <li>Soporte directo y seguimiento durante el piloto.</li>
+              <li>Feedback real para definir las próximas mejoras.</li>
+            </ul>
+            <p className="landing-pilot-note"><strong>Sin compromiso de contratación.</strong> Al finalizar, el club puede continuar con cualquiera de los planes publicados.</p>
+            <a className="landing-button landing-button--pilot" href="#contacto" onClick={(event) => scrollToSection(event, 'contacto')}>Postular mi club al piloto</a>
+          </div>
+        </section>
+
         <section className="landing-section landing-shell" id="demos" aria-labelledby="demos-title">
           <div className="landing-section-heading">
             <p className="landing-eyebrow">Conocé la plataforma</p>
             <h2 id="demos-title">Explorá cada módulo en acción</h2>
-            <p>Ingresá a las demos y recorré cómo ClubDesk acompaña cada área de la institución.</p>
+            <p>Ingresá a las demos con datos de ejemplo y recorré cómo ClubDesk acompaña cada área de la institución durante la prueba de 30 días.</p>
           </div>
           <div className="landing-demo-grid">
             {modules.map((module, index) => (
@@ -244,9 +264,9 @@ export default function ModuleSelector() {
 
         <section className="landing-section landing-shell landing-plans-section" id="planes" aria-labelledby="plans-title">
           <div className="landing-section-heading">
-            <p className="landing-eyebrow">Planes ClubDesk</p>
+            <p className="landing-eyebrow">Precios post-piloto</p>
             <h2 id="plans-title">Elegí la solución para tu club</h2>
-            <p>Empezá por el módulo que necesitás hoy o integrá toda la institución desde el primer día.</p>
+            <p>La prueba de 30 días es sin costo y sin compromiso. Estos precios muestran la continuidad del club después del piloto.</p>
           </div>
           <div className="landing-plans-grid">
             {plans.map((plan) => (
@@ -257,12 +277,13 @@ export default function ModuleSelector() {
                   <p>{plan.audience}</p>
                   {plan.requirement && <span className="landing-plan-requirement">{plan.requirement}</span>}
                   <div className="landing-price-row"><strong>{plan.price}</strong><span>por mes</span></div>
+                  <span className="landing-plan-postpiloto">Precio post-piloto</span>
                   {plan.priceNote && <p className="landing-price-note">{plan.priceNote}</p>}
                 </div>
                 <ul className="landing-plan-features">
                   {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
                 </ul>
-                <a className="landing-plan-cta" href={whatsappUrl(`Hola, quiero consultar por el plan ${plan.name} de ClubDesk.`)} target="_blank" rel="noreferrer">{plan.cta}</a>
+                <a className="landing-plan-cta" href={whatsappUrl(`Hola, quiero consultar por el plan ${plan.name} de ClubDesk para continuar después del piloto de 30 días.`)} target="_blank" rel="noreferrer">{plan.cta}</a>
               </article>
             ))}
           </div>
@@ -299,13 +320,23 @@ export default function ModuleSelector() {
               <img src={alboShopScreenshot} alt="Página inicial de Albo Shop, la tienda online de Club Atlético Alvarado" loading="lazy" decoding="async" />
             </div>
           </figure>
+          <aside className="landing-institutional-badge landing-ecommerce-badge" aria-label="Servicio adicional: el e-commerce se cotiza por separado y no está incluido en el piloto ni en los planes de gestión">
+            <span aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+              </svg>
+            </span>
+            <p><strong>Servicio adicional: el e-commerce se cotiza por separado y no está incluido en el piloto ni en los planes de gestión.</strong></p>
+          </aside>
         </section>
 
         <section className="landing-contact landing-shell" id="contacto" aria-labelledby="contact-title">
           <div className="landing-contact-intro">
             <p className="landing-eyebrow">Contacto</p>
-            <h2 id="contact-title">Armemos el plan para tu club</h2>
-            <p>Contanos qué necesitás y te respondemos por WhatsApp con una propuesta según las prioridades de tu institución.</p>
+            <h2 id="contact-title">Empezá con 30 días sin costo</h2>
+            <p>Contanos qué necesita tu club: coordinamos el piloto de 30 días sin costo y, al terminar, el plan post-piloto que mejor se adapte. Te respondemos por WhatsApp.</p>
           </div>
           <form className="landing-contact-form" onSubmit={handleContactSubmit}>
             <p className="landing-contact-required"><span aria-hidden="true">*</span> Campos obligatorios</p>
@@ -330,7 +361,7 @@ export default function ModuleSelector() {
             <div className="landing-contact-field">
               <label htmlFor="contact-message">Consulta <span aria-hidden="true">*</span></label>
               <textarea id="contact-message" name="consulta" rows={5} autoComplete="off" aria-describedby="contact-message-help" required />
-              <span className="landing-contact-help" id="contact-message-help">Contanos brevemente qué necesitás para tu club.</span>
+              <span className="landing-contact-help" id="contact-message-help">Contanos brevemente qué necesita tu club durante el piloto.</span>
             </div>
             <button className="landing-button landing-button--contact landing-contact-submit" type="submit">Enviar consulta por WhatsApp</button>
           </form>
