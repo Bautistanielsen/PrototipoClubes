@@ -306,7 +306,7 @@ export default function ModuleSelector() {
 
         <section className="landing-section landing-shell landing-case-study-section" id="ecommerce" aria-labelledby="ecommerce-title">
           <div className="landing-case-study-copy">
-            <p className="landing-eyebrow landing-eyebrow--case-study">En producción · Caso real</p>
+            <p className="landing-eyebrow landing-eyebrow--case-study">OTROS SERVICIOS</p>
             <h2 id="ecommerce-title">E-commerce en producción.</h2>
             <p>Albo Shop demuestra cómo una tienda online propia puede ordenar el catálogo, presentar cada categoría y convertir la identidad del club en una experiencia de compra profesional.</p>
             <div className="landing-case-study-actions">
