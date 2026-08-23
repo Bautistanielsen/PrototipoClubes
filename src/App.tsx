@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AppProvider, useApp } from './state/AppContext';
 import Sidebar from './components/Sidebar';
 import MobileTopBar from './components/MobileTopBar';
@@ -159,4 +160,4 @@ function Shell() {
   return <AdministrativeLayout />;
 }
 
-export default function App() { return <AppProvider><Shell /></AppProvider>; }
+export default function App() { return <AppProvider><Shell /><Analytics /></AppProvider>; }
