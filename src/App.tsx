@@ -9,6 +9,7 @@ import MoreSheet from './components/MoreSheet';
 import Toast from './components/Toast';
 import ModuleSelector from './components/ModuleSelector';
 import ModuleSwitcher from './components/ModuleSwitcher';
+import ModuleQuickNav from './components/ModuleQuickNav';
 import SportsSquadEntry from './components/SportsSquadEntry';
 import SportsSquadSwitcher from './components/SportsSquadSwitcher';
 import SportsAssistant from './components/SportsAssistant';
@@ -123,7 +124,7 @@ function DeportivoLayout() {
   };
   if (state.activeEquipoDeportivoId === null) return <><SportsSquadEntry /><EquipoDeportivoModal /><Toast /></>;
   return <div style={{ minHeight: '100vh', display: 'flex', background: '#f5f7fb' }}>
-    {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}><ClubEscudo size={48} /><strong>Club Atlético Modelo</strong></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}><SportsNavIcon screen="estadisticas" /><span>Estadísticas</span><b aria-hidden="true">{statisticsOpen ? '−' : '+'}</b></button>{statisticsOpen && <div className="deportivo-statistics-children">{statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</div>}</div><SportsSquadSwitcher variant="sidebar" /><button className="deportivo-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button></aside>}
+    {!state.isMobile && <aside className="deportivo-sidebar"><div className="deportivo-brand" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}><ClubEscudo size={48} /><strong>Club Atlético Modelo</strong></div><div className="deportivo-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}><SportsNavIcon screen={item.screen} />{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}><SportsNavIcon screen="estadisticas" /><span>Estadísticas</span><b aria-hidden="true">{statisticsOpen ? '−' : '+'}</b></button>{statisticsOpen && <div className="deportivo-statistics-children">{statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</div>}</div><SportsSquadSwitcher variant="sidebar" /><ModuleQuickNav current="deportivo" buttonClassName="deportivo-switch" homeClassName="deportivo-switch deportivo-switch-home" /></aside>}
     <div style={{ flex: 1, minWidth: 0 }}>
       {state.isMobile && <><ModuleSwitcher color="#087f75" /><SportsSquadSwitcher variant="mobile" /></>}
       {state.isMobile && <nav className="deportivo-mobile-nav">{nav.map((item) => <button key={item.screen} onClick={() => actions.navigate(item.screen)} className={state.screen === item.screen ? 'active' : ''}>{item.label}</button>)}<button onClick={toggleStatistics} className={state.screen === 'estadisticas' ? 'active statistics-parent' : 'statistics-parent'} aria-expanded={statisticsOpen}>Estadísticas {statisticsOpen ? '−' : '+'}</button>{statisticsOpen && statisticsViews.map((item) => <button key={item.view} onClick={() => selectStatistics(item.view)} className={state.screen === 'estadisticas' && state.estadisticasVista === item.view ? 'active' : ''}>{item.label}</button>)}</nav>}
@@ -137,7 +138,7 @@ function PortalLayout() {
   const { state, actions } = useApp();
   const esSocio = state.portalRol === 'socio';
   return <div className="portal-stage">
-    <button className="portal-module-switch" onClick={actions.showModuleSelector}>Cambiar módulo</button>
+    <ModuleQuickNav current="socio" wrapperClassName="portal-quick-nav" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
     {state.portalLoggedIn && (
       <button
         className="portal-module-switch"

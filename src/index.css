@@ -283,6 +283,9 @@ a:hover {
   box-shadow: 0 6px 18px rgba(26, 55, 91, .1);
   cursor: pointer;
 }
+.portal-quick-nav { position: fixed; top: 22px; right: 24px; z-index: 30; align-items: flex-end; }
+.portal-quick-nav-btn { border: 1px solid #bdd0e2; border-radius: 10px; background: #fff; color: #2774b8; padding: 9px 12px; font-size: 12px; font-weight: 750; box-shadow: 0 6px 18px rgba(26, 55, 91, .1); cursor: pointer; white-space: nowrap; }
+.portal-quick-nav-btn-home { background: #172a54; color: #fff; border-color: #172a54; }
 .portal-frame {
   --portal-navy: #172a54;
   --portal-navy-deep: #0c1830;
@@ -384,6 +387,7 @@ a:hover {
 .deportivo-nav button.active { color: #087f75; background: #fff; }
 .deportivo-nav button svg { flex-shrink: 0; }
 .deportivo-switch { border: 1px solid rgba(255,255,255,.3); background: transparent; color: #e2f4f1; border-radius: 9px; padding: 10px; cursor: pointer; font-weight: 700; font-size: 12px; }
+.deportivo-switch-home { background: rgba(255,255,255,.12); }
 .deportivo-mobile-nav { display: flex; gap: 5px; overflow-x: auto; padding: 10px; background: #fff; border-bottom: 1px solid #e3e7ef; }
 .deportivo-mobile-nav button { border: none; border-radius: 9px; padding: 10px 12px; white-space: nowrap; background: transparent; color: #4b5468; font-weight: 700; }
 .deportivo-mobile-nav button.active { background: #e0f3f0; color: #087f75; }
@@ -494,6 +498,8 @@ a:hover {
   .module-grid { grid-template-columns: 1fr; }
   .portal-stage { padding: 0; display: block; }
   .portal-module-switch { position: absolute; top: 10px; right: 12px; padding: 7px 9px; box-shadow: none; }
+  .portal-quick-nav { position: absolute; top: 10px; right: 12px; gap: 6px; }
+  .portal-quick-nav-btn { padding: 6px 9px; font-size: 11px; box-shadow: none; }
   .portal-frame { max-width: none; height: 100vh; min-height: 100vh; border: none; border-radius: 0; box-shadow: none; }
   .portal-device-top { display: none; }
   .portal-content { padding-top: 56px; }

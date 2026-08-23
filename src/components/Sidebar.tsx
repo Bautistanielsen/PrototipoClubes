@@ -1,6 +1,7 @@
 import { useApp } from '../state/AppContext';
 import SidebarItem from './SidebarItem';
 import ClubEscudo from './ClubEscudo';
+import ModuleQuickNav from './ModuleQuickNav';
 import type { Screen } from '../types';
 
 function NavIcon({ screen }: { screen: Screen }) {
@@ -53,6 +54,10 @@ export default function Sidebar() {
       <div style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Club Atlético Modelo</div>
     </div>
     <div style={{ flex: 1 }}>{groups.map((group, index) => <div key={group.title || 'inicio'}>{group.title && <div style={{ color: '#7482ad', fontSize: 10.5, fontWeight: 800, letterSpacing: '.06em', padding: `${index === 1 ? 7 : 16}px 12px 6px` }}>{group.title}</div>}{group.items.map((item) => <SidebarItem key={item.screen} active={state.screen === item.screen} onClick={() => actions.navigate(item.screen)} icon={<NavIcon screen={item.screen} />} label={item.label} />)}</div>)}</div>
-    <button onClick={actions.showModuleSelector} style={{ border: '1px solid rgba(255,255,255,.18)', background: 'transparent', color: '#c3cbe4', borderRadius: 9, padding: '10px', cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Cambiar módulo</button>
+    <ModuleQuickNav
+      current="administrativo"
+      buttonStyle={{ border: '1px solid rgba(255,255,255,.18)', background: 'transparent', color: '#c3cbe4', borderRadius: 9, padding: '10px', cursor: 'pointer', fontWeight: 700, fontSize: 12, textAlign: 'left' }}
+      homeStyle={{ border: '1px solid rgba(255,255,255,.34)', background: 'rgba(255,255,255,.08)', color: '#fff', borderRadius: 9, padding: '10px', cursor: 'pointer', fontWeight: 700, fontSize: 12, textAlign: 'left' }}
+    />
   </aside>;
 }

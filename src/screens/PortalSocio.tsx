@@ -969,6 +969,18 @@ function Cuota() {
   const { state, actions } = useApp();
   const socio = state.socios[0];
   const historial = useMemo(() => historialPagosSocio(socio, state.categorias), [socio, state.categorias]);
+  const [contribuyendo, setContribuyendo] = useState(false);
+  const [montoContribucion, setMontoContribucion] = useState('');
+  const [medioContribucion, setMedioContribucion] = useState<MedioPago>('Efectivo');
+
+  const confirmarContribucion = () => {
+    const monto = Number(montoContribucion);
+    if (!monto || monto <= 0) { actions.mostrarToast('Ingresá un monto válido'); return; }
+    actions.mostrarToast(`¡Gracias por tu contribución de ${formatMoney(monto)}!`);
+    setContribuyendo(false);
+    setMontoContribucion('');
+    setMedioContribucion('Efectivo');
+  };
 
   if (state.portalRol === 'hincha') {
     return <>
@@ -999,18 +1011,66 @@ function Cuota() {
           : `Último pago: ${ultimoPago}`}
       </p>
     </section>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px' }}>
+        <strong style={{ fontSize: 14, margin: '2px 0' }}>Método de pago</strong>
+        <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>{medioPagoLabel(medioPago)}</p>
+      </section>
+      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px' }}>
+        <strong style={{ fontSize: 14, margin: '2px 0' }}>Débito automático</strong>
+        <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>
+          {medioPago !== 'Tarjeta'
+            ? 'Disponible solo con tarjeta de crédito o débito.'
+            : debitoAutomatico ? 'Activo para el cobro de la cuota mensual.' : 'No activado. Pedilo en la administración del club.'}
+        </p>
+      </section>
+    </div>
+
     <section className="portal-card">
-      <strong>Método de pago</strong>
-      <p>{medioPagoLabel(medioPago)}</p>
+      <strong>¿Querés ayudar más al club?</strong>
+      <p>Hacé una contribución voluntaria, además de tu cuota, con el medio de pago que prefieras.</p>
+      <button onClick={() => setContribuyendo(true)}>Hacer una contribución</button>
     </section>
-    <section className="portal-card">
-      <strong>Débito automático</strong>
-      <p>
-        {medioPago !== 'Tarjeta'
-          ? 'Disponible solo pagando con tarjeta de crédito o débito.'
-          : debitoAutomatico ? 'Activo para el cobro de la cuota mensual.' : 'No activado. Pedilo en la administración del club para sumarlo a tu cuenta.'}
-      </p>
-    </section>
+
+    {contribuyendo && (
+      <ModalOverlay onClose={() => setContribuyendo(false)} maxWidth={380} ariaLabel="Hacer una contribución al club">
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Hacer una contribución</div>
+        <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>Un aporte extra para ayudar al club, además de tu cuota.</div>
+
+        <label style={fieldLabelStyle}>Monto</label>
+        <input
+          type="number"
+          min={1}
+          value={montoContribucion}
+          onChange={(e) => setMontoContribucion(e.target.value)}
+          placeholder="Ej: 5000"
+          style={fieldInputStyle}
+        />
+
+        <label style={fieldLabelStyle}>Método de pago</label>
+        <select value={medioContribucion} onChange={(e) => setMedioContribucion(e.target.value as MedioPago)} style={fieldInputStyle}>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Transferencia">Transferencia</option>
+          <option value="MercadoPago">Mercado Pago</option>
+          <option value="Tarjeta">Tarjeta de crédito/débito</option>
+        </select>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setContribuyendo(false)}
+            style={{ flex: 1, height: 46, border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmarContribucion}
+            style={{ flex: 1, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+          >
+            Confirmar
+          </button>
+        </div>
+      </ModalOverlay>
+    )}
 
     <strong className="portal-label">Historial de pagos</strong>
     <section className="portal-card" style={{ padding: 0, overflow: 'hidden' }}>
