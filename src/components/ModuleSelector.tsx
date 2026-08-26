@@ -277,6 +277,10 @@ export default function ModuleSelector() {
           </div>
         </section>
 
+        <div className="landing-shell">
+          <p className="landing-goal-banner">Nuestro objetivo es ayudar a <strong>controlar y potenciar los ingresos</strong>, <strong>subir el nivel de los entrenamientos</strong> y <strong>aumentar el sentimiento de pertenencia</strong> al club.</p>
+        </div>
+
         <section className="landing-section landing-shell landing-plans-section" id="planes" aria-labelledby="plans-title">
           <div className="landing-section-heading">
             <p className="landing-eyebrow">Precios post-piloto</p>
@@ -302,6 +306,7 @@ export default function ModuleSelector() {
               </article>
             ))}
           </div>
+          <p className="landing-goal-banner">La personalización de la plataforma a la identidad y necesidades de tu club (branding, categorías, tipos de cuota, y ajustes propios de tu institución) está incluida en el precio — <strong>sin cargos extra</strong>.</p>
         </section>
 
         <section className="landing-section landing-shell landing-case-study-section" id="ecommerce" aria-labelledby="ecommerce-title">

@@ -82,6 +82,19 @@ a:hover {
 .landing-hero-eyebrow { margin: 0 auto 18px; }
 .landing-hero h1 { max-width: 920px; margin: 0 auto 18px; color: var(--landing-navy); font-size: clamp(42px, 4.8vw, 66px); font-weight: 800; letter-spacing: -.055em; line-height: 1.04; }
 .landing-hero-copy { max-width: 660px; margin: 0 auto; color: #536078; font-size: clamp(16px, 1.7vw, 19px); line-height: 1.58; }
+.landing-goal-banner {
+  max-width: 680px;
+  margin: 48px auto 40px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(8, 127, 117, .18);
+  background: linear-gradient(135deg, rgba(235, 248, 244, .9), rgba(223, 240, 255, .75));
+  color: var(--landing-navy);
+  font-size: clamp(13.5px, 1.3vw, 15px);
+  line-height: 1.5;
+  text-align: center;
+}
+.landing-goal-banner strong { color: var(--landing-teal); }
 .landing-hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
 .landing-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: 12px; padding: 0 20px; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease; }
 .landing-button:hover { transform: translateY(-1px); }
@@ -173,7 +186,7 @@ a:hover {
 .landing-plan--full .landing-plan-cta { color: #fff; }
 .landing-plan-cta:hover { color: #fff; filter: brightness(1.06); }
 .landing-plan--full .landing-plan-cta:hover { color: #fff; }
-.landing-case-study-section { display: grid; box-sizing: border-box; width: min(1440px, calc(100% - 64px)); min-width: 0; min-height: calc(100svh - 76px); grid-template-columns: minmax(340px, .66fr) minmax(0, 1.34fr); grid-auto-rows: auto; align-content: center; align-items: stretch; gap: clamp(48px, 6vw, 92px); margin-top: 0; padding: var(--landing-section-space) 0 var(--landing-section-space-compact); scroll-margin-top: 100px; }
+.landing-case-study-section { display: grid; box-sizing: border-box; width: min(1440px, calc(100% - 64px)); min-width: 0; min-height: calc(100svh - 76px); grid-template-columns: minmax(340px, .66fr) minmax(0, 1.34fr); grid-auto-rows: auto; align-content: center; align-items: stretch; gap: clamp(48px, 6vw, 92px); margin-top: 0; padding: clamp(12px, 1.6vw, 24px) 0 var(--landing-section-space-compact); scroll-margin-top: 100px; }
 .landing-case-study-copy { display: flex; position: relative; z-index: 1; max-width: 500px; flex-direction: column; padding-top: 0; }
 .landing-eyebrow--case-study { border-color: rgba(8, 127, 117, .25); background: rgba(255, 255, 255, .76); color: var(--landing-teal); }
 .landing-case-study-copy h2 { margin: 18px 0; color: var(--landing-navy); font-size: clamp(38px, 4vw, 58px); font-weight: 800; letter-spacing: -.05em; line-height: 1.02; }
