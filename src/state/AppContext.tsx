@@ -560,8 +560,8 @@ export interface AppActions {
   nextMonth: () => void;
   setFilter: (f: EstadoFilter) => void;
   setSearchQuery: (v: string) => void;
-  toggleRecordatorio: (id: number) => void;
   enviarRecordatorioWhatsapp: (id: number) => void;
+  enviarRecordatorioApp: (id: number) => void;
   cobrarMoroso: (id: number) => void;
   openAgregarSocio: () => void;
   openEditarSocio: (id: number) => void;
@@ -1002,15 +1002,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setFilter: (f) => update({ estadoFilter: f }),
     setSearchQuery: (v) => update({ searchQuery: v }),
 
-    toggleRecordatorio: (id) => {
-      update((s) => {
-        const cur = s.recordatorios[id] || 'pendiente';
-        const next: EstadoRecordatorio = cur === 'enviado' ? 'pendiente' : 'enviado';
-        return { recordatorios: { ...s.recordatorios, [id]: next } };
-      });
-      showToast('Estado del recordatorio actualizado');
-    },
-
     enviarRecordatorioWhatsapp: (id) => {
       const s = state.socios.find((x) => x.id === id);
       if (!s) return;
@@ -1019,6 +1010,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensaje), '_blank');
       update((prev) => ({ recordatorios: { ...prev.recordatorios, [id]: 'enviado' } }));
       showToast('Abriendo WhatsApp para ' + s.nombre);
+    },
+
+    enviarRecordatorioApp: (id) => {
+      const s = state.socios.find((x) => x.id === id);
+      if (!s) return;
+      update((prev) => ({ recordatorios: { ...prev.recordatorios, [id]: 'enviado' } }));
+      showToast('Recordatorio enviado por la app a ' + s.nombre);
     },
 
     cobrarMoroso: (id) => {

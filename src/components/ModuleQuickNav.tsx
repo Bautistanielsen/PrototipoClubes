@@ -28,14 +28,25 @@ export default function ModuleQuickNav({
   return (
     <div
       className={wrapperClassName}
-      style={{ display: 'flex', flexDirection: direction, gap, flexWrap: direction === 'row' ? 'wrap' : 'nowrap', ...wrapperStyle }}
+      style={{ display: 'flex', flexDirection: direction, gap, flexWrap: 'nowrap', ...wrapperStyle }}
     >
       {OTHER_MODULES[current].map((id) => (
-        <button key={id} type="button" className={buttonClassName} style={buttonStyle} onClick={() => actions.selectModule(id)}>
+        <button
+          key={id}
+          type="button"
+          className={buttonClassName}
+          style={direction === 'row' ? { ...buttonStyle, flex: '1 1 0', minWidth: 0, whiteSpace: 'normal', lineHeight: 1.2, textAlign: 'center' } : buttonStyle}
+          onClick={() => actions.selectModule(id)}
+        >
           Ver {MODULE_LABELS[id]}
         </button>
       ))}
-      <button type="button" className={homeClassName ?? buttonClassName} style={homeStyle ?? buttonStyle} onClick={actions.showModuleSelector}>
+      <button
+        type="button"
+        className={homeClassName ?? buttonClassName}
+        style={direction === 'row' ? { ...(homeStyle ?? buttonStyle), flex: '1 1 0', minWidth: 0, whiteSpace: 'normal', lineHeight: 1.2, textAlign: 'center' } : (homeStyle ?? buttonStyle)}
+        onClick={actions.showModuleSelector}
+      >
         Volver al inicio
       </button>
     </div>

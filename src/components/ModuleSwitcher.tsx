@@ -19,9 +19,10 @@ export default function ModuleSwitcher({ color = '#172a54' }: { color?: string }
       <ModuleQuickNav
         current={current}
         direction="row"
-        gap={8}
-        buttonStyle={{ border: '1px solid rgba(255,255,255,.34)', background: 'transparent', color: '#fff', borderRadius: 8, padding: '7px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-        homeStyle={{ border: '1px solid rgba(255,255,255,.6)', background: 'rgba(255,255,255,.14)', color: '#fff', borderRadius: 8, padding: '7px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+        gap={7}
+        wrapperStyle={{ marginTop: 4, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.18)' }}
+        buttonStyle={{ border: '1px solid rgba(255,255,255,.4)', background: 'rgba(255,255,255,.1)', color: '#fff', borderRadius: 14, padding: '7px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}
+        homeStyle={{ border: '1px solid #fff', background: '#fff', color, borderRadius: 14, padding: '7px 8px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
       />
     </div>
   );

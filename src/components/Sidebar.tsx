@@ -4,7 +4,7 @@ import ClubEscudo from './ClubEscudo';
 import ModuleQuickNav from './ModuleQuickNav';
 import type { Screen } from '../types';
 
-function NavIcon({ screen }: { screen: Screen }) {
+export function NavIcon({ screen }: { screen: Screen }) {
   const common = { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 };
 
   switch (screen) {

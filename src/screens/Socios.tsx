@@ -75,9 +75,6 @@ export default function Socios() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a' }}>Padrón de socios</div>
-          <div style={{ fontSize: 14, color: '#6b7488', marginTop: 2 }}>
-            {filteredSocios.length} de {state.socios.length} socios
-          </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -131,26 +128,26 @@ export default function Socios() {
         aria-label="Nuevo socio"
         style={{
           position: 'fixed',
-          right: 28,
-          bottom: state.isMobile ? 152 : 96,
+          left: state.isMobile ? 28 : 292,
+          bottom: state.isMobile ? 'calc(81px + env(safe-area-inset-bottom))' : 96,
           zIndex: 30,
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
-          height: 54,
-          padding: '0 24px',
+          gap: state.isMobile ? 8 : 10,
+          height: state.isMobile ? 46 : 54,
+          padding: state.isMobile ? '0 18px' : '0 24px',
           border: 'none',
-          borderRadius: 27,
+          borderRadius: state.isMobile ? 23 : 27,
           background: '#172a54',
           color: '#fff',
           fontWeight: 700,
-          fontSize: 15,
+          fontSize: state.isMobile ? 13.5 : 15,
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           boxShadow: '0 8px 20px rgba(23, 42, 84, 0.45)',
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        <svg width={state.isMobile ? 17 : 20} height={state.isMobile ? 17 : 20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
         Nuevo socio
       </button>
 
@@ -181,11 +178,10 @@ export default function Socios() {
           {filteredSocios.map((s) => {
             const meta = estadoMeta[s.estado];
             const esMoroso = s.estado === 'moroso';
-            const rec = state.recordatorios[s.id] || 'pendiente';
             const esProtegido = state.socios[0]?.id === s.id;
             return (
               <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 20px', borderBottom: '1px solid #f0f1f5' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 200 }}>
                     <div style={{ fontSize: 12, color: '#9aa2b1', fontWeight: 600, width: 36 }}>#{s.numero}</div>
                     <div>
@@ -195,7 +191,7 @@ export default function Socios() {
                       <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 1 }}>Último pago: {s.ultimoPago} · {s.telefono}</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                     {esMoroso && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#c1293c' }}>{formatMoney(s.deuda)}</div>}
                     {s.debitoAutomatico && (
                       <div style={{ fontSize: 11.5, fontWeight: 600, color: '#1b3a8a', background: '#eaeefb', padding: '5px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
@@ -205,6 +201,8 @@ export default function Socios() {
                     <div style={{ fontSize: 12.5, fontWeight: 700, padding: '6px 12px', borderRadius: 20, background: meta.bg, color: meta.color, whiteSpace: 'nowrap' }}>
                       {meta.label}
                     </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
                     <button
                       onClick={() => actions.openEditarSocio(s.id)}
                       aria-label={`Editar ${s.nombre} ${s.apellido}`}
@@ -229,34 +227,22 @@ export default function Socios() {
                   </div>
                 </div>
                 {esMoroso && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#fbf7f2', borderRadius: 10, padding: '10px 14px' }}>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        padding: '5px 12px',
-                        borderRadius: 20,
-                        background: rec === 'enviado' ? '#e5f6ea' : '#fdf0dc',
-                        color: rec === 'enviado' ? '#1a7d43' : '#a15c00',
-                      }}
-                    >
-                      {rec === 'enviado' ? 'Recordatorio enviado' : 'Pendiente de envío'}
-                    </div>
-                    <button
-                      onClick={() => actions.toggleRecordatorio(s.id)}
-                      style={{ height: 36, padding: '0 14px', borderRadius: 8, border: '1px solid #d7dce6', background: '#fff', color: '#16203a', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
-                    >
-                      {rec === 'enviado' ? 'Marcar pendiente' : 'Marcar enviado'}
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'stretch', gap: 6, width: 'calc(100% + 40px)', margin: '0 -20px', background: '#fbf7f2', borderRadius: 10, padding: '10px 10px' }}>
                     <button
                       onClick={() => actions.enviarRecordatorioWhatsapp(s.id)}
-                      style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                      style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}
                     >
                       Enviar por WhatsApp
                     </button>
                     <button
+                      onClick={() => actions.enviarRecordatorioApp(s.id)}
+                      style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', borderRadius: 8, border: '1px solid #172a54', background: '#fff', color: '#172a54', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}
+                    >
+                      Enviar por app
+                    </button>
+                    <button
                       onClick={() => actions.cobrarMoroso(s.id)}
-                      style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: '#172a54', color: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                      style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', borderRadius: 8, border: 'none', background: '#172a54', color: '#fff', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', whiteSpace: 'nowrap' }}
                     >
                       Registrar cobro
                     </button>
