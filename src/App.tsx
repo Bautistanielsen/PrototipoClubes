@@ -73,7 +73,7 @@ function ScreenContent() {
     case 'formaciones': return <Formaciones />;
     case 'partidos': return <Partidos />;
     case 'estadisticas': return <Estadisticas />;
-    case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': case 'portal_partidos': return <PortalSocio />;
+    case 'portal_login': case 'portal_inicio': case 'portal_cuota': case 'portal_reservas': case 'portal_novedades': case 'portal_perfil': case 'portal_hacete_socio': case 'portal_mis_reservas': case 'portal_torneos': case 'portal_partidos': case 'portal_tienda': return <PortalSocio />;
   }
 }
 
@@ -135,19 +135,9 @@ function DeportivoLayout() {
 }
 
 function PortalLayout() {
-  const { state, actions } = useApp();
-  const esSocio = state.portalRol === 'socio';
+  const { state } = useApp();
   return <div className="portal-stage">
-    <ModuleQuickNav current="socio" wrapperClassName="portal-quick-nav" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
-    {state.portalLoggedIn && (
-      <button
-        className="portal-module-switch"
-        style={{ left: 24, right: 'auto' }}
-        onClick={() => actions.setPortalRol(esSocio ? 'hincha' : 'socio')}
-      >
-        Viendo como {esSocio ? 'socio' : 'hincha'} · Cambiar
-      </button>
-    )}
+    <ModuleQuickNav current="socio" direction={state.isMobile ? 'row' : 'column'} wrapperClassName="portal-quick-nav" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
     <ScreenContent /><Toast />
   </div>;
 }

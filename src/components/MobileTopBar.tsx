@@ -16,8 +16,8 @@ export default function MobileTopBar() {
         direction="row"
         gap={7}
         wrapperStyle={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.16)' }}
-        buttonStyle={{ color: '#fff', fontSize: 10, border: '1px solid rgba(255,255,255,.4)', borderRadius: 14, padding: '7px 8px', background: 'rgba(255,255,255,.1)', cursor: 'pointer', fontWeight: 700 }}
-        homeStyle={{ color: '#172a54', fontSize: 10, border: '1px solid #fff', borderRadius: 14, padding: '7px 8px', background: '#fff', cursor: 'pointer', fontWeight: 800 }}
+        buttonStyle={{ color: '#fff', fontSize: 10.5, border: '1px solid rgba(255,255,255,.4)', borderRadius: 14, padding: '7px 4px', background: 'rgba(255,255,255,.1)', cursor: 'pointer', fontWeight: 700 }}
+        homeStyle={{ color: '#172a54', fontSize: 10.5, border: '1px solid #fff', borderRadius: 14, padding: '7px 4px', background: '#fff', cursor: 'pointer', fontWeight: 800 }}
       />
     </div>
   );

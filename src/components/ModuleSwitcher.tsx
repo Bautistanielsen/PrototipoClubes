@@ -21,8 +21,8 @@ export default function ModuleSwitcher({ color = '#172a54' }: { color?: string }
         direction="row"
         gap={7}
         wrapperStyle={{ marginTop: 4, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.18)' }}
-        buttonStyle={{ border: '1px solid rgba(255,255,255,.4)', background: 'rgba(255,255,255,.1)', color: '#fff', borderRadius: 14, padding: '7px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}
-        homeStyle={{ border: '1px solid #fff', background: '#fff', color, borderRadius: 14, padding: '7px 8px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+        buttonStyle={{ border: '1px solid rgba(255,255,255,.4)', background: 'rgba(255,255,255,.1)', color: '#fff', borderRadius: 14, padding: '7px 4px', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}
+        homeStyle={{ border: '1px solid #fff', background: '#fff', color, borderRadius: 14, padding: '7px 4px', fontSize: 10.5, fontWeight: 800, cursor: 'pointer' }}
       />
     </div>
   );

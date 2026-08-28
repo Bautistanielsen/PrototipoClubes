@@ -120,6 +120,7 @@ export const seedProductosShop: ProductoShop[] = [
       { id: 1, talle: 'M', color: 'Negro', stock: 5 },
       { id: 2, talle: 'L', color: 'Azul', stock: 3 },
     ],
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNCkiPgo8cGF0aCBkPSJNLTQwIC01OCBMLTcwIC0zOCBMLTU4IC04IEwtNDAgLTE4IEwtNDAgNjAgTDQwIDYwIEw0MCAtMTggTDU4IC04IEw3MCAtMzggTDQwIC01OCBDNDAgLTQ2IDIyIC0zOCAwIC0zOCBDLTIyIC0zOCAtNDAgLTQ2IC00MCAtNTggWiIgZmlsbD0iIzE3MmE1NCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
   },
   {
     id: 2,
@@ -133,12 +134,28 @@ export const seedProductosShop: ProductoShop[] = [
       { id: 4, talle: 'M', color: 'Blanco', stock: 5 },
       { id: 5, talle: 'L', color: 'Negro', stock: 3 },
     ],
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNCkiPgo8cGF0aCBkPSJNLTQwIC01MCBMLTY2IC0zMiBMLTUyIC00IEwtMzggLTE0IEwtMzggNTQgTDM4IDU0IEwzOCAtMTQgTDUyIC00IEw2NiAtMzIgTDQwIC01MCBDNDAgLTM4IDIyIC0zMCAwIC0zMCBDLTIyIC0zMCAtNDAgLTM4IC00MCAtNTAgWiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMTcyYTU0IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
   },
-  { id: 3, nombre: 'Gorra', precio: 12000, categoria: 'Accesorio', stock: 3, stockMin: 3 },
-  { id: 4, nombre: 'Botella deportiva', precio: 12000, categoria: 'Accesorio', stock: 20, stockMin: 3 },
-  { id: 5, nombre: 'Bufanda', precio: 10000, categoria: 'Accesorio', stock: 2, stockMin: 3 },
-  { id: 6, nombre: 'Llavero', precio: 5000, categoria: 'Accesorio', stock: 15, stockMin: 3 },
-  { id: 7, nombre: 'Mochila', precio: 30000, categoria: 'Accesorio', stock: 5, stockMin: 3 },
+  {
+    id: 3, nombre: 'Gorra', precio: 12000, categoria: 'Accesorio', stock: 3, stockMin: 3,
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwOCkiPgo8cGF0aCBkPSJNLTQ2IC00IEMtNDYgLTMwIC0yNSAtNDggMCAtNDggQzI1IC00OCA0NiAtMzAgNDYgLTQgTDQ2IDQgTC00NiA0IFoiIGZpbGw9IiMxNzJhNTQiIHN0cm9rZT0iIzBmMWMzZCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0tNDYgNCBMMjAgNCBDNDAgNCA1OCA4IDY4IDE2IEw0NiAyMCBMLTQ2IDEyIFoiIGZpbGw9IiMxNzJhNTQiIHN0cm9rZT0iIzBmMWMzZCIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxjaXJjbGUgY3g9IjAiIGN5PSItNDQiIHI9IjQiIGZpbGw9IiMwZjFjM2QiLz4KPC9nPgo8L3N2Zz4K',
+  },
+  {
+    id: 4, nombre: 'Botella deportiva', precio: 12000, categoria: 'Accesorio', stock: 20, stockMin: 3,
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNCkiPgo8cmVjdCB4PSItOSIgeT0iLTYyIiB3aWR0aD0iMTgiIGhlaWdodD0iMTQiIHJ4PSIzIiBmaWxsPSIjMTcyYTU0IiBzdHJva2U9IiMwZjFjM2QiIHN0cm9rZS13aWR0aD0iMyIvPgo8cGF0aCBkPSJNLTkgLTQ4IEwtMjIgLTMwIEwtMjIgNTIgQy0yMiA1OCAtMTcgNjIgLTExIDYyIEwxMSA2MiBDMTcgNjIgMjIgNTggMjIgNTIgTDIyIC0zMCBMOSAtNDggWiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMTcyYTU0IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHJlY3QgeD0iLTIyIiB5PSItNiIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjE2IiBmaWxsPSIjMTcyYTU0Ii8+CjwvZz4KPC9zdmc+Cg==',
+  },
+  {
+    id: 5, nombre: 'Bufanda', precio: 10000, categoria: 'Accesorio', stock: 2, stockMin: 3,
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNCkiPgo8cGF0aCBkPSJNLTU2IC0zMCBDLTQwIC00NiAtMTAgLTQ2IDEwIC0zMCBDMzAgLTE0IDUwIC0xNCA1OCAtMjYgTDU4IC04IEM0OCA2IDI2IDYgOCAtMTAgQy04IC0yNCAtMzAgLTI0IC00MiAtMTIgWiIgZmlsbD0iIzE3MmE1NCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTS00MiAtMTIgTC0xNCA0MCBDLTEyIDQ2IC0xOCA1MiAtMjQgNTAgTC00MCA0NCBDLTQ2IDQyIC00OCAzNCAtNDQgMjggWiIgZmlsbD0iIzE3MmE1NCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTU4IC0yNiBMNDAgMzQgQzM4IDQwIDQ0IDQ2IDUwIDQ0IEw2NCAzOCBDNzAgMzYgNzIgMjggNjggMjIgWiIgZmlsbD0iIzE3MmE1NCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
+  },
+  {
+    id: 6, nombre: 'Llavero', precio: 5000, categoria: 'Accesorio', stock: 15, stockMin: 3,
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNCkiPgo8Y2lyY2xlIGN4PSItMzAiIGN5PSItMzAiIHI9IjIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMxNzJhNTQiIHN0cm9rZS13aWR0aD0iNiIvPgo8cGF0aCBkPSJNLTE2IC0xNiBMMzggMzggTDUwIDI2IEw1OCAzNCBMNDYgNDYgTDM0IDU4IEwyNiA1MCBMMzggMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzE3MmE1NCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
+  },
+  {
+    id: 7, nombre: 'Mochila', precio: 30000, categoria: 'Accesorio', stock: 5, stockMin: 3,
+    foto: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlZWYxZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNikiPgo8cGF0aCBkPSJNLTMwIC01MCBDLTMwIC01OCAtMjAgLTY0IDAgLTY0IEMyMCAtNjQgMzAgLTU4IDMwIC01MCBMMzAgLTQwIEwtMzAgLTQwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzE3MmE1NCIgc3Ryb2tlLXdpZHRoPSIzIi8+CjxwYXRoIGQ9Ik0tMzggLTQwIEMtMzggLTUwIC0yMiAtNTYgMCAtNTYgQzIyIC01NiAzOCAtNTAgMzggLTQwIEwzOCA0NiBDMzggNTQgMzAgNjAgMjAgNjAgTC0yMCA2MCBDLTMwIDYwIC0zOCA1NCAtMzggNDYgWiIgZmlsbD0iIzE3MmE1NCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHJlY3QgeD0iLTE2IiB5PSItMTQiIHdpZHRoPSIzMiIgaGVpZ2h0PSIyMiIgcng9IjQiIGZpbGw9IiNmZmZmZmYiLz4KPHBhdGggZD0iTS0yNCAtNDAgTC0yNCAyMCBNMjQgLTQwIEwyNCAyMCIgc3Ryb2tlPSIjMGYxYzNkIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo=',
+  },
 ];
 
 export const seedVentasShop: VentaShop[] = [
@@ -171,6 +188,21 @@ export const seedSponsors: Sponsor[] = [
   { id: 1, nombre: 'Farmacia San Martín', rubro: 'Salud', monto: 25000, ubicacion: 'Cancha', fechaInicio: '2026-03-01', fechaFin: '2026-12-31', contacto: '11-4455-6677' },
   { id: 2, nombre: 'Distribuidora El Sol', rubro: 'Alimentos', monto: 40000, ubicacion: 'Camiseta', fechaInicio: '2026-01-01', fechaFin: '2026-08-15', contacto: '11-2233-4455' },
   { id: 3, nombre: 'Inmobiliaria Rivas', rubro: 'Inmobiliaria', monto: 18000, ubicacion: 'Portal del Hincha', fechaInicio: '2026-06-01', fechaFin: '2027-05-31', contacto: 'contacto@rivas.com' },
+  {
+    id: 4, nombre: 'Panadería La Espiga', rubro: 'Alimentos', monto: 15000, ubicacion: 'Buffet',
+    fechaInicio: '2026-02-01', fechaFin: '2026-12-31', contacto: '11-5566-7788',
+    logo: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmZGYzZTIiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNikiPgo8ZWxsaXBzZSBjeD0iMCIgY3k9IjEwIiByeD0iNTIiIHJ5PSIzNCIgZmlsbD0iI2M4NzkyZiIgc3Ryb2tlPSIjOGE0ZjE4IiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTS0zMCAtNCBDLTMwIC0xOCAtMTggLTMwIDAgLTMwIEMxOCAtMzAgMzAgLTE4IDMwIC00IiBmaWxsPSJub25lIiBzdHJva2U9IiM4YTRmMTgiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik0tMTQgNCB2MTQgTTAgMCB2MTggTTE0IDQgdjE0IiBzdHJva2U9IiM4YTRmMTgiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==',
+  },
+  {
+    id: 5, nombre: 'AutoService Norte', rubro: 'Automotor', monto: 32000, ubicacion: 'Cancha',
+    fechaInicio: '2026-01-15', fechaFin: '2027-01-14', contacto: '11-3344-9900',
+    logo: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlN2VkZjciLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDExMCkiPgo8cGF0aCBkPSJNLTU4IDYgTC00NiAtMjIgQy00MiAtMzAgLTM0IC0zNCAtMjQgLTM0IEwyNCAtMzQgQzM0IC0zNCA0MiAtMzAgNDYgLTIyIEw1OCA2IEw1OCAyNiBDNTggMzIgNTMgMzYgNDggMzYgTDQ0IDM2IEMzOSAzNiAzNCAzMiAzNCAyNiBMMzQgMjIgTC0zNCAyMiBMLTM0IDI2IEMtMzQgMzIgLTM5IDM2IC00NCAzNiBMLTQ4IDM2IEMtNTMgMzYgLTU4IDMyIC01OCAyNiBaIiBmaWxsPSIjMjc3NGI4IiBzdHJva2U9IiMxNzQ5N2QiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSItMzIiIGN5PSIyNCIgcj0iMTAiIGZpbGw9IiMxNzQ5N2QiLz4KPGNpcmNsZSBjeD0iMzIiIGN5PSIyNCIgcj0iMTAiIGZpbGw9IiMxNzQ5N2QiLz4KPHBhdGggZD0iTS0zOCAtMzAgTC0yOCAtNiBMMjggLTYgTDM4IC0zMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTc0OTdkIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9nPgo8L3N2Zz4K',
+  },
+  {
+    id: 6, nombre: 'Óptica Visión', rubro: 'Salud', monto: 20000, ubicacion: 'Portal del Hincha',
+    fechaInicio: '2026-04-01', fechaFin: '2027-03-31', contacto: 'contacto@opticavision.com.ar',
+    logo: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlYWY2ZjAiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNikiPgo8Y2lyY2xlIGN4PSItMzAiIGN5PSIwIiByPSIyNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQ3YTRmIiBzdHJva2Utd2lkdGg9IjYiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIwIiByPSIyNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQ3YTRmIiBzdHJva2Utd2lkdGg9IjYiLz4KPHBhdGggZD0iTS00IDAgaDgiIHN0cm9rZT0iIzBkN2E0ZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTS01NiAwIGMtNiAwIC0xMCAtNCAtMTAgLTEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwZDdhNGYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik01NiAwIGM2IDAgMTAgLTQgMTAgLTEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwZDdhNGYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==',
+  },
 ];
 
 export const seedComunicados: Comunicado[] = [

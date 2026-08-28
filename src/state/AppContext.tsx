@@ -538,7 +538,6 @@ export interface AppActions {
   liberarReserva: (id: number) => void;
   reservarTurnoHincha: (canchaId: number, dia: string, hora: string, medioPago: MedioPago) => void;
   cerrarBienvenidaReservas: () => void;
-  setPortalRol: (rol: 'socio' | 'hincha') => void;
   iniciarSesionPortal: () => void;
   cerrarSesionPortal: () => void;
   marcarComunicadoLeido: (id: number) => void;
@@ -586,6 +585,7 @@ export interface AppActions {
   setNuevaVentaVarianteId: (v: string) => void;
   setNuevaVentaMedio: (v: MedioPago) => void;
   registrarVentaShop: () => void;
+  comprarProductoShopPortal: (id: number, medio: MedioPago) => void;
   quitarVentaShop: (id: number) => void;
   setNuevoStockShopCantidad: (v: string) => void;
   setNuevoStockShopTalle: (v: string) => void;
@@ -922,7 +922,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
     cerrarBienvenidaReservas: () => update({ reservaBienvenidaVista: true }),
-    setPortalRol: (rol) => update({ portalRol: rol }),
     iniciarSesionPortal: () => update({ portalLoggedIn: true, portalRol: 'socio', screen: 'portal_inicio' }),
     cerrarSesionPortal: () => update({ portalLoggedIn: false, screen: 'portal_login' }),
     marcarComunicadoLeido: (id) => update((s) => (
@@ -1266,6 +1265,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ventasShop: [{ id: Date.now(), productoId: p.id, producto: p.nombre, precio: p.precio, medio: prev.nuevaVentaMedio, hora: 'ahora' }, ...prev.ventasShop],
           productosShop: prev.productosShop.map((x) => (x.id === p.id ? { ...x, stock: x.stock - 1 } : x)),
           nuevaVentaProductoId: '',
+        };
+      });
+    },
+    comprarProductoShopPortal: (id, medio) => {
+      setState((prev) => {
+        const p = prev.productosShop.find((x) => x.id === id);
+        if (!p) return prev;
+        if (p.stock <= 0) {
+          showToast('Sin stock disponible de ' + p.nombre);
+          return prev;
+        }
+        showToast('¡Compra registrada! Retirala por secretaría del club.');
+        return {
+          ...prev,
+          ventasShop: [{ id: Date.now(), productoId: p.id, producto: p.nombre, precio: p.precio, medio, hora: 'ahora' }, ...prev.ventasShop],
+          productosShop: prev.productosShop.map((x) => (x.id === p.id ? { ...x, stock: x.stock - 1 } : x)),
         };
       });
     },

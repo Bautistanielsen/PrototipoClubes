@@ -30,6 +30,7 @@ export default function PortalSocio() {
     if (active === 'portal_mis_reservas') return <MisReservas />;
     if (active === 'portal_torneos') return <PortalTorneos />;
     if (active === 'portal_partidos') return <PortalPartidos />;
+    if (active === 'portal_tienda') return <PortalTienda />;
     return <Inicio reservation={nextReservation} news={latestNews} />;
   };
 
@@ -127,7 +128,6 @@ function Login() {
   );
 }
 
-const TIENDA_CLUB_URL = 'https://tienda.clubatleticomodelo.com.ar';
 const BUFFET_WHATSAPP_NUMERO = '5492235550199';
 const DORADO = '#d4af6a';
 
@@ -274,40 +274,35 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
     )}
 
     <strong className="portal-label">Servicios</strong>
-    <a
-      href={TIENDA_CLUB_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="portal-card portal-menu-card"
-      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', marginBottom: 8, textDecoration: 'none' }}
-    >
-      <div style={{ width: 30, height: 30, borderRadius: '50%', background: ICONO_COLOR.tienda.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-        <BeneficioIcon tipo="tienda" />
-      </div>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Tienda del club</span>
-      <EnlaceExternoIcon />
-    </a>
-    <button
-      onClick={() => window.open(`https://wa.me/${BUFFET_WHATSAPP_NUMERO}?text=${encodeURIComponent('Hola! Quería consultar el menú del buffet.')}`, '_blank')}
-      className="portal-card portal-menu-card"
-      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', textAlign: 'left' }}
-    >
-      <div style={{ width: 30, height: 30, borderRadius: '50%', background: ICONO_COLOR.buffet.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-        <BeneficioIcon tipo="buffet" />
-      </div>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Buffet · Pedidos por WhatsApp</span>
-      <EnlaceExternoIcon />
-    </button>
-    <button
-      onClick={() => setShowContacto(true)}
-      className="portal-card portal-menu-card"
-      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', marginTop: 8, textAlign: 'left' }}
-    >
-      <div style={{ width: 30, height: 30, borderRadius: '50%', background: ICONO_COLOR.contacto.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-        <ContactoIcon />
-      </div>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#2774b8' }}>Contacto y ubicación</span>
-    </button>
+    <div className="portal-services-grid">
+      <button
+        onClick={() => actions.navigate('portal_tienda')}
+        className="portal-card portal-menu-card portal-service-tile"
+      >
+        <div className="portal-service-tile-icon" style={{ background: ICONO_COLOR.tienda.bg }}>
+          <BeneficioIcon tipo="tienda" />
+        </div>
+        <span>Tienda del club</span>
+      </button>
+      <button
+        onClick={() => window.open(`https://wa.me/${BUFFET_WHATSAPP_NUMERO}?text=${encodeURIComponent('Hola! Quería consultar el menú del buffet.')}`, '_blank')}
+        className="portal-card portal-menu-card portal-service-tile"
+      >
+        <div className="portal-service-tile-icon" style={{ background: ICONO_COLOR.buffet.bg }}>
+          <BeneficioIcon tipo="buffet" />
+        </div>
+        <span>Buffet</span>
+      </button>
+      <button
+        onClick={() => setShowContacto(true)}
+        className="portal-card portal-menu-card portal-service-tile"
+      >
+        <div className="portal-service-tile-icon" style={{ background: ICONO_COLOR.contacto.bg }}>
+          <ContactoIcon />
+        </div>
+        <span>Contacto</span>
+      </button>
+    </div>
 
     <SponsorsPortal />
 
@@ -949,13 +944,6 @@ function MercadoPagoIcon() {
   );
 }
 
-function EnlaceExternoIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2774b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M7 17 17 7M9 7h8v8" />
-    </svg>
-  );
-}
 
 function BeneficioIcon({ tipo }: { tipo: 'buffet' | 'tienda' | 'entrada' | 'novedades' }) {
   const common = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: ICONO_COLOR[tipo].stroke, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -1400,6 +1388,86 @@ function NovedadImagen({ src, alt, style }: { src: string; alt: string; style?: 
   );
 }
 
+function PortalTienda() {
+  const { state, actions } = useApp();
+  const [comprando, setComprando] = useState<number | null>(null);
+  const [medioCompra, setMedioCompra] = useState<MedioPago>('Efectivo');
+  const producto = state.productosShop.find((p) => p.id === comprando);
+
+  const confirmarCompra = () => {
+    if (!producto) return;
+    actions.comprarProductoShopPortal(producto.id, medioCompra);
+    setComprando(null);
+    setMedioCompra('Efectivo');
+  };
+
+  return <>
+    <h1>Tienda del club</h1>
+    <p className="portal-page-sub">Comprá indumentaria y accesorios oficiales</p>
+
+    {state.productosShop.length === 0 && (
+      <section className="portal-card"><p>No hay productos cargados por el momento.</p></section>
+    )}
+
+    {state.productosShop.map((p) => {
+      const sinStock = p.stock <= 0;
+      return (
+        <section key={p.id} className="portal-card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 12, background: ICONO_COLOR.tienda.bg, display: 'grid', placeItems: 'center', flexShrink: 0, overflow: 'hidden' }}>
+            {p.foto ? <img src={p.foto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <BeneficioIcon tipo="tienda" />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: '#16203a' }}>{p.nombre}</div>
+            <div style={{ fontSize: 12.5, color: '#8b93a5', marginTop: 2 }}>{p.categoria}{sinStock ? ' · Sin stock' : ''}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#2774b8', marginTop: 4 }}>{formatMoney(p.precio)}</div>
+          </div>
+          <button
+            onClick={() => setComprando(p.id)}
+            disabled={sinStock}
+            style={{
+              height: 38, padding: '0 16px', borderRadius: 9, border: 'none',
+              background: sinStock ? '#e3e7ef' : '#2774b8', color: sinStock ? '#9aa2b1' : '#fff',
+              fontWeight: 700, fontSize: 13, cursor: sinStock ? 'not-allowed' : 'pointer', flexShrink: 0,
+            }}
+          >
+            {sinStock ? 'Sin stock' : 'Comprar'}
+          </button>
+        </section>
+      );
+    })}
+
+    {producto && (
+      <ModalOverlay onClose={() => setComprando(null)} maxWidth={380} ariaLabel={`Comprar ${producto.nombre}`}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Confirmar compra</div>
+        <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>{producto.nombre} · {formatMoney(producto.precio)}</div>
+
+        <label style={fieldLabelStyle}>Método de pago</label>
+        <select value={medioCompra} onChange={(e) => setMedioCompra(e.target.value as MedioPago)} style={fieldInputStyle}>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Transferencia">Transferencia</option>
+          <option value="MercadoPago">Mercado Pago</option>
+          <option value="Tarjeta">Tarjeta de crédito/débito</option>
+        </select>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={() => setComprando(null)}
+            style={{ flex: 1, height: 46, border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmarCompra}
+            style={{ flex: 1, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+          >
+            Confirmar compra
+          </button>
+        </div>
+      </ModalOverlay>
+    )}
+  </>;
+}
+
 function Novedades() {
   const { state, actions } = useApp();
   const [abiertos, setAbiertos] = useState<Set<number>>(new Set());
@@ -1573,8 +1641,7 @@ function CarnetSocioModal({ onClose }: { onClose: () => void }) {
 function ContactoIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ICONO_COLOR.contacto.stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21c-4.4-3-8-6.3-8-10.3A5.7 5.7 0 0 1 12 6a5.7 5.7 0 0 1 8 4.7c0 4-3.6 7.3-8 10.3Z" />
-      <circle cx="12" cy="10.5" r="2.3" />
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z" />
     </svg>
   );
 }

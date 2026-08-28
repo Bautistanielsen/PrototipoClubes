@@ -35,7 +35,7 @@ export default function ModuleQuickNav({
           key={id}
           type="button"
           className={buttonClassName}
-          style={direction === 'row' ? { ...buttonStyle, flex: '1 1 0', minWidth: 0, whiteSpace: 'normal', lineHeight: 1.2, textAlign: 'center' } : buttonStyle}
+          style={direction === 'row' ? { ...buttonStyle, flex: '1.3 1 0', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : buttonStyle}
           onClick={() => actions.selectModule(id)}
         >
           Ver {MODULE_LABELS[id]}
@@ -44,7 +44,7 @@ export default function ModuleQuickNav({
       <button
         type="button"
         className={homeClassName ?? buttonClassName}
-        style={direction === 'row' ? { ...(homeStyle ?? buttonStyle), flex: '1 1 0', minWidth: 0, whiteSpace: 'normal', lineHeight: 1.2, textAlign: 'center' } : (homeStyle ?? buttonStyle)}
+        style={direction === 'row' ? { ...(homeStyle ?? buttonStyle), flex: '0.7 1 0', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : (homeStyle ?? buttonStyle)}
         onClick={actions.showModuleSelector}
       >
         Volver al inicio
