@@ -203,6 +203,8 @@ export const seedSponsors: Sponsor[] = [
     fechaInicio: '2026-04-01', fechaFin: '2027-03-31', contacto: 'contacto@opticavision.com.ar',
     logo: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNlYWY2ZjAiLz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDEwNikiPgo8Y2lyY2xlIGN4PSItMzAiIGN5PSIwIiByPSIyNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQ3YTRmIiBzdHJva2Utd2lkdGg9IjYiLz4KPGNpcmNsZSBjeD0iMzAiIGN5PSIwIiByPSIyNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMGQ3YTRmIiBzdHJva2Utd2lkdGg9IjYiLz4KPHBhdGggZD0iTS00IDAgaDgiIHN0cm9rZT0iIzBkN2E0ZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTS01NiAwIGMtNiAwIC0xMCAtNCAtMTAgLTEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwZDdhNGYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik01NiAwIGM2IDAgMTAgLTQgMTAgLTEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMwZDdhNGYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==',
   },
+  { id: 7, nombre: 'Ferretería Central', rubro: 'Hogar', monto: 16000, ubicacion: 'Portal del Hincha', fechaInicio: '2026-03-15', fechaFin: '2027-03-14', contacto: '11-6677-8899' },
+  { id: 8, nombre: 'Café del Barrio', rubro: 'Gastronomía', monto: 14000, ubicacion: 'Portal del Hincha', fechaInicio: '2026-05-01', fechaFin: '2027-04-30', contacto: '11-7788-9900' },
 ];
 
 export const seedComunicados: Comunicado[] = [

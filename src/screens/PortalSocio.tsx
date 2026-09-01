@@ -338,7 +338,8 @@ function SponsorsPortal() {
         <div
           key={s.id}
           className="portal-card"
-          style={{ minWidth: 148, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8, padding: '16px 14px', position: 'relative' }}
+          onClick={() => window.open(`https://www.${s.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.com.ar`, '_blank')}
+          style={{ minWidth: 148, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8, padding: '16px 14px', position: 'relative', cursor: 'pointer' }}
         >
           <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: '#8b93a5', letterSpacing: '.04em' }}>PUBLICIDAD</span>
           {s.logo ? (
