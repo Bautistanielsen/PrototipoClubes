@@ -47,12 +47,6 @@ export default function PortalSocio() {
     <div className="portal-frame">
       <div className="portal-device-top"><span /></div>
       <div className="portal-content">
-        <div className="portal-topbar">
-          <div className="portal-topbar-brand">
-            <div className="portal-topbar-crest">{firstSocio.fotoPerfil ? <img src={firstSocio.fotoPerfil} alt="" style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover', display: 'block' }} /> : 'CAM'}</div>
-            <span className="portal-topbar-greeting">HOLA, {memberName.toUpperCase()}</span>
-          </div>
-        </div>
         {content()}
       </div>
       <nav className="portal-nav">
@@ -61,7 +55,7 @@ export default function PortalSocio() {
         <PortalNav active={active === 'portal_torneos'} label="Torneos" onClick={() => actions.navigate('portal_torneos')} />
         <PortalNav active={active === 'portal_reservas'} label="Reservas" onClick={() => actions.navigate('portal_reservas')} />
         <PortalNav active={active === 'portal_mis_reservas'} label="Mis reservas" onClick={() => actions.navigate('portal_mis_reservas')} />
-        <PortalNav active={active === 'portal_perfil'} label="Mi perfil" onClick={() => actions.navigate('portal_perfil')} />
+        <PortalNav active={active === 'portal_perfil'} label="Mi perfil" avatar={firstSocio.fotoPerfil} onClick={() => actions.navigate('portal_perfil')} />
       </nav>
       <HinchaAssistant />
     </div>
@@ -196,7 +190,6 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
   const cancha = state.canchas.find((c) => c.id === reservation?.canchaId);
   const esSocio = state.portalRol === 'socio';
   const socio = state.socios[0];
-  const primerNombre = socio.nombre;
   const [datosCalendario, setDatosCalendario] = useState<SportsCalendarData | null>(null);
   useEffect(() => { setDatosCalendario(readSportsCalendarData()); }, []);
   const proximoPorEquipo = datosCalendario
@@ -212,43 +205,57 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
   const iniciales = `${socio.nombre[0] ?? ''}${socio.apellido[0] ?? ''}`.toUpperCase();
 
   return <>
-    <div className="portal-hero">
-      <div className="portal-hero-top">
-        <div className="portal-hero-who">
-          <div className="portal-hero-avatar">
-            {esSocio && socio.fotoPerfil ? <img src={socio.fotoPerfil} alt="" /> : esSocio ? iniciales : 'CAM'}
+    <div style={{ borderRadius: 18, overflow: 'hidden', marginBottom: 22 }}>
+      <div className="portal-hero" style={{ margin: 0, borderRadius: esSocio && estado ? 0 : 18 }}>
+        <div className="portal-hero-top">
+          <div className="portal-hero-who">
+            <div className="portal-hero-avatar" style={{ width: 52, height: 52 }}>
+              {esSocio && socio.fotoPerfil ? <img src={socio.fotoPerfil} alt="" /> : esSocio ? iniciales : 'CAM'}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div className="portal-hero-greeting">{esSocio ? `Hola, ${socio.nombre}` : 'Tu club, cerca tuyo'}</div>
+              <div className="portal-hero-sub">{esSocio ? 'Club Atlético Modelo' : 'Sumate y accedé a beneficios exclusivos'}</div>
+            </div>
           </div>
-          <div style={{ minWidth: 0 }}>
-            <div className="portal-hero-greeting">{esSocio ? `Hola, ${primerNombre}` : 'Tu club, cerca tuyo'}</div>
-            <div className="portal-hero-sub">{esSocio ? `Socio #${socio.numero} · Club Atlético Modelo` : 'Sumate y accedé a beneficios exclusivos'}</div>
-          </div>
+          <ClubEscudo size={40} />
         </div>
-        {estado && <span className="portal-hero-chip" style={{ background: estado.bg, color: estado.color }}>{estado.label}</span>}
+        {!esSocio && (
+          <button
+            onClick={() => actions.navigate('portal_hacete_socio')}
+            style={{ marginTop: 16, height: 42, padding: '0 18px', border: 'none', borderRadius: 9, background: DORADO, color: '#0c1830', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}
+          >
+            Hacete socio
+          </button>
+        )}
       </div>
-      {!esSocio && (
-        <button
-          onClick={() => actions.navigate('portal_hacete_socio')}
-          style={{ marginTop: 16, height: 42, padding: '0 18px', border: 'none', borderRadius: 9, background: DORADO, color: '#0c1830', fontSize: 13.5, fontWeight: 700, cursor: 'pointer' }}
-        >
-          Hacete socio
-        </button>
+      {esSocio && estado && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 14px',
+          background: estado.bg, color: estado.color, fontSize: 13, fontWeight: 700,
+        }}>
+          {socio.estado === 'al_dia' ? '✓ Tu cuota está al día' : socio.estado === 'por_vencer' ? 'Tu cuota está por vencer' : 'Tenés la cuota vencida'}
+        </div>
       )}
     </div>
 
     <div className="portal-stats">
       <button className="portal-stat" onClick={() => actions.navigate('portal_mis_reservas')}>
-        <div className="portal-stat-icon" style={{ background: ICONO_COLOR.tienda.bg }}>
-          <CanchaIcon nombre={cancha?.nombre ?? ''} stroke={ICONO_COLOR.tienda.stroke} />
+        <div className="portal-stat-top">
+          <span>Próxima reserva</span>
+          <div className="portal-stat-icon" style={{ background: ICONO_COLOR.tienda.bg }}>
+            <CanchaIcon nombre={cancha?.nombre ?? ''} stroke={ICONO_COLOR.tienda.stroke} />
+          </div>
         </div>
-        <span>Próxima reserva</span>
         <strong>{reservation ? `${reservation.dia} · ${reservation.hora}` : 'Sin reservas'}</strong>
         <small>{reservation ? cancha?.nombre : 'Reservá un espacio'}</small>
       </button>
       <button className="portal-stat" onClick={() => actions.navigate('portal_partidos')}>
-        <div className="portal-stat-icon" style={{ background: ICONO_COLOR.novedades.bg }}>
-          <TrofeoIcon stroke={ICONO_COLOR.novedades.stroke} />
+        <div className="portal-stat-top">
+          <span>Próximo partido</span>
+          <div className="portal-stat-icon" style={{ background: ICONO_COLOR.novedades.bg }}>
+            <TrofeoIcon stroke={ICONO_COLOR.novedades.stroke} />
+          </div>
         </div>
-        <span>Próximo partido</span>
         <strong>{proximo ? `${proximo.equipo.nombre} vs. ${proximo.partido!.rival || 'rival a confirmar'}` : 'Sin partidos'}</strong>
         <small>{proximo ? `${formatFechaCorta(proximo.partido!.fecha)}${proximo.partido!.horaInicio ? ` · ${proximo.partido!.horaInicio}` : ''}` : 'Todavía no hay fecha'}</small>
       </button>
@@ -262,13 +269,15 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       </section>
     ) : (
       news.map((item) => (
-        <section key={item.id} className="portal-card">
-          <strong style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <section key={item.id} className="portal-card" style={{ padding: '9px 12px', marginBottom: 8 }}>
+          <strong style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5 }}>
             {!state.comunicadosLeidos.includes(item.id) && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2774b8', flexShrink: 0 }} />}
             {item.titulo}
           </strong>
-          {item.imagen && <NovedadImagen src={item.imagen} alt={item.titulo} style={{ margin: '6px 0' }} />}
-          {!item.imagen && <p>{item.cuerpo}</p>}
+          {item.imagen && <NovedadImagen src={item.imagen} alt={item.titulo} style={{ margin: '5px 0', maxHeight: 70, objectFit: 'cover' }} />}
+          {!item.imagen && (
+            <p style={{ margin: '3px 0 0', fontSize: 12.5, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.cuerpo}</p>
+          )}
         </section>
       ))
     )}
@@ -347,8 +356,9 @@ const ORDEN_ESTADO_TORNEO: Record<string, number> = { 'En curso': 0, 'Próximo':
 function PortalTorneos() {
   const { state, actions } = useApp();
   const [expandidoId, setExpandidoId] = useState<number | null>(null);
-  const [filtro, setFiltro] = useState<FiltroTorneo>('Todos');
+  const [filtro, setFiltro] = useState<FiltroTorneo>('Próximo');
   const [inscribiendoTorneoId, setInscribiendoTorneoId] = useState<number | null>(null);
+  const [resultadosTorneoId, setResultadosTorneoId] = useState<number | null>(null);
 
   const torneosFiltrados = useMemo(
     () => state.torneos
@@ -358,14 +368,9 @@ function PortalTorneos() {
   );
 
   const torneoInscribiendo = state.torneos.find((t) => t.id === inscribiendoTorneoId);
-  const enCurso = state.torneos.filter((t) => estadoTorneo(t, HOY_ISO) === 'En curso').length;
-  const proximos = state.torneos.filter((t) => estadoTorneo(t, HOY_ISO) === 'Próximo').length;
-
+  const torneoResultados = state.torneos.find((t) => t.id === resultadosTorneoId);
   return <>
-    <h1>Torneos</h1>
-    <p className="portal-page-sub">
-      {state.torneos.length === 0 ? 'El club todavía no organizó torneos.' : `${enCurso} en curso · ${proximos} próximos a arrancar`}
-    </p>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>🏆 Torneos</h1>
 
     <FilterPills
       options={FILTROS_TORNEO}
@@ -383,29 +388,26 @@ function PortalTorneos() {
       const meta = estadoTorneoMeta[estado];
       const abierto = expandidoId === t.id;
       const equipos = state.equiposTorneo.filter((eq) => eq.torneoId === t.id);
-      const partidos = state.partidosTorneo.filter((p) => p.torneoId === t.id);
-      const tabla = tablaPosiciones(t.id, state.equiposTorneo, state.partidosTorneo);
-      const nombreEquipo = (id: number) => equipos.find((eq) => eq.id === id)?.nombre ?? '—';
       const inscripcion = state.inscripcionesTorneo.find((i) => i.torneoId === t.id);
 
       return (
         <section
           key={t.id}
           className="portal-card portal-menu-card"
-          onClick={() => setExpandidoId(abierto ? null : t.id)}
-          style={{ cursor: 'pointer', borderLeft: `4px solid ${meta.color}` }}
+          onClick={() => estado === 'Próximo' && setExpandidoId(abierto ? null : t.id)}
+          style={{ cursor: estado === 'Próximo' ? 'pointer' : 'default', borderLeft: `4px solid ${meta.color}` }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <strong style={{ margin: 0 }}>{t.nombre}</strong>
             <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: meta.bg, color: meta.color }}>{estado}</span>
           </div>
-          <p style={{ margin: '6px 0 0' }}>{t.deporte} · {formatFechaCorta(t.fechaInicio)} al {formatFechaCorta(t.fechaFin)}</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-            <span className="portal-meta-chip">📍 {t.lugar}</span>
-            <span className="portal-meta-chip">Cupo {t.cupo}</span>
-            <span className="portal-meta-chip">Inscripción {formatMoney(t.valorInscripcion)}</span>
-          </div>
-          {t.descripcion && <p style={{ marginTop: 8, color: '#8b93a5' }}>{t.descripcion}</p>}
+          <p style={{ margin: '6px 0 0', fontWeight: 700, color: '#16203a' }}>{formatFechaCorta(t.fechaInicio)} al {formatFechaCorta(t.fechaFin)}</p>
+          {estado !== 'En curso' && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              <span className="portal-meta-chip" style={{ fontWeight: 800 }}>Cupo {equipos.length}/{t.cupo}</span>
+              <span className="portal-meta-chip" style={{ fontWeight: 800, background: '#eaf6ec', borderColor: '#bfe4c6', color: '#1f7a34' }}>Inscripción {formatMoney(t.valorInscripcion)}</span>
+            </div>
+          )}
           {t.premio && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4,
@@ -414,6 +416,19 @@ function PortalTorneos() {
               <TrofeoIcon />
               <span style={{ fontSize: 13, fontWeight: 700, color: '#8a6d1a' }}>{t.premio}</span>
             </div>
+          )}
+          {estado !== 'Próximo' && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setResultadosTorneoId(t.id); }}
+              style={{
+                display: 'block', margin: '8px auto 0', height: 40, padding: '0 22px', borderRadius: 8,
+                border: 'none', background: 'linear-gradient(135deg, #172a54, #21386f)', color: '#fff',
+                fontSize: 13.5, fontWeight: 800, letterSpacing: '.01em', cursor: 'pointer',
+                boxShadow: '0 3px 10px rgba(23,42,84,.28)',
+              }}
+            >
+              🏆 Ver resultados
+            </button>
           )}
           {inscripcion && <p>Anotado como <strong>{inscripcion.nombreEquipo}</strong></p>}
 
@@ -425,7 +440,7 @@ function PortalTorneos() {
                 else setInscribiendoTorneoId(t.id);
               }}
               style={{
-                marginTop: 8, height: 38, padding: '0 16px', borderRadius: 8, border: inscripcion ? '1px solid #d7dce6' : 'none',
+                display: 'block', margin: '8px auto 0', height: 38, padding: '0 16px', borderRadius: 8, border: inscripcion ? '1px solid #d7dce6' : 'none',
                 background: inscripcion ? '#fff' : '#172a54', color: inscripcion ? '#16203a' : '#fff',
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
               }}
@@ -434,66 +449,9 @@ function PortalTorneos() {
             </button>
           )}
 
-          {abierto && (
+          {abierto && estado === 'Próximo' && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f0f1f5' }} onClick={(e) => e.stopPropagation()}>
-              <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Equipos</strong>
-              {equipos.length === 0 ? (
-                <p style={{ margin: '0 0 12px' }}>Todavía no hay equipos anotados.</p>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-                  {equipos.map((eq) => (
-                    <span key={eq.id} style={{ fontSize: 12.5, fontWeight: 600, color: '#16203a', background: '#f5f7fb', borderRadius: 20, padding: '5px 12px' }}>{eq.nombre}</span>
-                  ))}
-                </div>
-              )}
-
-              {partidos.length > 0 && (
-                <>
-                  <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Partidos</strong>
-                  <div style={{ display: 'grid', gap: 6, marginBottom: 12 }}>
-                    {partidos.map((p) => (
-                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: '#16203a' }}>
-                        <span>{nombreEquipo(p.equipoLocalId)} vs {nombreEquipo(p.equipoVisitanteId)}</span>
-                        <strong>{p.golesLocal !== null && p.golesVisitante !== null ? `${p.golesLocal} - ${p.golesVisitante}` : 'Sin jugar'}</strong>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {tabla.length > 0 && (
-                <>
-                  <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Tabla de posiciones</strong>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                      <thead>
-                        <tr style={{ color: '#8b93a5', textAlign: 'left' }}>
-                          <th style={{ padding: '4px 6px' }}>Equipo</th>
-                          <th style={{ padding: '4px 6px' }}>PJ</th>
-                          <th style={{ padding: '4px 6px' }}>V</th>
-                          <th style={{ padding: '4px 6px' }}>E</th>
-                          <th style={{ padding: '4px 6px' }}>D</th>
-                          <th style={{ padding: '4px 6px' }}>DG</th>
-                          <th style={{ padding: '4px 6px' }}>Pts</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tabla.map((fila) => (
-                          <tr key={fila.equipoId} style={{ borderTop: '1px solid #f0f1f5', color: '#16203a', fontWeight: 600 }}>
-                            <td style={{ padding: '4px 6px' }}>{fila.nombre}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.pj}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.g}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.e}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.p}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.dg}</td>
-                            <td style={{ padding: '4px 6px' }}>{fila.pts}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
+              <TorneoResultadosContent torneoId={t.id} />
             </div>
           )}
         </section>
@@ -506,7 +464,113 @@ function PortalTorneos() {
         onClose={() => setInscribiendoTorneoId(null)}
       />
     )}
+
+    {torneoResultados && (
+      <TorneoResultadosModal
+        torneo={torneoResultados}
+        onClose={() => setResultadosTorneoId(null)}
+      />
+    )}
   </>;
+}
+
+function TorneoResultadosContent({ torneoId }: { torneoId: number }) {
+  const { state } = useApp();
+  const equipos = state.equiposTorneo.filter((eq) => eq.torneoId === torneoId);
+  const partidos = state.partidosTorneo.filter((p) => p.torneoId === torneoId);
+  const tabla = tablaPosiciones(torneoId, state.equiposTorneo, state.partidosTorneo);
+  const nombreEquipo = (id: number) => equipos.find((eq) => eq.id === id)?.nombre ?? '—';
+
+  const ultimoPartido = partidos[partidos.length - 1];
+  const campeonId = ultimoPartido && ultimoPartido.golesLocal !== null && ultimoPartido.golesVisitante !== null
+    ? (ultimoPartido.golesLocal > ultimoPartido.golesVisitante ? ultimoPartido.equipoLocalId
+      : ultimoPartido.golesVisitante > ultimoPartido.golesLocal ? ultimoPartido.equipoVisitanteId : null)
+    : null;
+
+  return <>
+    {campeonId !== null && (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
+        background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 10, padding: '8px 12px',
+      }}>
+        <TrofeoIcon />
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#8a6d1a' }}>Campeón: {nombreEquipo(campeonId)}</span>
+      </div>
+    )}
+
+    <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Equipos</strong>
+    {equipos.length === 0 ? (
+      <p style={{ margin: '0 0 12px' }}>Todavía no hay equipos anotados.</p>
+    ) : (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+        {equipos.map((eq) => (
+          <span key={eq.id} style={eq.id === campeonId
+            ? { fontSize: 12.5, fontWeight: 800, color: '#8a6d1a', background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 20, padding: '5px 12px' }
+            : { fontSize: 12.5, fontWeight: 600, color: '#16203a', background: '#f5f7fb', borderRadius: 20, padding: '5px 12px' }}>
+            {eq.id === campeonId ? '🏆 ' : ''}{eq.nombre}
+          </span>
+        ))}
+      </div>
+    )}
+
+    {partidos.length > 0 && (
+      <>
+        <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Partidos</strong>
+        <div style={{ display: 'grid', gap: 6, marginBottom: 12 }}>
+          {partidos.map((p) => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: '#16203a' }}>
+              <span>{nombreEquipo(p.equipoLocalId)} vs {nombreEquipo(p.equipoVisitanteId)}</span>
+              <strong>{p.golesLocal !== null && p.golesVisitante !== null ? `${p.golesLocal} - ${p.golesVisitante}` : 'Sin jugar'}</strong>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    {tabla.length > 0 && (
+      <>
+        <strong style={{ display: 'block', fontSize: 13, color: '#16203a', marginBottom: 6 }}>Tabla de posiciones</strong>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ color: '#8b93a5', textAlign: 'left' }}>
+                <th style={{ padding: '4px 6px' }}>Equipo</th>
+                <th style={{ padding: '4px 6px' }}>PJ</th>
+                <th style={{ padding: '4px 6px' }}>V</th>
+                <th style={{ padding: '4px 6px' }}>E</th>
+                <th style={{ padding: '4px 6px' }}>D</th>
+                <th style={{ padding: '4px 6px' }}>DG</th>
+                <th style={{ padding: '4px 6px' }}>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tabla.map((fila) => (
+                <tr key={fila.equipoId} style={{ borderTop: '1px solid #f0f1f5', color: '#16203a', fontWeight: 600 }}>
+                  <td style={{ padding: '4px 6px' }}>{fila.nombre}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.pj}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.g}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.e}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.p}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.dg}</td>
+                  <td style={{ padding: '4px 6px' }}>{fila.pts}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+  </>;
+}
+
+function TorneoResultadosModal({ torneo, onClose }: { torneo: Torneo; onClose: () => void }) {
+  return (
+    <ModalOverlay onClose={onClose} maxWidth={420} ariaLabel={`Resultados de ${torneo.nombre}`} cardStyle={{ maxHeight: '82vh', overflowY: 'auto' }}>
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>{torneo.nombre}</div>
+      <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>{formatFechaCorta(torneo.fechaInicio)} al {formatFechaCorta(torneo.fechaFin)}</div>
+      <TorneoResultadosContent torneoId={torneo.id} />
+    </ModalOverlay>
+  );
 }
 
 function InscripcionTorneoModal({ torneo, onClose }: { torneo: Torneo; onClose: () => void }) {
@@ -976,7 +1040,7 @@ function Cuota() {
 
   if (state.portalRol === 'hincha') {
     return <>
-      <h1>Mi cuota</h1>
+      <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>Mi cuota</h1>
       <section className="portal-card portal-card-primary">
         <div>Todavía no sos socio</div>
         <strong>No tenés una cuota asociada</strong>
@@ -991,7 +1055,7 @@ function Cuota() {
 
   const { deuda, estado, ultimoPago, debitoAutomatico, medioPago } = socio;
   return <>
-    <h1>Mi cuota</h1>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>Mi cuota</h1>
     <section className="portal-card portal-card-primary">
       <div>{estado === 'al_dia' ? 'Cuota al día' : 'Cuota pendiente'}</div>
       <strong>{deuda > 0 ? formatMoney(deuda) : 'Sin deuda'}</strong>
@@ -1125,8 +1189,7 @@ function Reservas() {
   };
 
   return <>
-    <h1>Reservas</h1>
-    <p className="portal-page-sub">{cancha ? `${cancha.nombre} #${cancha.numero} · ${formatMoney(cancha.precio)} el turno` : 'Elegí deporte, cancha y horario'}</p>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>Reservas</h1>
 
     <strong className="portal-label-tight">Elegí un deporte</strong>
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
@@ -1307,8 +1370,7 @@ function MisReservas() {
   };
 
   return <>
-    <h1>Mis reservas</h1>
-    <p className="portal-page-sub">{proximas.length > 0 ? `${proximas.length} reserva${proximas.length > 1 ? 's' : ''} próxima${proximas.length > 1 ? 's' : ''}` : 'Sin reservas próximas'}</p>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>Mis reservas</h1>
 
     <strong className="portal-label-tight">Próximas</strong>
     {proximas.length === 0 ? (
@@ -1813,14 +1875,18 @@ function Perfil({ memberName }: { memberName: string }) {
   </>;
 }
 function SectionTitle({ title, action, onClick }: { title: string; action: string; onClick: () => void }) { return <div className="portal-section-title"><strong>{title}</strong><button className="portal-text-button" onClick={onClick}>{action}</button></div>; }
-function PortalNav({ active, label, badge, onClick }: { active: boolean; label: string; badge?: number; onClick: () => void }) {
+function PortalNav({ active, label, badge, avatar, onClick }: { active: boolean; label: string; badge?: number; avatar?: string; onClick: () => void }) {
   return (
     <button onClick={onClick} style={{ border: 'none', background: 'transparent', color: active ? '#172a54' : '#8b93a5', fontWeight: active ? 800 : 600, cursor: 'pointer', fontSize: 10.5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '4px 0' }}>
       <span style={{
         position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         width: 34, height: 26, borderRadius: 9, background: active ? '#eef2fb' : 'transparent', transition: 'background .15s ease',
       }}>
-        <PortalNavIcon label={label} />
+        {avatar ? (
+          <img src={avatar} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', boxShadow: active ? '0 0 0 2px #172a54' : 'none' }} />
+        ) : (
+          <PortalNavIcon label={label} />
+        )}
         {Boolean(badge) && (
           <span style={{
             position: 'absolute', top: -3, right: 1, minWidth: 14, height: 14, padding: '0 3px', borderRadius: 20,

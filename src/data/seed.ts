@@ -249,7 +249,7 @@ export const seedCategorias: Categoria[] = [
 
 export const seedEquiposDeportivos: EquipoDeportivo[] = [
   { id: 1, nombre: 'Primera división', disciplina: 'Fútbol' },
-  { id: 2, nombre: 'Sub 17', disciplina: 'Fútbol' },
+  { id: 2, nombre: 'Unión', disciplina: 'Fútbol' },
   { id: 3, nombre: 'Reserva', disciplina: 'Fútbol' },
   { id: 4, nombre: 'Primera', disciplina: 'Básquet' },
 ];
@@ -276,19 +276,29 @@ export const seedJugadores: Jugador[] = [
 
 export const seedTorneos: Torneo[] = [
   { id: 1, nombre: 'Copa de Tenis Interna', deporte: 'Tenis', fechaInicio: '2026-07-10', fechaFin: '2026-07-20', lugar: 'Cancha de Tenis', cupo: 8, valorInscripcion: 5000, descripcion: 'Torneo finalizado, formato eliminación directa.', premio: 'Trofeo y medalla para el campeón' },
-  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.', premio: 'Kit deportivo del club + $20.000' },
-  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.', premio: 'Copa + entradas para el próximo partido del primer equipo' },
+  { id: 2, nombre: 'Torneo Relámpago de Pádel', deporte: 'Pádel', fechaInicio: '2026-07-28', fechaFin: '2026-07-31', lugar: 'Canchas de Pádel', cupo: 16, valorInscripcion: 8000, descripcion: 'Categorías A, B y C.', premio: 'Kit deportivo del club' },
+  { id: 3, nombre: 'Copa Aniversario de Fútbol 5', deporte: 'Fútbol 5', fechaInicio: '2026-08-15', fechaFin: '2026-08-16', lugar: 'Cancha Fútbol 5', cupo: 12, valorInscripcion: 15000, descripcion: 'Torneo relámpago para socios, equipos de 7 jugadores.', premio: 'Copa + $100.000' },
+  { id: 4, nombre: 'Torneo de Vóley Playero', deporte: 'Vóley', fechaInicio: '2026-09-05', fechaFin: '2026-09-06', lugar: 'Cancha de Vóley', cupo: 12, valorInscripcion: 6000, descripcion: 'Modalidad dupla, categoría libre.', premio: 'Medalla y vale de $10.000 en la tienda del club' },
+  { id: 5, nombre: 'Copa de Básquet 3x3', deporte: 'Básquet', fechaInicio: '2026-09-20', fechaFin: '2026-09-21', lugar: 'Cancha Multiuso', cupo: 16, valorInscripcion: 10000, descripcion: 'Equipos de 4 jugadores, formato 3x3.', premio: 'Trofeo + indumentaria del club' },
+  { id: 6, nombre: 'Torneo de Tenis de Mesa', deporte: 'Tenis de mesa', fechaInicio: '2026-10-03', fechaFin: '2026-10-04', lugar: 'Salón Social', cupo: 20, valorInscripcion: 3000, descripcion: 'Individual, todas las categorías.', premio: 'Medalla para los tres primeros puestos' },
 ];
 
 export const seedEquiposTorneo: EquipoTorneo[] = [
-  { id: 1, torneoId: 2, nombre: 'Los Halcones' },
-  { id: 2, torneoId: 2, nombre: 'Dupla Norte' },
-  { id: 3, torneoId: 2, nombre: 'Set Point' },
-  { id: 4, torneoId: 2, nombre: 'Los Zurdos' },
+  { id: 1, torneoId: 1, nombre: 'Franco Díaz' },
+  { id: 2, torneoId: 1, nombre: 'Martina Ruiz' },
+  { id: 3, torneoId: 1, nombre: 'Lucas Bianchi' },
+  { id: 4, torneoId: 1, nombre: 'Sofía Núñez' },
+  { id: 5, torneoId: 2, nombre: 'Los Halcones' },
+  { id: 6, torneoId: 2, nombre: 'Dupla Norte' },
+  { id: 7, torneoId: 2, nombre: 'Set Point' },
+  { id: 8, torneoId: 2, nombre: 'Los Zurdos' },
 ];
 
 export const seedPartidosTorneo: PartidoTorneo[] = [
-  { id: 1, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 2, golesLocal: 6, golesVisitante: 3 },
-  { id: 2, torneoId: 2, equipoLocalId: 3, equipoVisitanteId: 4, golesLocal: 4, golesVisitante: 4 },
-  { id: 3, torneoId: 2, equipoLocalId: 1, equipoVisitanteId: 3, golesLocal: null, golesVisitante: null },
+  { id: 1, torneoId: 1, equipoLocalId: 1, equipoVisitanteId: 2, golesLocal: 6, golesVisitante: 3 },
+  { id: 2, torneoId: 1, equipoLocalId: 3, equipoVisitanteId: 4, golesLocal: 6, golesVisitante: 4 },
+  { id: 3, torneoId: 1, equipoLocalId: 1, equipoVisitanteId: 3, golesLocal: 6, golesVisitante: 2 },
+  { id: 4, torneoId: 2, equipoLocalId: 5, equipoVisitanteId: 6, golesLocal: 6, golesVisitante: 3 },
+  { id: 5, torneoId: 2, equipoLocalId: 7, equipoVisitanteId: 8, golesLocal: 4, golesVisitante: 4 },
+  { id: 6, torneoId: 2, equipoLocalId: 5, equipoVisitanteId: 7, golesLocal: null, golesVisitante: null },
 ];

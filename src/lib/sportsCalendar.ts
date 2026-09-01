@@ -64,7 +64,7 @@ export type Prefs = { visibles: number[]; colores: Record<number, string>; confi
 export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number; deletedEquipoIds?: number[] };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
-export const CANONICAL_DEMO_SEASON_SEED_VERSION = 2;
+export const CANONICAL_DEMO_SEASON_SEED_VERSION = 3;
 
 function dateFromIso(value: string) {
   return new Date(`${value}T12:00:00`);
@@ -272,7 +272,7 @@ export const seedEventos: Evento[] = [
   { id: 214, equipoId: 1, tipo: 'Partido', fecha: '2026-07-26', horaInicio: '16:00', rival: 'Atlético del Sur', condicion: 'Visitante', competencia: 'Copa', lugar: 'Estadio del Sur', estado: 'finalizado' },
   { id: 101, equipoId: 1, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '19:00', horaFin: '21:00', lugar: 'Cancha principal', titulo: 'Trabajo táctico', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 101 },
   { id: 104, equipoId: 2, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '18:00', horaFin: '19:30', titulo: 'Técnica individual', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 104 },
-  { id: 105, equipoId: 2, tipo: 'Partido', fecha: '2026-08-08', horaInicio: '11:00', rival: 'Juventud Unida', condicion: 'Local', competencia: 'Copa' },
+  { id: 105, equipoId: 2, tipo: 'Partido', fecha: '2026-08-08', horaInicio: '11:00', rival: 'Juventud', condicion: 'Local', competencia: 'Copa' },
   { id: 106, equipoId: 2, tipo: 'Descanso', fecha: '2026-08-09', titulo: 'Descanso', recurrencia: { dias: [0], hasta: '2026-08-30' }, serieId: 106 },
   { id: 107, equipoId: 1, tipo: 'Otro', fecha: '2026-08-06', horaInicio: '20:30', titulo: 'Charla con familias', descripcion: 'Reunión informativa previa al torneo.' },
 ];
