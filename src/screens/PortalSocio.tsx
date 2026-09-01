@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney, formatFechaCorta } from '../lib/format';
@@ -269,7 +269,12 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       </section>
     ) : (
       news.map((item) => (
-        <section key={item.id} className="portal-card" style={{ padding: '9px 12px', marginBottom: 8 }}>
+        <section
+          key={item.id}
+          className="portal-card portal-menu-card"
+          onClick={() => actions.abrirNovedad(item.id)}
+          style={{ padding: '9px 12px', marginBottom: 8, cursor: 'pointer' }}
+        >
           <strong style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13.5 }}>
             {!state.comunicadosLeidos.includes(item.id) && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#2774b8', flexShrink: 0 }} />}
             {item.titulo}
@@ -1538,6 +1543,16 @@ function Novedades() {
   const { state, actions } = useApp();
   const [abiertos, setAbiertos] = useState<Set<number>>(new Set());
   const comunicadosVisibles = useMemo(() => comunicadosParaSocio(state.comunicados, state.socios[0]), [state.comunicados, state.socios]);
+  const itemRefs = useRef<Record<number, HTMLElement | null>>({});
+
+  useEffect(() => {
+    const id = state.novedadPendienteId;
+    if (id === null) return;
+    setAbiertos((actual) => new Set(actual).add(id));
+    actions.marcarComunicadoLeido(id);
+    itemRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    actions.limpiarNovedadPendiente();
+  }, [state.novedadPendienteId, actions]);
 
   const toggle = (id: number) => {
     setAbiertos((actual) => {
@@ -1580,6 +1595,7 @@ function Novedades() {
       return (
         <section
           key={item.id}
+          ref={(el) => { itemRefs.current[item.id] = el; }}
           className="portal-card portal-menu-card"
           onClick={() => toggle(item.id)}
           style={{ cursor: 'pointer', borderLeft: `4px solid ${leido ? '#e3e7ef' : '#2774b8'}` }}

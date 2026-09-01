@@ -64,7 +64,7 @@ export type Prefs = { visibles: number[]; colores: Record<number, string>; confi
 export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number; deletedEquipoIds?: number[] };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
-export const CANONICAL_DEMO_SEASON_SEED_VERSION = 3;
+export const CANONICAL_DEMO_SEASON_SEED_VERSION = 4;
 
 function dateFromIso(value: string) {
   return new Date(`${value}T12:00:00`);
@@ -270,6 +270,9 @@ export const seedEventos: Evento[] = [
   { id: 212, equipoId: 1, tipo: 'Partido', fecha: '2026-07-19', horaInicio: '15:30', rival: 'Juventud Unida', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 12, lugar: 'Estadio Juventud', estado: 'finalizado' },
   { id: 213, equipoId: 1, tipo: 'Partido', fecha: '2026-07-23', horaInicio: '20:00', rival: 'Deportivo Central', condicion: 'Local', competencia: 'Copa', lugar: 'Cancha principal', estado: 'finalizado' },
   { id: 214, equipoId: 1, tipo: 'Partido', fecha: '2026-07-26', horaInicio: '16:00', rival: 'Atlético del Sur', condicion: 'Visitante', competencia: 'Copa', lugar: 'Estadio del Sur', estado: 'finalizado' },
+  { id: 215, equipoId: 1, tipo: 'Partido', fecha: '2026-08-16', horaInicio: '16:00', rival: 'Deportivo Belgrano', condicion: 'Local', competencia: 'Liga', numeroFecha: 13, lugar: 'Cancha principal' },
+  { id: 216, equipoId: 1, tipo: 'Partido', fecha: '2026-08-23', horaInicio: '15:30', rival: 'Social San Martín', condicion: 'Visitante', competencia: 'Liga', numeroFecha: 14, lugar: 'Estadio San Martín' },
+  { id: 217, equipoId: 1, tipo: 'Partido', fecha: '2026-08-30', horaInicio: '16:00', rival: 'Atlético Peñarol', condicion: 'Local', competencia: 'Liga', numeroFecha: 15, lugar: 'Cancha principal' },
   { id: 101, equipoId: 1, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '19:00', horaFin: '21:00', lugar: 'Cancha principal', titulo: 'Trabajo táctico', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 101 },
   { id: 104, equipoId: 2, tipo: 'Entrenamiento', fecha: '2026-08-04', horaInicio: '18:00', horaFin: '19:30', titulo: 'Técnica individual', recurrencia: { dias: [1, 3], hasta: '2026-08-31' }, serieId: 104 },
   { id: 105, equipoId: 2, tipo: 'Partido', fecha: '2026-08-08', horaInicio: '11:00', rival: 'Juventud', condicion: 'Local', competencia: 'Copa' },
@@ -294,7 +297,7 @@ export const seedActas: Record<string, Acta> = {
   '214': actaDemo(0, 2, formacionDemo442, [], [{ jugadorId: '4', minuto: '' }], [], puntajesDemo442, 'La serie se cerró con una derrota fuera de casa.'),
 };
 
-const CANONICAL_DEMO_IDS = new Set(seedEventos.filter((evento) => evento.tipo === 'Partido' && evento.equipoId === 1 && evento.estado === 'finalizado').map((evento) => evento.id));
+const CANONICAL_DEMO_IDS = new Set(seedEventos.filter((evento) => evento.tipo === 'Partido' && evento.equipoId === 1).map((evento) => evento.id));
 const LEGACY_PRIMERA_MATCH_IDS = new Set([91, 92, 93, 102, 103]);
 const DEMO_NUMERO_FECHA: Record<number, number> = {
   201: 1, 202: 2, 203: 3, 204: 4, 205: 5, 206: 6, 207: 7,

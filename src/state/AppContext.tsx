@@ -287,6 +287,7 @@ export interface AppState {
   activeEquipoDeportivoId: number | null;
   estadisticasVista: StatisticsView;
   actaEventoPendienteId: number | null;
+  novedadPendienteId: number | null;
   showJugadorModal: boolean;
   jugadorEditandoId: number | null;
   nuevoJugadorNombre: string;
@@ -443,6 +444,7 @@ const initialState: AppState = {
   activeEquipoDeportivoId: null,
   estadisticasVista: 'summary',
   actaEventoPendienteId: null,
+  novedadPendienteId: null,
   showJugadorModal: false,
   jugadorEditandoId: null,
   nuevoJugadorNombre: '',
@@ -541,6 +543,8 @@ export interface AppActions {
   iniciarSesionPortal: () => void;
   cerrarSesionPortal: () => void;
   marcarComunicadoLeido: (id: number) => void;
+  abrirNovedad: (id: number) => void;
+  limpiarNovedadPendiente: () => void;
   setFotoPerfil: (dataUrl: string) => void;
   marcarTodosComunicadosLeidos: () => void;
   eliminarComunicado: (id: number) => void;
@@ -927,6 +931,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     marcarComunicadoLeido: (id) => update((s) => (
       s.comunicadosLeidos.includes(id) ? {} : { comunicadosLeidos: [...s.comunicadosLeidos, id] }
     )),
+    abrirNovedad: (id) => update({ screen: 'portal_novedades', novedadPendienteId: id }),
+    limpiarNovedadPendiente: () => update({ novedadPendienteId: null }),
     marcarTodosComunicadosLeidos: () => update((s) => ({ comunicadosLeidos: s.comunicados.map((c) => c.id) })),
     setFotoPerfil: (dataUrl) => update((s) => ({ socios: s.socios.map((soc, i) => i === 0 ? { ...soc, fotoPerfil: dataUrl } : soc) })),
     eliminarComunicado: (id) => {
