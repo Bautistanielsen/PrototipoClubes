@@ -19,6 +19,8 @@ export default function PortalSocio() {
   const latestNews = comunicadosSocio.slice(0, 2);
   const novedadesNoLeidas = comunicadosSocio.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
   const nextReservation = useMemo(() => state.reservas.find((r) => r.nombre === memberName), [memberName, state.reservas]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { contentRef.current?.scrollTo(0, 0); }, [active]);
 
   const content = () => {
     if (active === 'portal_login') return <Login />;
@@ -46,7 +48,7 @@ export default function PortalSocio() {
   return (
     <div className="portal-frame">
       <div className="portal-device-top"><span /></div>
-      <div className="portal-content">
+      <div className="portal-content" ref={contentRef}>
         {content()}
       </div>
       <nav className="portal-nav">
@@ -1473,8 +1475,7 @@ function PortalTienda() {
   };
 
   return <>
-    <h1>Tienda del club</h1>
-    <p className="portal-page-sub">Comprá indumentaria y accesorios oficiales</p>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>Tienda del club</h1>
 
     {state.productosShop.length === 0 && (
       <section className="portal-card"><p>No hay productos cargados por el momento.</p></section>

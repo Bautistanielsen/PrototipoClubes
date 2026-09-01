@@ -64,7 +64,7 @@ export type Prefs = { visibles: number[]; colores: Record<number, string>; confi
 export type SportsCalendarData = { eventos: Evento[]; actas: Record<string, Acta>; prefs: Prefs; demoSeasonSeedVersion?: number; deletedEquipoIds?: number[] };
 
 export const SPORTS_CALENDAR_STORAGE = 'club-calendario-deportivo-v1';
-export const CANONICAL_DEMO_SEASON_SEED_VERSION = 4;
+export const CANONICAL_DEMO_SEASON_SEED_VERSION = 5;
 
 function dateFromIso(value: string) {
   return new Date(`${value}T12:00:00`);
@@ -299,6 +299,7 @@ export const seedActas: Record<string, Acta> = {
 
 const CANONICAL_DEMO_IDS = new Set(seedEventos.filter((evento) => evento.tipo === 'Partido' && evento.equipoId === 1).map((evento) => evento.id));
 const LEGACY_PRIMERA_MATCH_IDS = new Set([91, 92, 93, 102, 103]);
+const FORCE_RESYNC_IDS = new Set([105]);
 const DEMO_NUMERO_FECHA: Record<number, number> = {
   201: 1, 202: 2, 203: 3, 204: 4, 205: 5, 206: 6, 207: 7,
   208: 8, 209: 9, 210: 10, 211: 11, 212: 12,
@@ -337,7 +338,9 @@ function migrateDemoSeason(eventos: Evento[], actas: Record<string, Acta>, seedV
     return { eventos, actas, demoSeasonSeedVersion: seedVersion, deletedEquipoIds: deletedIds };
   }
 
-  const preservedEventos = eventos.filter((evento) => !LEGACY_PRIMERA_MATCH_IDS.has(evento.id));
+  const preservedEventos = eventos
+    .filter((evento) => !LEGACY_PRIMERA_MATCH_IDS.has(evento.id))
+    .map((evento) => (FORCE_RESYNC_IDS.has(evento.id) ? seedEventos.find((se) => se.id === evento.id) ?? evento : evento));
   const storedIds = new Set(preservedEventos.map((evento) => evento.id));
   const addedEventos = seedEventos.filter((evento) => CANONICAL_DEMO_IDS.has(evento.id) && !storedIds.has(evento.id) && !deletedIds.includes(evento.equipoId));
   const migratedEventos = withDemoNumeroFecha([...preservedEventos, ...addedEventos]);
