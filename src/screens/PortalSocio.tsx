@@ -399,9 +399,13 @@ function PortalTorneos() {
             <strong style={{ margin: 0 }}>{t.nombre}</strong>
             <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: meta.bg, color: meta.color }}>{estado}</span>
           </div>
-          <p>{t.deporte} · {t.fechaInicio} al {t.fechaFin} · {t.lugar}</p>
-          <p>Cupo: {t.cupo} · Inscripción: {formatMoney(t.valorInscripcion)}</p>
-          {t.descripcion && <p>{t.descripcion}</p>}
+          <p style={{ margin: '6px 0 0' }}>{t.deporte} · {formatFechaCorta(t.fechaInicio)} al {formatFechaCorta(t.fechaFin)}</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+            <span className="portal-meta-chip">📍 {t.lugar}</span>
+            <span className="portal-meta-chip">Cupo {t.cupo}</span>
+            <span className="portal-meta-chip">Inscripción {formatMoney(t.valorInscripcion)}</span>
+          </div>
+          {t.descripcion && <p style={{ marginTop: 8, color: '#8b93a5' }}>{t.descripcion}</p>}
           {t.premio && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4,
