@@ -127,12 +127,15 @@ function Login() {
 const BUFFET_WHATSAPP_NUMERO = '5492235550199';
 const DORADO = '#d4af6a';
 
+// Paleta secundaria fija para íconos de servicio (no depende del color de marca del club,
+// así se mantiene igual en cualquier club de la plataforma). 4 tonos pastel, siempre los mismos,
+// asignados en este orden — el único color que cambia por club es el navy/dorado de marca.
 const ICONO_COLOR: Record<string, { bg: string; stroke: string }> = {
-  tienda: { bg: '#e8f0fc', stroke: '#2774b8' },
-  buffet: { bg: '#fdf1de', stroke: '#c2790f' },
-  entrada: { bg: '#f2e9fb', stroke: '#7c3fc4' },
-  novedades: { bg: '#e3f6ef', stroke: '#15916a' },
-  contacto: { bg: '#fbe7f0', stroke: '#b23a72' },
+  tienda: { bg: '#eef1f7', stroke: '#4d5f7a' },
+  buffet: { bg: '#eef4ef', stroke: '#4c6b57' },
+  entrada: { bg: '#f6f1e9', stroke: '#8a6f4a' },
+  novedades: { bg: '#f1eff6', stroke: '#635f82' },
+  contacto: { bg: '#f1eff6', stroke: '#635f82' },
 };
 
 const CLUB_DIRECCION = 'Av. Colón 3456, Mar del Plata';
