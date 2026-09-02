@@ -29,7 +29,9 @@ export default function MobileBottomNav() {
     <div
       className="no-print"
       style={{
-        position: 'sticky',
+        position: 'fixed',
+        left: 0,
+        right: 0,
         bottom: 0,
         zIndex: 20,
         background: '#fff',
