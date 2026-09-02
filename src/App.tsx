@@ -135,10 +135,12 @@ function DeportivoLayout() {
 }
 
 function PortalLayout() {
-  const { state } = useApp();
   return <div className="portal-stage">
-    <ModuleQuickNav current="socio" direction={state.isMobile ? 'row' : 'column'} wrapperClassName="portal-quick-nav" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
-    <ScreenContent /><Toast />
+    <div className="portal-stage-inner">
+      <ModuleQuickNav current="socio" direction="row" wrapperClassName="portal-quick-nav" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
+      <ScreenContent />
+    </div>
+    <Toast />
   </div>;
 }
 

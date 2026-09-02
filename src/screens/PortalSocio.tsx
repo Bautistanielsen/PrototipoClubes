@@ -2222,10 +2222,10 @@ function EditarDatoModal({ campo, valorActual, onClose }: { campo: (typeof CAMPO
 function SectionTitle({ title, action, onClick }: { title: string; action: string; onClick: () => void }) { return <div className="portal-section-title"><strong>{title}</strong><button className="portal-text-button" onClick={onClick}>{action}</button></div>; }
 function PortalNav({ active, label, badge, avatar, onClick }: { active: boolean; label: string; badge?: number; avatar?: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{ border: 'none', background: 'transparent', color: active ? '#172a54' : '#8b93a5', fontWeight: active ? 800 : 600, cursor: 'pointer', fontSize: 10.5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: '4px 0' }}>
+    <button onClick={onClick} style={{ border: 'none', background: 'transparent', color: active ? '#172a54' : '#8b93a5', fontWeight: active ? 800 : 600, cursor: 'pointer', fontSize: 10.5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: '2px 0' }}>
       <span style={{
         position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        width: 34, height: 26, borderRadius: 9, background: active ? '#eef2fb' : 'transparent', transition: 'background .15s ease',
+        width: 34, height: 22, borderRadius: 8, background: active ? '#eef2fb' : 'transparent', transition: 'background .15s ease',
       }}>
         {avatar ? (
           <img src={avatar} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', boxShadow: active ? '0 0 0 2px #172a54' : 'none' }} />
