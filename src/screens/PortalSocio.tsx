@@ -378,7 +378,10 @@ function PortalTorneos() {
   const torneoInscribiendo = state.torneos.find((t) => t.id === inscribiendoTorneoId);
   const torneoResultados = state.torneos.find((t) => t.id === resultadosTorneoId);
   return <>
-    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>🏆 Torneos</h1>
+    <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 20px' }}>
+      <TrofeoIcon stroke="#16203a" size={26} />
+      Torneos
+    </h1>
 
     <FilterPills
       options={FILTROS_TORNEO}
@@ -412,8 +415,12 @@ function PortalTorneos() {
           <p style={{ margin: '6px 0 0', fontWeight: 700, color: '#16203a' }}>{formatFechaCorta(t.fechaInicio)} al {formatFechaCorta(t.fechaFin)}</p>
           {estado !== 'En curso' && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-              <span className="portal-meta-chip" style={{ fontWeight: 800 }}>Cupo {equipos.length}/{t.cupo}</span>
-              <span className="portal-meta-chip" style={{ fontWeight: 800, background: '#eaf6ec', borderColor: '#bfe4c6', color: '#1f7a34' }}>Inscripción {formatMoney(t.valorInscripcion)}</span>
+              <span className="portal-meta-chip" style={{ fontSize: 12, fontWeight: 700, padding: '5px 12px' }}>
+                <PersonasIcon /> Cupo {equipos.length}/{t.cupo}
+              </span>
+              <span className="portal-meta-chip" style={{ fontSize: 12, fontWeight: 700, padding: '5px 12px', background: '#eaf6ec', borderColor: '#bfe4c6', color: '#1f7a34' }}>
+                Inscripción {formatMoney(t.valorInscripcion)}
+              </span>
             </div>
           )}
           {t.premio && (
@@ -421,7 +428,7 @@ function PortalTorneos() {
               display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4,
               background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 10, padding: '8px 12px',
             }}>
-              <TrofeoIcon />
+              <MedallaIcon />
               <span style={{ fontSize: 13, fontWeight: 700, color: '#8a6d1a' }}>{t.premio}</span>
             </div>
           )}
@@ -429,13 +436,14 @@ function PortalTorneos() {
             <button
               onClick={(e) => { e.stopPropagation(); setResultadosTorneoId(t.id); }}
               style={{
-                display: 'block', margin: '8px auto 0', height: 40, padding: '0 22px', borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, margin: '8px auto 0', height: 40, padding: '0 22px', borderRadius: 8,
                 border: 'none', background: 'linear-gradient(135deg, #172a54, #21386f)', color: '#fff',
                 fontSize: 13.5, fontWeight: 800, letterSpacing: '.01em', cursor: 'pointer',
                 boxShadow: '0 3px 10px rgba(23,42,84,.28)',
               }}
             >
-              🏆 Ver resultados
+              <TrofeoIcon stroke="#fff" size={15} />
+              Ver resultados
             </button>
           )}
           {inscripcion && <p>Anotado como <strong>{inscripcion.nombreEquipo}</strong></p>}
@@ -448,12 +456,13 @@ function PortalTorneos() {
                 else setInscribiendoTorneoId(t.id);
               }}
               style={{
-                display: 'block', margin: '8px auto 0', height: 38, padding: '0 16px', borderRadius: 8, border: inscripcion ? '1px solid #d7dce6' : 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, margin: '8px auto 0', height: 38, padding: '0 16px', borderRadius: 8, border: inscripcion ? '1px solid #d7dce6' : 'none',
                 background: inscripcion ? '#fff' : '#172a54', color: inscripcion ? '#16203a' : '#fff',
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              {inscripcion ? '✓ Anotado — cancelar' : 'Anotarme'}
+              <CheckIcon stroke={inscripcion ? '#16203a' : '#fff'} size={14} />
+              {inscripcion ? 'Anotado — cancelar' : 'Anotarme'}
             </button>
           )}
 
@@ -1004,10 +1013,34 @@ function HaceteSocio() {
   </>;
 }
 
-function TrofeoIcon({ stroke = '#8a6d1a' }: { stroke?: string }) {
+function TrofeoIcon({ stroke = '#8a6d1a', size = 18 }: { stroke?: string; size?: number }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z" /><path d="M8 5H5a2 2 0 0 0 2 4M16 5h3a2 2 0 0 1-2 4" /><path d="M12 12v4M9 20h6M10 16h4v4h-4z" />
+    </svg>
+  );
+}
+
+function MedallaIcon({ stroke = '#8a6d1a', size = 18 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M8 3h8l-2.5 7h-3L8 3Z" /><circle cx="12" cy="15" r="6" /><path d="m9.7 15 1.5 1.5L14.5 13" />
+    </svg>
+  );
+}
+
+function PersonasIcon({ stroke = 'currentColor', size = 13 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="9" cy="8" r="3.2" /><path d="M2.7 20c.3-3.4 3-5.6 6.3-5.6s6 2.2 6.3 5.6" /><path d="M15.8 8.6a2.8 2.8 0 1 1 3-4.6" /><path d="M17.3 14.6c2.2.5 3.7 2.4 4 5" />
+    </svg>
+  );
+}
+
+function CheckIcon({ stroke = 'currentColor', size = 15 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M5 13l4 4L19 7" />
     </svg>
   );
 }
