@@ -1238,7 +1238,7 @@ function Reservas() {
         const active = deporte === d;
         return (
           <button key={d} onClick={() => elegirDeporte(d)} className={`portal-choice${active ? ' active' : ''}`}>
-            <CanchaIcon nombre={d} stroke={active ? '#fff' : '#2774b8'} />
+            <CanchaIcon nombre={d} />
             {d}
           </button>
         );
@@ -1251,22 +1251,32 @@ function Reservas() {
         const active = canchaId === c.id;
         return (
           <button key={c.id} onClick={() => { setCanchaId(c.id); setReservandoHora(null); }} className={`portal-choice${active ? ' active' : ''}`}>
+            <CanchaGridIcon />
             Cancha {c.numero}
           </button>
         );
       })}
     </div>
 
-    <input
-      type="date"
-      value={dia}
-      min={HOY_ISO}
-      onChange={(e) => { setDia(e.target.value); setReservandoHora(null); }}
-      style={{ width: '100%', height: 44, padding: '0 12px', border: '1px solid #e3e7ef', borderRadius: 9, fontSize: 14, color: '#16203a', background: '#fff', marginBottom: 12 }}
-    />
+    <div style={{ position: 'relative', marginBottom: 12 }}>
+      <input
+        type="date"
+        value={dia}
+        min={HOY_ISO}
+        onChange={(e) => { setDia(e.target.value); setReservandoHora(null); }}
+        className="portal-date-input"
+        style={{ width: '100%', height: 44, padding: '0 40px 0 12px', border: '1px solid #e3e7ef', borderRadius: 9, fontSize: 14, color: '#16203a', background: '#fff' }}
+      />
+      <span style={{ position: 'absolute', top: '50%', right: 14, transform: 'translateY(-50%)', pointerEvents: 'none', color: '#6b7488', display: 'flex' }}>
+        <CalendarioIcon />
+      </span>
+    </div>
 
-    <div style={{ background: '#f5f7fb', borderRadius: 10, padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#6b7488', lineHeight: 1.5 }}>
-      Cada turno dura 1 hora. Podés cancelarlo sin cargo hasta 2 horas antes del horario reservado.
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 14 }}>
+      <InfoIcon />
+      <p style={{ margin: 0, fontSize: 11.5, color: '#8b93a5', lineHeight: 1.5 }}>
+        Cada turno dura 1 hora. Podés cancelarlo sin cargo hasta 2 horas antes del horario reservado.
+      </p>
     </div>
 
     <section className="portal-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -1289,7 +1299,7 @@ function Reservas() {
             {libre && (
               <button
                 onClick={() => abrirPopup(t.hora)}
-                style={{ height: 36, padding: '0 14px', borderRadius: 8, border: 'none', background: '#172a54', color: '#fff', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
+                style={{ height: 32, padding: '0 14px', borderRadius: 8, border: '1px solid #b9cfe8', background: '#fff', color: '#172a54', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
               >
                 Reservar
               </button>
@@ -1455,13 +1465,37 @@ function medioPagoLabel(medio: MedioPago | undefined) {
   return medio ?? 'Efectivo';
 }
 
-function CanchaIcon({ nombre, stroke = '#2774b8' }: { nombre: string; stroke?: string }) {
+function CanchaIcon({ nombre, stroke = 'currentColor' }: { nombre: string; stroke?: string }) {
   const common = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   const n = nombre.toLowerCase();
   if (n.includes('fútbol') || n.includes('futbol')) return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="m12 7 3.5 2.5-1.3 4.1H9.8L8.5 9.5 12 7Z" /></svg>;
   if (n.includes('pádel') || n.includes('padel')) return <svg {...common}><rect x="6" y="3" width="12" height="12" rx="6" /><path d="M12 15v6M9 21h6" /></svg>;
-  if (n.includes('tenis')) return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="M4 8c4 2 12 2 16 0M4 16c4-2 12-2 16 0" /></svg>;
+  if (n.includes('tenis')) return <svg {...common}><ellipse cx="12" cy="9" rx="6" ry="7.5" /><path d="M12 16.5v5.5M9 22h6" /></svg>;
   return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>;
+}
+
+function CanchaGridIcon({ stroke = 'currentColor' }: { stroke?: string }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M12 3v18M3 12h18" />
+    </svg>
+  );
+}
+
+function CalendarioIcon({ stroke = 'currentColor' }: { stroke?: string }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+function InfoIcon({ stroke = '#8b93a5' }: { stroke?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+      <circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><circle cx="12" cy="8" r="0.5" fill={stroke} />
+    </svg>
+  );
 }
 function NovedadImagen({ src, alt, style }: { src: string; alt: string; style?: CSSProperties }) {
   const [ampliada, setAmpliada] = useState(false);
