@@ -341,7 +341,7 @@ a:hover {
 .portal-card-primary::after { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,106,.16), transparent 70%); pointer-events: none; }
 .portal-card-primary div:first-child { color: rgba(255,255,255,.65); font-size: 12px; font-weight: 700; letter-spacing: .03em; }
 .portal-card-primary strong { font-size: 21px; letter-spacing: -.02em; }
-.portal-card-primary p { color: rgba(255,255,255,.7); }
+.portal-card-primary p { color: rgba(255,255,255,.58); }
 .portal-card button { border: none; border-radius: 9px; padding: 10px 14px; background: var(--portal-navy); color: #fff; margin-top: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; transition: opacity .15s ease; }
 .portal-card button:hover { opacity: .9; }
 .portal-card-primary button { background: var(--portal-gold); color: var(--portal-navy-deep); position: relative; }

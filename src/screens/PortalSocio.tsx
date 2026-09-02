@@ -426,7 +426,8 @@ function PortalTorneos() {
           {t.premio && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 4,
-              background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 10, padding: '8px 12px',
+              background: '#fdf3d9', borderLeft: '1px solid #f0dfa3', borderRight: '1px solid #f0dfa3', borderBottom: '1px solid #f0dfa3',
+              borderTop: '2px solid var(--portal-gold)', borderRadius: 10, padding: '8px 12px',
             }}>
               <MedallaIcon />
               <span style={{ fontSize: 13, fontWeight: 700, color: '#8a6d1a' }}>{t.premio}</span>
@@ -508,7 +509,8 @@ function TorneoResultadosContent({ torneoId }: { torneoId: number }) {
     {campeonId !== null && (
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
-        background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 10, padding: '8px 12px',
+        background: '#fdf3d9', borderLeft: '1px solid #f0dfa3', borderRight: '1px solid #f0dfa3', borderBottom: '1px solid #f0dfa3',
+        borderTop: '2px solid var(--portal-gold)', borderRadius: 10, padding: '8px 12px',
       }}>
         <TrofeoIcon />
         <span style={{ fontSize: 13, fontWeight: 800, color: '#8a6d1a' }}>Campeón: {nombreEquipo(campeonId)}</span>
@@ -522,9 +524,9 @@ function TorneoResultadosContent({ torneoId }: { torneoId: number }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
         {equipos.map((eq) => (
           <span key={eq.id} style={eq.id === campeonId
-            ? { fontSize: 12.5, fontWeight: 800, color: '#8a6d1a', background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 20, padding: '5px 12px' }
+            ? { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12.5, fontWeight: 800, color: '#8a6d1a', background: '#fdf3d9', border: '1px solid #f0dfa3', borderRadius: 20, padding: '5px 12px' }
             : { fontSize: 12.5, fontWeight: 600, color: '#16203a', background: '#f5f7fb', borderRadius: 20, padding: '5px 12px' }}>
-            {eq.id === campeonId ? '🏆 ' : ''}{eq.nombre}
+            {eq.id === campeonId && <TrofeoIcon size={12} />}{eq.nombre}
           </span>
         ))}
       </div>
@@ -1109,12 +1111,14 @@ function Cuota() {
       </p>
     </section>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px' }}>
-        <strong style={{ fontSize: 14, margin: '2px 0' }}>Método de pago</strong>
+      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px', position: 'relative' }}>
+        <span style={{ position: 'absolute', top: 10, right: 10, color: '#c7cedb' }}><InfoIcon stroke="#c7cedb" /></span>
+        <strong style={{ fontSize: 14, margin: '2px 0', display: 'block', paddingRight: 16 }}>Método de pago</strong>
         <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>{medioPagoLabel(medioPago)}</p>
       </section>
-      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px' }}>
-        <strong style={{ fontSize: 14, margin: '2px 0' }}>Débito automático</strong>
+      <section className="portal-card" style={{ marginBottom: 0, padding: '12px 14px', position: 'relative' }}>
+        <span style={{ position: 'absolute', top: 10, right: 10, color: '#c7cedb' }}><InfoIcon stroke="#c7cedb" /></span>
+        <strong style={{ fontSize: 14, margin: '2px 0', display: 'block', paddingRight: 16 }}>Débito automático</strong>
         <p style={{ fontSize: 12.5, margin: '4px 0 0' }}>
           {medioPago !== 'Tarjeta'
             ? 'Disponible solo con tarjeta de crédito o débito.'
@@ -1126,7 +1130,10 @@ function Cuota() {
     <section className="portal-card">
       <strong>¿Querés ayudar más al club?</strong>
       <p>Hacé una contribución voluntaria, además de tu cuota, con el medio de pago que prefieras.</p>
-      <button onClick={() => setContribuyendo(true)}>Hacer una contribución</button>
+      <button onClick={() => setContribuyendo(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+        <CorazonIcon stroke="#fff" />
+        Hacer una contribución
+      </button>
     </section>
 
     {contribuyendo && (
@@ -1177,11 +1184,13 @@ function Cuota() {
         historial.map((pago, i) => (
           <div
             key={pago.fecha}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '12px 16px', borderBottom: i < historial.length - 1 ? '1px solid #f0f1f5' : 'none' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '13px 16px', borderBottom: i < historial.length - 1 ? '1px solid #e3e7ef' : 'none' }}
           >
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: '#f5f7fb', color: '#6b7488', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                <MedioPagoIcon medio={pago.medioPago} />
+              </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: '#16203a' }}>Cuota {pago.fecha}</div>
-              <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2 }}>{medioPagoLabel(pago.medioPago)}</div>
             </div>
             <strong style={{ fontSize: 14, color: '#16203a' }}>{formatMoney(pago.monto)}</strong>
           </div>
@@ -1494,6 +1503,22 @@ function InfoIcon({ stroke = '#8b93a5' }: { stroke?: string }) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
       <circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><circle cx="12" cy="8" r="0.5" fill={stroke} />
+    </svg>
+  );
+}
+
+function MedioPagoIcon({ medio, stroke = 'currentColor', size = 15 }: { medio: MedioPago; stroke?: string; size?: number }) {
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, style: { flexShrink: 0 } };
+  if (medio === 'Tarjeta') return <svg {...common}><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>;
+  if (medio === 'Transferencia') return <svg {...common}><path d="m7 8 4-4 4 4M11 4v10M17 16l-4 4-4-4M13 20V10" /></svg>;
+  if (medio === 'MercadoPago') return <svg {...common}><path d="M3 12c0-4.5 4-8 9-8s9 3.5 9 8-4 8-9 8c-1.6 0-3.1-.3-4.4-1L3 21l1-4.7C3.4 15 3 13.6 3 12Z" /></svg>;
+  return <svg {...common}><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>;
+}
+
+function CorazonIcon({ stroke = 'currentColor', size = 15 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M12 20s-7.5-4.6-9.5-9.2C1.2 7.5 3 4.5 6.3 4.5c2 0 3.4 1 5.7 3.3 2.3-2.3 3.7-3.3 5.7-3.3 3.3 0 5.1 3 3.8 6.3C19.5 15.4 12 20 12 20Z" />
     </svg>
   );
 }
