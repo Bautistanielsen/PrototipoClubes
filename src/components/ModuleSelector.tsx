@@ -109,9 +109,52 @@ const plans = [
   },
 ];
 
+const faqs: { pregunta: string; respuesta: string }[] = [
+  {
+    pregunta: '¿Cómo funciona el piloto de 30 días?',
+    respuesta: 'Activamos los módulos que tu club quiera probar con datos reales durante 30 días, sin costo y con acompañamiento de nuestro equipo. Al finalizar, decidís si continuás con alguno de los planes publicados — no hay compromiso de contratación.',
+  },
+  {
+    pregunta: '¿Necesito tarjeta de crédito para empezar el piloto?',
+    respuesta: 'No. El piloto se coordina por WhatsApp y no pedimos ningún medio de pago para arrancar.',
+  },
+  {
+    pregunta: '¿Puedo probar un solo módulo o tengo que contratar todo el sistema?',
+    respuesta: 'Podés elegir Administrativo, Deportivo o Portal del Hincha por separado (el Portal del Hincha requiere el plan Administrativo activo), o los tres juntos con Full Club. Vos decidís qué necesita tu club.',
+  },
+  {
+    pregunta: '¿Qué pasa con los datos que ya tenemos en Excel o papel?',
+    respuesta: 'Te acompañamos en la carga inicial de socios, cuotas y categorías durante la configuración del piloto, para que no tengas que empezar de cero.',
+  },
+  {
+    pregunta: '¿Se adapta a la identidad de nuestro club (colores, categorías, tipos de cuota)?',
+    respuesta: 'Sí, la personalización a la marca y a las reglas propias de tu institución está incluida en el precio, sin cargos extra.',
+  },
+  {
+    pregunta: '¿Qué soporte tenemos durante y después del piloto?',
+    respuesta: 'Soporte directo con nuestro equipo durante los 30 días de prueba, y un solo equipo de soporte para los tres módulos si contratás Full Club.',
+  },
+  {
+    pregunta: '¿Podemos dar de baja en cualquier momento?',
+    respuesta: 'Sí. El piloto no tiene compromiso de contratación, y los planes post-piloto se coordinan mes a mes por WhatsApp.',
+  },
+];
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s ease' }}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
 export default function ModuleSelector() {
   const { actions } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -176,6 +219,7 @@ export default function ModuleSelector() {
             <a href="#demos" onClick={(event) => scrollToSection(event, 'demos')}>Demos</a>
             <a href="#planes" onClick={(event) => scrollToSection(event, 'planes')}>Planes</a>
             <a href="#ecommerce" onClick={(event) => scrollToSection(event, 'ecommerce')}>Caso real</a>
+            <a href="#faq" onClick={(event) => scrollToSection(event, 'faq')}>FAQ</a>
             <a href="#contacto" onClick={(event) => scrollToSection(event, 'contacto')}>Contacto</a>
           </nav>
         </div>
@@ -338,6 +382,33 @@ export default function ModuleSelector() {
             </span>
             <p><strong>Servicio adicional: el e-commerce se cotiza por separado y no está incluido en el piloto ni en los planes de gestión.</strong></p>
           </aside>
+        </section>
+
+        <section className="landing-section landing-shell landing-faq-section" id="faq" aria-labelledby="faq-title">
+          <div className="landing-section-heading">
+            <p className="landing-eyebrow">Preguntas frecuentes</p>
+            <h2 id="faq-title">¿Tenés dudas antes de empezar?</h2>
+            <p>Estas son las consultas que más nos hacen los clubes antes de sumarse al piloto.</p>
+          </div>
+          <div className="landing-faq-list">
+            {faqs.map((item, index) => {
+              const abierta = faqAbierta === index;
+              return (
+                <div className="landing-faq-item" key={item.pregunta}>
+                  <button
+                    type="button"
+                    className="landing-faq-question"
+                    aria-expanded={abierta}
+                    onClick={() => setFaqAbierta(abierta ? null : index)}
+                  >
+                    <span>{item.pregunta}</span>
+                    <ChevronIcon open={abierta} />
+                  </button>
+                  {abierta && <p className="landing-faq-answer">{item.respuesta}</p>}
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         <section className="landing-contact landing-shell" id="contacto" aria-labelledby="contact-title">
