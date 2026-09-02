@@ -315,7 +315,10 @@ a:hover {
 }
 .portal-device-top { height: 38px; flex-shrink: 0; display: grid; place-items: center; background: #f5f7fb; }
 .portal-device-top span { width: 118px; height: 28px; border-radius: 18px; background: #090a0c; box-shadow: inset 0 0 0 1px #27292d; }
-.portal-content { padding: 22px 18px 18px; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: radial-gradient(circle at 50% 0%, #eef2fa 0%, #f5f7fb 55%); }
+.portal-content { padding: 22px 18px 18px; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; background: radial-gradient(circle at 50% 0%, #eef2fa 0%, #f5f7fb 55%); scrollbar-width: none; -ms-overflow-style: none; }
+.portal-content::-webkit-scrollbar { display: none; }
+.portal-sponsors-row { scrollbar-width: none; -ms-overflow-style: none; }
+.portal-sponsors-row::-webkit-scrollbar { display: none; }
 .portal-content h1 { color: var(--portal-ink); font-size: 24px; font-weight: 800; letter-spacing: -.03em; margin: 10px 0 20px; }
 .portal-content h1:has(+ .portal-page-sub) { margin-bottom: 4px; }
 .portal-page-sub { color: var(--portal-muted); font-size: 13px; margin: 0 0 20px; }

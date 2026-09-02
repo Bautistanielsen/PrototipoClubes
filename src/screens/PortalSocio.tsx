@@ -333,7 +333,7 @@ function SponsorsPortal() {
 
   return <>
     <strong className="portal-label">Sponsors</strong>
-    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
+    <div className="portal-sponsors-row" style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
       {sponsors.map((s) => (
         <div
           key={s.id}
