@@ -543,6 +543,7 @@ export interface AppActions {
   iniciarSesionPortal: () => void;
   cerrarSesionPortal: () => void;
   marcarComunicadoLeido: (id: number) => void;
+  pagarCuota: (medioPago: MedioPago) => void;
   abrirNovedad: (id: number) => void;
   limpiarNovedadPendiente: () => void;
   setFotoPerfil: (dataUrl: string) => void;
@@ -931,6 +932,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     marcarComunicadoLeido: (id) => update((s) => (
       s.comunicadosLeidos.includes(id) ? {} : { comunicadosLeidos: [...s.comunicadosLeidos, id] }
     )),
+    pagarCuota: (medioPago) => {
+      update((s) => {
+        if (!s.socios[0]) return {};
+        const [anio, mes, dia] = HOY_ISO.split('-');
+        return {
+          socios: s.socios.map((soc, i) => i === 0
+            ? { ...soc, deuda: 0, estado: 'al_dia', medioPago, ultimoPago: `${dia}/${mes}/${anio}` }
+            : soc),
+        };
+      });
+      showToast('¡Cuota pagada! Gracias por tu pago.');
+    },
     abrirNovedad: (id) => update({ screen: 'portal_novedades', novedadPendienteId: id }),
     limpiarNovedadPendiente: () => update({ novedadPendienteId: null }),
     marcarTodosComunicadosLeidos: () => update((s) => ({ comunicadosLeidos: s.comunicados.map((c) => c.id) })),

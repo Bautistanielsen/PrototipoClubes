@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { useApp } from '../state/AppContext';
 import { formatMoney, formatFechaCorta } from '../lib/format';
-import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, ultimoVencimientoCuotaVencido, estadoMeta, estadoSponsor, historialPagosSocio, comunicadosParaSocio } from '../lib/derive';
+import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, ultimoVencimientoCuotaVencido, estadoMeta, estadoSponsor, historialPagosSocio, comunicadosParaSocio, cuotaDeSocio } from '../lib/derive';
 import { readSportsCalendarData, parseFinalizedResult } from '../lib/sportsCalendar';
 import type { SportsCalendarData } from '../lib/sportsCalendar';
-import type { MedioPago, Comunicado, Torneo } from '../types';
+import type { MedioPago, Comunicado, Torneo, Socio } from '../types';
 import ModalOverlay from '../components/modals/ModalOverlay';
 import HinchaAssistant from '../components/HinchaAssistant';
 import ClubEscudo from '../components/ClubEscudo';
@@ -202,6 +202,7 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
     : [];
   const proximo = proximoPorEquipo[0];
   const [showContacto, setShowContacto] = useState(false);
+  const [pagando, setPagando] = useState(false);
 
   const estado = esSocio ? estadoMeta[socio.estado] : null;
   const iniciales = `${socio.nombre[0] ?? ''}${socio.apellido[0] ?? ''}`.toUpperCase();
@@ -219,7 +220,12 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
               <div className="portal-hero-sub">{esSocio ? 'Club Atlético Modelo' : 'Sumate y accedé a beneficios exclusivos'}</div>
             </div>
           </div>
-          <ClubEscudo size={40} />
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center',
+            background: 'rgba(255,255,255,.1)', border: '1.5px solid rgba(212,175,106,.5)',
+          }}>
+            <ClubEscudo size={42} />
+          </div>
         </div>
         {!esSocio && (
           <button
@@ -232,16 +238,31 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
       </div>
       {esSocio && estado && (
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 10px 10px 14px',
           background: estado.bg, color: estado.color, fontSize: 13, fontWeight: 700,
         }}>
-          {socio.estado === 'al_dia' ? '✓ Tu cuota está al día' : socio.estado === 'por_vencer' ? 'Tu cuota está por vencer' : 'Tenés la cuota vencida'}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {socio.estado === 'al_dia' && <CheckIcon stroke={estado.color} size={14} />}
+            {socio.estado === 'al_dia' ? 'Tu cuota está al día' : socio.estado === 'por_vencer' ? 'Tu cuota está por vencer' : 'Tenés la cuota vencida'}
+          </span>
+          {socio.estado !== 'al_dia' && (
+            <button
+              onClick={() => setPagando(true)}
+              style={{ flexShrink: 0, height: 32, padding: '0 14px', borderRadius: 8, border: 'none', background: estado.color, color: '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer' }}
+            >
+              Pagar ahora
+            </button>
+          )}
         </div>
       )}
     </div>
 
+    {pagando && (
+      <PagarCuotaModal socio={socio} onClose={() => setPagando(false)} />
+    )}
+
     <div className="portal-stats">
-      <button className="portal-stat" onClick={() => actions.navigate('portal_mis_reservas')}>
+      <button className="portal-stat" onClick={() => actions.navigate(reservation ? 'portal_mis_reservas' : 'portal_reservas')}>
         <div className="portal-stat-top">
           <span>Próxima reserva</span>
           <div className="portal-stat-icon" style={{ background: ICONO_COLOR.tienda.bg }}>
@@ -326,31 +347,76 @@ function Inicio({ reservation, news }: { reservation: { canchaId: number; dia: s
   </>;
 }
 
+function PagarCuotaModal({ socio, onClose }: { socio: Socio; onClose: () => void }) {
+  const { state, actions } = useApp();
+  const [medioPago, setMedioPago] = useState<MedioPago>('Efectivo');
+  const monto = socio.deuda > 0 ? socio.deuda : cuotaDeSocio(socio, state.categorias);
+
+  const confirmar = () => {
+    actions.pagarCuota(medioPago);
+    onClose();
+  };
+
+  return (
+    <ModalOverlay onClose={onClose} maxWidth={380} ariaLabel="Pagar cuota">
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 4 }}>Pagar cuota</div>
+      <div style={{ fontSize: 13.5, color: '#6b7488', marginBottom: 18 }}>{socio.nombre} {socio.apellido} · Socio #{socio.numero}</div>
+
+      <div style={{ fontSize: 13, fontWeight: 600, color: '#16203a', marginBottom: 4 }}>Monto a pagar</div>
+      <div style={{ fontSize: 24, fontWeight: 800, color: '#16203a', marginBottom: 18 }}>{formatMoney(monto)}</div>
+
+      <label style={fieldLabelStyle}>Método de pago</label>
+      <select value={medioPago} onChange={(e) => setMedioPago(e.target.value as MedioPago)} style={fieldInputStyle}>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Transferencia">Transferencia</option>
+        <option value="MercadoPago">Mercado Pago</option>
+        <option value="Tarjeta">Tarjeta de crédito/débito</option>
+      </select>
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={onClose}
+          style={{ flex: 1, height: 46, border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={confirmar}
+          style={{ flex: 1, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+        >
+          Confirmar pago
+        </button>
+      </div>
+    </ModalOverlay>
+  );
+}
+
 function SponsorsPortal() {
   const { state } = useApp();
   const sponsors = state.sponsors.filter((s) => s.ubicacion === 'Portal del Hincha' && estadoSponsor(s, HOY_ISO) !== 'Vencido');
   if (sponsors.length === 0) return null;
 
   return <>
-    <strong className="portal-label">Sponsors</strong>
-    <div className="portal-sponsors-row" style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ fontSize: 10.5, fontWeight: 700, color: '#9aa2b1', letterSpacing: '.06em', textTransform: 'uppercase', margin: '20px 0 8px' }}>Con el apoyo de</div>
+    <div className="portal-sponsors-row" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, marginBottom: 8, WebkitOverflowScrolling: 'touch', scrollSnapType: 'x mandatory' }}>
       {sponsors.map((s) => (
         <div
           key={s.id}
-          className="portal-card"
           onClick={() => window.open(`https://www.${s.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.com.ar`, '_blank')}
-          style={{ minWidth: 148, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8, padding: '16px 14px', position: 'relative', cursor: 'pointer' }}
+          style={{
+            minWidth: 118, flexShrink: 0, scrollSnapAlign: 'start', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 5,
+            padding: '11px 10px', position: 'relative', cursor: 'pointer',
+            background: '#f7f8fb', border: '1px solid #eef0f5', borderRadius: 12,
+          }}
         >
-          <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, fontWeight: 700, color: '#8b93a5', letterSpacing: '.04em' }}>PUBLICIDAD</span>
           {s.logo ? (
-            <img src={s.logo} alt={s.nombre} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }} />
+            <img src={s.logo} alt={s.nombre} style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover' }} />
           ) : (
-            <div style={{ width: 44, height: 44, borderRadius: 10, background: '#eaeefb', color: '#2774b8', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 16 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eaeefb', color: '#8b93a5', display: 'grid', placeItems: 'center', fontWeight: 700, fontSize: 13 }}>
               {s.nombre[0]?.toUpperCase()}
             </div>
           )}
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#16203a', lineHeight: 1.2 }}>{s.nombre}</div>
-          <div style={{ fontSize: 11.5, color: '#8b93a5' }}>{s.rubro}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 600, color: '#6b7488', lineHeight: 1.25 }}>{s.nombre}</div>
         </div>
       ))}
     </div>
