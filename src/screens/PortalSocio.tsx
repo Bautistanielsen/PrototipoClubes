@@ -15,7 +15,7 @@ export default function PortalSocio() {
   const active = state.screen;
   const firstSocio = state.socios[0];
   const memberName = `${firstSocio.nombre} ${firstSocio.apellido}`;
-  const comunicadosSocio = comunicadosParaSocio(state.comunicados, firstSocio);
+  const comunicadosSocio = comunicadosParaSocio(state.comunicados, firstSocio, state.comunicadosOcultos);
   const latestNews = comunicadosSocio.slice(0, 2);
   const novedadesNoLeidas = comunicadosSocio.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
   const nextReservation = useMemo(() => state.reservas.find((r) => r.nombre === memberName), [memberName, state.reservas]);
@@ -750,6 +750,12 @@ const ESTADO_PARTIDO_LABEL: Record<string, string> = {
   postergado: 'Postergado',
 };
 
+function diasHasta(fechaIso: string): number {
+  const hoy = new Date(`${HOY_ISO}T00:00:00`);
+  const fecha = new Date(`${fechaIso}T00:00:00`);
+  return Math.round((fecha.getTime() - hoy.getTime()) / 86400000);
+}
+
 function PortalPartidos() {
   const { state } = useApp();
   const [filtro, setFiltro] = useState<FiltroPartido>('Próximos');
@@ -775,8 +781,8 @@ function PortalPartidos() {
     : [];
 
   return <>
-    <h1>Partidos</h1>
-    <p className="portal-page-sub">{equipo ? equipo.nombre : 'Seguí a los equipos del club'}</p>
+    <h1 style={{ textAlign: 'center', fontSize: 28, letterSpacing: '-.02em', margin: '4px 0 4px' }}>Partidos</h1>
+    <p className="portal-page-sub" style={{ textAlign: 'center' }}>{equipo ? equipo.nombre : 'Seguí a los equipos del club'}</p>
 
     {!equipo ? (
       <section className="portal-card"><p>El club todavía no cargó partidos.</p></section>
@@ -801,20 +807,38 @@ function PortalPartidos() {
           <section className="portal-card"><p>No hay {filtro === 'Próximos' ? 'partidos programados' : 'resultados cargados'}.</p></section>
         )}
 
-        {partidos.map((p) => {
+        {partidos.map((p, i) => {
           const acta = datos?.actas[String(p.id)];
           const resultado = parseFinalizedResult(p, acta);
           const meta = resultado ? RESULTADO_META[resultado.outcome] : null;
           const estadoLabel = p.estado && ESTADO_PARTIDO_LABEL[p.estado];
+          const esProximo = filtro === 'Próximos' && !estadoLabel;
+          const destacado = esProximo && i === 0 && diasHasta(p.fecha) <= 7;
           return (
             <section key={p.id} className="portal-card" style={{ borderLeft: `4px solid ${meta ? meta.color : estadoLabel ? '#a34a55' : '#c7cedb'}` }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                <strong style={{ margin: 0 }}>{equipo.nombre} {resultado ? `${resultado.club} - ${resultado.rival}` : 'vs.'} {p.rival || 'rival a confirmar'}</strong>
+                <strong style={{ margin: 0 }}>{equipo.nombre} vs. {p.rival || 'rival a confirmar'}</strong>
                 {meta && <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: meta.bg, color: meta.color }}>{meta.label}</span>}
                 {!meta && estadoLabel && <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: '#f3e9ea', color: '#a34a55' }}>{estadoLabel}</span>}
+                {!meta && !estadoLabel && destacado && <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 800, padding: '5px 10px', borderRadius: 20, background: '#eaeefb', color: '#1b3a8a' }}>Esta semana</span>}
               </div>
+
+              {resultado && (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '8px 0 2px' }}>
+                  <strong style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', color: '#16203a' }}>{resultado.club} - {resultado.rival}</strong>
+                </div>
+              )}
+
               <p>{p.competencia || 'Liga'} · {p.condicion || 'Local'} · {formatFechaCorta(p.fecha)}{p.horaInicio ? ` · ${p.horaInicio}` : ''}</p>
-              {p.lugar && <p>{p.lugar}</p>}
+              {p.lugar && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.lugar)}`}
+                  target="_blank" rel="noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#2774b8', fontSize: 13.5, fontWeight: 600, textDecoration: 'none' }}
+                >
+                  <UbicacionIcon size={13} /> {p.lugar}
+                </a>
+              )}
               {p.motivo && <p>{p.motivo}</p>}
             </section>
           );
@@ -1548,13 +1572,10 @@ function CameraIcon() {
   );
 }
 
-function TrashIcon() {
+function CerrarIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 6h18" />
-      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" />
+      <path d="M18 6 6 18M6 6l12 12" />
     </svg>
   );
 }
@@ -1594,6 +1615,14 @@ function CanchaGridIcon({ stroke = 'currentColor' }: { stroke?: string }) {
   );
 }
 
+function UbicacionIcon({ stroke = 'currentColor', size = 18 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M12 21s-7-6.4-7-11.5A7 7 0 0 1 19 9.5C19 14.6 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
+
 function CalendarioIcon({ stroke = 'currentColor' }: { stroke?: string }) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -1606,6 +1635,14 @@ function InfoIcon({ stroke = '#8b93a5' }: { stroke?: string }) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
       <circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><circle cx="12" cy="8" r="0.5" fill={stroke} />
+    </svg>
+  );
+}
+
+function LapizIcon({ stroke = 'currentColor', size = 13 }: { stroke?: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M17 3a2.85 2.85 0 1 1 4 4L7 21l-4 1 1-4Z" />
     </svg>
   );
 }
@@ -1739,7 +1776,10 @@ function PortalTienda() {
 function Novedades() {
   const { state, actions } = useApp();
   const [abiertos, setAbiertos] = useState<Set<number>>(new Set());
-  const comunicadosVisibles = useMemo(() => comunicadosParaSocio(state.comunicados, state.socios[0]), [state.comunicados, state.socios]);
+  const comunicadosVisibles = useMemo(
+    () => comunicadosParaSocio(state.comunicados, state.socios[0], state.comunicadosOcultos),
+    [state.comunicados, state.socios, state.comunicadosOcultos]
+  );
   const itemRefs = useRef<Record<number, HTMLElement | null>>({});
 
   useEffect(() => {
@@ -1760,14 +1800,14 @@ function Novedades() {
     actions.marcarComunicadoLeido(id);
   };
 
-  const abrirTodas = () => {
+  const marcarTodasLeidas = () => {
     setAbiertos(new Set(comunicadosVisibles.map((c) => c.id)));
     actions.marcarTodosComunicadosLeidos();
   };
 
-  const eliminar = (e: MouseEvent, id: number) => {
+  const archivar = (e: MouseEvent, id: number) => {
     e.stopPropagation();
-    actions.eliminarComunicado(id);
+    actions.archivarComunicadoPortal(id);
   };
 
   const noLeidas = comunicadosVisibles.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
@@ -1778,7 +1818,7 @@ function Novedades() {
 
     {comunicadosVisibles.length > 0 && (
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <button className="portal-text-button" onClick={abrirTodas}>Abrir todas</button>
+        <button className="portal-text-button" onClick={marcarTodasLeidas}>Marcar todas como leídas</button>
       </div>
     )}
 
@@ -1803,11 +1843,12 @@ function Novedades() {
               <strong style={{ margin: 0 }}>{item.titulo}</strong>
             </div>
             <button
-              onClick={(e) => eliminar(e, item.id)}
-              aria-label="Eliminar novedad"
-              style={{ flexShrink: 0, border: 'none', background: 'transparent', color: '#a34a55', cursor: 'pointer', padding: 4, display: 'flex' }}
+              onClick={(e) => archivar(e, item.id)}
+              aria-label="Archivar novedad (dejar de verla en mi lista)"
+              title="Archivar"
+              style={{ flexShrink: 0, border: 'none', background: 'transparent', color: '#8b93a5', cursor: 'pointer', padding: 4, display: 'flex' }}
             >
-              <TrashIcon />
+              <CerrarIcon />
             </button>
           </div>
           {abierto && item.imagen && <NovedadImagen src={item.imagen} alt={item.titulo} style={{ marginTop: 8 }} />}
@@ -1960,19 +2001,49 @@ function ContactoClubModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const CAMPOS_PERFIL: { campo: 'dni' | 'fechaNacimiento' | 'domicilio' | 'telefono' | 'email'; label: string }[] = [
+  { campo: 'dni', label: 'DNI' },
+  { campo: 'fechaNacimiento', label: 'Fecha de nacimiento' },
+  { campo: 'domicilio', label: 'Domicilio' },
+  { campo: 'telefono', label: 'Teléfono' },
+  { campo: 'email', label: 'Email' },
+];
+
 function Perfil({ memberName }: { memberName: string }) {
   const { state, actions } = useApp();
   const socio = state.socios[0];
   const esSocio = state.portalRol === 'socio';
   const iniciales = `${socio.nombre[0] ?? ''}${socio.apellido[0] ?? ''}`.toUpperCase();
   const [showCarnet, setShowCarnet] = useState(false);
+  const [editandoCampo, setEditandoCampo] = useState<(typeof CAMPOS_PERFIL)[number] | null>(null);
 
-  const dato = (label: string, valor?: string) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '10px 0', borderBottom: '1px solid #f0f1f5' }}>
-      <span style={{ fontSize: 13, color: '#8b93a5' }}>{label}</span>
-      <span style={{ fontSize: 13.5, fontWeight: 600, color: '#16203a', textAlign: 'right' }}>{valor && valor.trim() ? valor : '—'}</span>
-    </div>
-  );
+  const camposCompletos = CAMPOS_PERFIL.filter((c) => socio[c.campo] && socio[c.campo]!.trim()).length;
+
+  const dato = (campo: (typeof CAMPOS_PERFIL)[number]) => {
+    const valor = socio[campo.campo];
+    const completo = Boolean(valor && valor.trim());
+    return (
+      <button
+        key={campo.campo}
+        onClick={() => setEditandoCampo(campo)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, width: '100%',
+          padding: '10px 0', border: 'none', borderBottom: '1px solid #f0f1f5',
+          background: 'transparent', cursor: 'pointer', textAlign: 'left',
+        }}
+      >
+        <span style={{ fontSize: 13, color: '#8b93a5' }}>{campo.label}</span>
+        {completo ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 600, color: '#16203a' }}>
+            {valor}
+            <LapizIcon stroke="#c7cedb" />
+          </span>
+        ) : (
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: '#2774b8' }}>+ Agregar</span>
+        )}
+      </button>
+    );
+  };
 
   const cambiarFoto = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2013,7 +2084,11 @@ function Perfil({ memberName }: { memberName: string }) {
             )}
             <label
               aria-label="Cambiar foto de perfil"
-              style={{ position: 'absolute', bottom: -2, right: -2, width: 22, height: 22, borderRadius: '50%', background: '#fff', border: '1px solid #e3e7ef', display: 'grid', placeItems: 'center', cursor: 'pointer', color: '#2774b8' }}
+              style={{
+                position: 'absolute', bottom: -3, right: -3, width: 26, height: 26, borderRadius: '50%',
+                background: '#172a54', border: '2px solid #fff', boxShadow: '0 2px 6px rgba(0,0,0,.25)',
+                display: 'grid', placeItems: 'center', cursor: 'pointer', color: '#fff',
+              }}
             >
               <CameraIcon />
               <input type="file" accept="image/*" onChange={cambiarFoto} style={{ display: 'none' }} />
@@ -2053,21 +2128,31 @@ function Perfil({ memberName }: { memberName: string }) {
 
     {showCarnet && <CarnetSocioModal onClose={() => setShowCarnet(false)} />}
 
-    <strong className="portal-label">Datos personales</strong>
-    <section className="portal-card">
-      {dato('DNI', socio.dni)}
-      {dato('Fecha de nacimiento', socio.fechaNacimiento)}
-      {dato('Domicilio', socio.domicilio)}
-      {dato('Teléfono', socio.telefono)}
-      {dato('Email', socio.email)}
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 11px' }}>
+      <strong className="portal-label" style={{ margin: 0 }}>Datos personales</strong>
+      <span style={{ fontSize: 11.5, fontWeight: 700, color: camposCompletos === CAMPOS_PERFIL.length ? '#1a7d43' : '#a15c00' }}>
+        Completá tu perfil ({camposCompletos}/{CAMPOS_PERFIL.length})
+      </span>
+    </div>
+    <section className="portal-card" style={{ padding: '4px 16px' }}>
+      {CAMPOS_PERFIL.map((campo) => dato(campo))}
     </section>
 
     {esSocio && (
       <>
-        <strong className="portal-label">Cuota</strong>
-        <section className="portal-card">
-          {dato('Método de pago', medioPagoLabel(socio.medioPago))}
-          {dato('Débito automático', socio.debitoAutomatico ? 'Activo' : 'No activado')}
+        <div style={{ margin: '24px 0 11px' }}>
+          <strong className="portal-label" style={{ margin: 0, display: 'block' }}>Cuota</strong>
+          <span style={{ fontSize: 11.5, color: '#8b93a5' }}>Gestionado por la administración del club</span>
+        </div>
+        <section className="portal-card" style={{ padding: '4px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '10px 0', borderBottom: '1px solid #f0f1f5' }}>
+            <span style={{ fontSize: 13, color: '#8b93a5' }}>Método de pago</span>
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: '#16203a', textAlign: 'right' }}>{medioPagoLabel(socio.medioPago)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '10px 0' }}>
+            <span style={{ fontSize: 13, color: '#8b93a5' }}>Débito automático</span>
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: '#16203a', textAlign: 'right' }}>{socio.debitoAutomatico ? 'Activo' : 'No activado'}</span>
+          </div>
         </section>
       </>
     )}
@@ -2081,11 +2166,58 @@ function Perfil({ memberName }: { memberName: string }) {
 
     <button
       onClick={actions.cerrarSesionPortal}
-      style={{ width: '100%', marginTop: 22, height: 46, border: '1px solid #e3b5bb', borderRadius: 10, background: '#fff', color: '#a34a55', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+      style={{ display: 'block', margin: '28px auto 0', padding: 0, border: 'none', background: 'transparent', color: '#8b93a5', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
     >
       Cerrar sesión
     </button>
+
+    {editandoCampo && (
+      <EditarDatoModal
+        campo={editandoCampo}
+        valorActual={socio[editandoCampo.campo] ?? ''}
+        onClose={() => setEditandoCampo(null)}
+      />
+    )}
   </>;
+}
+
+function EditarDatoModal({ campo, valorActual, onClose }: { campo: (typeof CAMPOS_PERFIL)[number]; valorActual: string; onClose: () => void }) {
+  const { actions } = useApp();
+  const [valor, setValor] = useState(valorActual);
+
+  const guardar = () => {
+    actions.actualizarDatoPerfil(campo.campo, valor.trim());
+    onClose();
+  };
+
+  return (
+    <ModalOverlay onClose={onClose} maxWidth={360} ariaLabel={`Editar ${campo.label}`}>
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#16203a', marginBottom: 18 }}>{campo.label}</div>
+      <label style={fieldLabelStyle}>{campo.label}</label>
+      <input
+        type={campo.campo === 'email' ? 'email' : campo.campo === 'fechaNacimiento' ? 'date' : 'text'}
+        value={valor}
+        onChange={(e) => setValor(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && guardar()}
+        placeholder={`Ingresá tu ${campo.label.toLowerCase()}`}
+        style={fieldInputStyle}
+      />
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={onClose}
+          style={{ flex: 1, height: 46, border: '1px solid #d7dce6', borderRadius: 9, background: '#fff', color: '#16203a', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={guardar}
+          style={{ flex: 1, height: 46, border: 'none', borderRadius: 9, background: '#172a54', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+        >
+          Guardar
+        </button>
+      </div>
+    </ModalOverlay>
+  );
 }
 function SectionTitle({ title, action, onClick }: { title: string; action: string; onClick: () => void }) { return <div className="portal-section-title"><strong>{title}</strong><button className="portal-text-button" onClick={onClick}>{action}</button></div>; }
 function PortalNav({ active, label, badge, avatar, onClick }: { active: boolean; label: string; badge?: number; avatar?: string; onClick: () => void }) {

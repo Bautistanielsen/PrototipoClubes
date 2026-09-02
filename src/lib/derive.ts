@@ -14,9 +14,16 @@ export function comunicadoAlcanzaSocio(comunicado: Comunicado, socio: Socio): bo
   return !estadoObjetivo || estadoObjetivo === socio.estado;
 }
 
-/** Comunicados que le corresponden a un socio según a quién fueron dirigidos. */
-export function comunicadosParaSocio(comunicados: Comunicado[], socio: Socio): Comunicado[] {
-  return comunicados.filter((c) => comunicadoAlcanzaSocio(c, socio));
+function fechaHoraOrdenable(c: Comunicado): string {
+  const [dia, mes, anio] = c.fecha.split('/');
+  return `${anio}-${mes}-${dia} ${c.hora}`;
+}
+
+/** Comunicados que le corresponden a un socio según a quién fueron dirigidos, sin los que archivó, del más reciente al más viejo. */
+export function comunicadosParaSocio(comunicados: Comunicado[], socio: Socio, ocultos: number[] = []): Comunicado[] {
+  return comunicados
+    .filter((c) => comunicadoAlcanzaSocio(c, socio) && !ocultos.includes(c.id))
+    .sort((a, b) => fechaHoraOrdenable(b).localeCompare(fechaHoraOrdenable(a)));
 }
 
 export const CUOTA = 12000;

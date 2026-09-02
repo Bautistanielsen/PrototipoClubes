@@ -252,6 +252,7 @@ export interface AppState {
   nuevoSponsorLogo: string;
   comunicados: Comunicado[];
   comunicadosLeidos: number[];
+  comunicadosOcultos: number[];
   nuevoTitulo: string;
   nuevoCuerpo: string;
   nuevoDestinatario: string;
@@ -410,6 +411,7 @@ const initialState: AppState = {
   nuevoSponsorLogo: '',
   comunicados: seedComunicados,
   comunicadosLeidos: [],
+  comunicadosOcultos: [],
   nuevoTitulo: '',
   nuevoCuerpo: '',
   nuevoDestinatario: 'Todos los socios',
@@ -548,11 +550,13 @@ export interface AppActions {
   cerrarSesionPortal: () => void;
   marcarComunicadoLeido: (id: number) => void;
   pagarCuota: (medioPago: MedioPago) => void;
+  actualizarDatoPerfil: (campo: 'dni' | 'fechaNacimiento' | 'domicilio' | 'email' | 'telefono', valor: string) => void;
   abrirNovedad: (id: number) => void;
   limpiarNovedadPendiente: () => void;
   setFotoPerfil: (dataUrl: string) => void;
   marcarTodosComunicadosLeidos: () => void;
   eliminarComunicado: (id: number) => void;
+  archivarComunicadoPortal: (id: number) => void;
   openAgregarPartido: (fecha?: string) => void;
   closeAgregarPartido: () => void;
   setNuevoPartidoFecha: (v: string) => void;
@@ -954,12 +958,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     limpiarNovedadPendiente: () => update({ novedadPendienteId: null }),
     marcarTodosComunicadosLeidos: () => update((s) => ({ comunicadosLeidos: s.comunicados.map((c) => c.id) })),
     setFotoPerfil: (dataUrl) => update((s) => ({ socios: s.socios.map((soc, i) => i === 0 ? { ...soc, fotoPerfil: dataUrl } : soc) })),
+    actualizarDatoPerfil: (campo, valor) => update((s) => ({ socios: s.socios.map((soc, i) => i === 0 ? { ...soc, [campo]: valor } : soc) })),
     eliminarComunicado: (id) => {
       update((s) => ({
         comunicados: s.comunicados.filter((c) => c.id !== id),
         comunicadosLeidos: s.comunicadosLeidos.filter((x) => x !== id),
       }));
       showToast('Novedad eliminada');
+    },
+    archivarComunicadoPortal: (id) => {
+      update((s) => (
+        s.comunicadosOcultos.includes(id) ? {} : { comunicadosOcultos: [...s.comunicadosOcultos, id] }
+      ));
+      showToast('Novedad archivada');
     },
 
     openAgregarPartido: (fecha) => update((s) => ({ showAgregarPartido: true, nuevoPartidoFecha: fecha || s.nuevoPartidoFecha })),
