@@ -209,18 +209,9 @@ export const seedSponsors: Sponsor[] = [
 
 export const seedComunicados: Comunicado[] = [
   {
-    id: 1,
-    titulo: 'Recordatorio de pago de cuota de julio',
-    cuerpo:
-      'Recordamos a los socios que la cuota de julio vence el día 5. Podés abonarla en secretaría o por transferencia.',
-    destinatario: 'Todos los socios',
-    fecha: '02/07/2026',
-    hora: '09:15',
-  },
-  {
     id: 2,
-    titulo: 'Nuevo horario de pileta de verano',
-    cuerpo: 'A partir de esta semana la pileta abre de 9 a 20 hs de lunes a domingo.',
+    titulo: 'Suspensión de actividades por mal clima',
+    cuerpo: 'Por la alerta meteorológica se suspenden las actividades al aire libre de hoy. Las novedades sobre la reprogramación se van a informar por este medio.',
     destinatario: 'Todos los socios',
     fecha: '15/06/2026',
     hora: '11:40',

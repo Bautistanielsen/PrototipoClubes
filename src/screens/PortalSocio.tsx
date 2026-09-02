@@ -131,11 +131,11 @@ const DORADO = '#d4af6a';
 // así se mantiene igual en cualquier club de la plataforma). 4 tonos pastel, siempre los mismos,
 // asignados en este orden — el único color que cambia por club es el navy/dorado de marca.
 const ICONO_COLOR: Record<string, { bg: string; stroke: string }> = {
-  tienda: { bg: '#eef1f7', stroke: '#4d5f7a' },
-  buffet: { bg: '#eef4ef', stroke: '#4c6b57' },
-  entrada: { bg: '#f6f1e9', stroke: '#8a6f4a' },
-  novedades: { bg: '#f1eff6', stroke: '#635f82' },
-  contacto: { bg: '#f1eff6', stroke: '#635f82' },
+  tienda: { bg: '#e3ebfc', stroke: '#3a5fc4' },
+  buffet: { bg: '#e0f7e9', stroke: '#1f9d5c' },
+  entrada: { bg: '#fdedd6', stroke: '#c47a1e' },
+  novedades: { bg: '#efe6fb', stroke: '#7b4fd1' },
+  contacto: { bg: '#efe6fb', stroke: '#7b4fd1' },
 };
 
 const CLUB_DIRECCION = 'Av. Colón 3456, Mar del Plata';
@@ -1271,13 +1271,16 @@ function Cuota() {
 function Reservas() {
   const { state, actions } = useApp();
   const memberName = `${state.socios[0].nombre} ${state.socios[0].apellido}`;
+  const repitiendo = state.canchas.find((c) => c.id === state.reservaRepitiendoCanchaId);
   const deportes = useMemo(() => Array.from(new Set(state.canchas.map((c) => c.nombre))), [state.canchas]);
-  const [deporte, setDeporte] = useState(deportes[0]);
+  const [deporte, setDeporte] = useState(repitiendo?.nombre ?? deportes[0]);
   const canchasDeporte = useMemo(() => state.canchas.filter((c) => c.nombre === deporte), [state.canchas, deporte]);
-  const [canchaId, setCanchaId] = useState<number | undefined>(canchasDeporte[0]?.id);
+  const [canchaId, setCanchaId] = useState<number | undefined>(repitiendo?.id ?? canchasDeporte[0]?.id);
   const [dia, setDia] = useState(HOY_ISO);
   const [reservandoHora, setReservandoHora] = useState<string | null>(null);
   const [medioPago, setMedioPago] = useState<MedioPago>('Efectivo');
+
+  useEffect(() => { if (state.reservaRepitiendoCanchaId !== null) actions.limpiarReservaRepitiendo(); }, [state.reservaRepitiendoCanchaId, actions]);
 
   const cancha = state.canchas.find((c) => c.id === canchaId);
 
@@ -1461,9 +1464,12 @@ function Reservas() {
   </>;
 }
 
+const HISTORIAL_RESERVAS_PAGINA = 5;
+
 function MisReservas() {
   const { state, actions } = useApp();
   const memberName = `${state.socios[0].nombre} ${state.socios[0].apellido}`;
+  const [verTodoHistorial, setVerTodoHistorial] = useState(false);
 
   const misReservas = useMemo(
     () => state.reservas.filter((r) => r.nombre === memberName),
@@ -1477,14 +1483,15 @@ function MisReservas() {
     () => misReservas.filter((r) => r.dia < HOY_ISO).sort((a, b) => (b.dia + b.hora).localeCompare(a.dia + a.hora)),
     [misReservas]
   );
+  const historialVisible = verTodoHistorial ? historial : historial.slice(0, HISTORIAL_RESERVAS_PAGINA);
 
-  const fila = (r: (typeof misReservas)[number], cancelable: boolean) => {
+  const fila = (r: (typeof misReservas)[number], variant: 'proxima' | 'historial') => {
     const c = state.canchas.find((x) => x.id === r.canchaId);
     return (
       <section
         key={r.id}
         className="portal-card"
-        style={{ display: 'flex', alignItems: 'center', gap: 12, borderLeft: `4px solid ${cancelable ? '#2774b8' : '#c7cedb'}`, marginBottom: 8 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, borderLeft: `4px solid ${variant === 'proxima' ? '#2774b8' : '#c7cedb'}`, marginBottom: 8 }}
       >
         <div style={{ width: 34, height: 34, borderRadius: 10, background: ICONO_COLOR.tienda.bg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
           <CanchaIcon nombre={c?.nombre ?? ''} stroke={ICONO_COLOR.tienda.stroke} />
@@ -1493,7 +1500,15 @@ function MisReservas() {
           <div style={{ fontSize: 13.5, fontWeight: 700, color: '#16203a' }}>{c?.nombre} #{c?.numero} · {formatFechaCorta(r.dia)} a las {r.hora}</div>
           <div style={{ fontSize: 12, color: '#8b93a5', marginTop: 2 }}>{c ? formatMoney(c.precio) : ''} · {medioPagoLabel(r.medioPago)}</div>
         </div>
-        {cancelable && <button className="portal-text-button" onClick={() => actions.liberarReserva(r.id)}>Cancelar</button>}
+        {variant === 'proxima' && <button className="portal-text-button" onClick={() => actions.liberarReserva(r.id)}>Cancelar</button>}
+        {variant === 'historial' && c && (
+          <button
+            onClick={() => actions.repetirReserva(c.id)}
+            style={{ flexShrink: 0, height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid #b9cfe8', background: '#fff', color: '#172a54', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+          >
+            Repetir
+          </button>
+        )}
       </section>
     );
   };
@@ -1505,14 +1520,21 @@ function MisReservas() {
     {proximas.length === 0 ? (
       <section className="portal-card"><p>No tenés reservas próximas.</p></section>
     ) : (
-      proximas.map((r) => fila(r, true))
+      proximas.map((r) => fila(r, 'proxima'))
     )}
 
     <strong className="portal-label">Historial</strong>
     {historial.length === 0 ? (
       <section className="portal-card"><p>Todavía no tenés reservas pasadas.</p></section>
     ) : (
-      historial.map((r) => fila(r, false))
+      <>
+        {historialVisible.map((r) => fila(r, 'historial'))}
+        {!verTodoHistorial && historial.length > HISTORIAL_RESERVAS_PAGINA && (
+          <button className="portal-text-button" onClick={() => setVerTodoHistorial(true)} style={{ display: 'block', margin: '4px auto 0' }}>
+            Ver todo el historial ({historial.length})
+          </button>
+        )}
+      </>
     )}
   </>;
 }
@@ -1547,8 +1569,20 @@ function CanchaIcon({ nombre, stroke = 'currentColor' }: { nombre: string; strok
   const common = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   const n = nombre.toLowerCase();
   if (n.includes('fútbol') || n.includes('futbol')) return <svg {...common}><circle cx="12" cy="12" r="9" /><path d="m12 7 3.5 2.5-1.3 4.1H9.8L8.5 9.5 12 7Z" /></svg>;
-  if (n.includes('pádel') || n.includes('padel')) return <svg {...common}><rect x="6" y="3" width="12" height="12" rx="6" /><path d="M12 15v6M9 21h6" /></svg>;
-  if (n.includes('tenis')) return <svg {...common}><ellipse cx="12" cy="9" rx="6" ry="7.5" /><path d="M12 16.5v5.5M9 22h6" /></svg>;
+  if (n.includes('pádel') || n.includes('padel')) return (
+    <svg {...common}>
+      <rect x="7" y="3" width="10" height="12" rx="5" />
+      <circle cx="10" cy="7" r="0.6" fill={stroke} /><circle cx="14" cy="7" r="0.6" fill={stroke} /><circle cx="12" cy="11" r="0.6" fill={stroke} />
+      <path d="M12 15v6M9 21h6" />
+    </svg>
+  );
+  if (n.includes('tenis')) return (
+    <svg {...common}>
+      <ellipse cx="12" cy="8" rx="5.5" ry="7" />
+      <path d="M12 1.5v13M6.7 8h10.6" />
+      <path d="M12 15v7M9 22h6" />
+    </svg>
+  );
   return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>;
 }
 

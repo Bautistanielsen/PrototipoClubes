@@ -288,6 +288,7 @@ export interface AppState {
   estadisticasVista: StatisticsView;
   actaEventoPendienteId: number | null;
   novedadPendienteId: number | null;
+  reservaRepitiendoCanchaId: number | null;
   showJugadorModal: boolean;
   jugadorEditandoId: number | null;
   nuevoJugadorNombre: string;
@@ -445,6 +446,7 @@ const initialState: AppState = {
   estadisticasVista: 'summary',
   actaEventoPendienteId: null,
   novedadPendienteId: null,
+  reservaRepitiendoCanchaId: null,
   showJugadorModal: false,
   jugadorEditandoId: null,
   nuevoJugadorNombre: '',
@@ -540,6 +542,8 @@ export interface AppActions {
   liberarReserva: (id: number) => void;
   reservarTurnoHincha: (canchaId: number, dia: string, hora: string, medioPago: MedioPago) => void;
   cerrarBienvenidaReservas: () => void;
+  repetirReserva: (canchaId: number) => void;
+  limpiarReservaRepitiendo: () => void;
   iniciarSesionPortal: () => void;
   cerrarSesionPortal: () => void;
   marcarComunicadoLeido: (id: number) => void;
@@ -927,6 +931,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
     cerrarBienvenidaReservas: () => update({ reservaBienvenidaVista: true }),
+    repetirReserva: (canchaId) => update({ screen: 'portal_reservas', reservaRepitiendoCanchaId: canchaId }),
+    limpiarReservaRepitiendo: () => update({ reservaRepitiendoCanchaId: null }),
     iniciarSesionPortal: () => update({ portalLoggedIn: true, portalRol: 'socio', screen: 'portal_inicio' }),
     cerrarSesionPortal: () => update({ portalLoggedIn: false, screen: 'portal_login' }),
     marcarComunicadoLeido: (id) => update((s) => (
