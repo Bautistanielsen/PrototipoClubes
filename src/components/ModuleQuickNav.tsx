@@ -28,14 +28,14 @@ export default function ModuleQuickNav({
   return (
     <div
       className={wrapperClassName}
-      style={{ display: 'flex', flexDirection: direction, gap, flexWrap: 'nowrap', ...wrapperStyle }}
+      style={{ display: 'flex', flexDirection: direction, gap, flexWrap: direction === 'row' ? 'wrap' : 'nowrap', ...wrapperStyle }}
     >
       {OTHER_MODULES[current].map((id) => (
         <button
           key={id}
           type="button"
           className={buttonClassName}
-          style={direction === 'row' ? { ...buttonStyle, flex: '1.3 1 0', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : buttonStyle}
+          style={direction === 'row' ? { ...buttonStyle, flex: '1 1 calc(50% - 4px)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : buttonStyle}
           onClick={() => actions.selectModule(id)}
         >
           Ver {MODULE_LABELS[id]}
@@ -44,7 +44,7 @@ export default function ModuleQuickNav({
       <button
         type="button"
         className={homeClassName ?? buttonClassName}
-        style={direction === 'row' ? { ...(homeStyle ?? buttonStyle), flex: '0.7 1 0', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : (homeStyle ?? buttonStyle)}
+        style={direction === 'row' ? { ...(homeStyle ?? buttonStyle), flex: '1 1 100%', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip', textAlign: 'center' } : (homeStyle ?? buttonStyle)}
         onClick={actions.showModuleSelector}
       >
         Volver al inicio
