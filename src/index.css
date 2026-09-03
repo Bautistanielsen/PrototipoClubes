@@ -304,7 +304,7 @@ a:hover {
 .exit-inicio-btn:hover { box-shadow: 0 4px 12px rgba(15, 29, 54, .22); }
 .exit-inicio-btn:active { transform: scale(.96); }
 .exit-inicio-btn:focus-visible { outline: 3px solid var(--exit-focus, rgba(255, 255, 255, .85)); outline-offset: 2px; }
-.portal-exit { display: none; z-index: 30; }
+.portal-mobile-exit-row { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .exit-inicio-btn { transition: none; }
   .exit-inicio-btn:active { transform: none; }
@@ -556,11 +556,11 @@ a:hover {
 @media (max-width: 760px) {
   .module-grid { grid-template-columns: 1fr; }
   .portal-stage { padding: 0; display: block; }
-  .portal-quick-nav { display: none; }
-  .portal-exit { display: grid; position: absolute; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); }
+  .portal-quick-nav { display: none !important; }
+  .portal-mobile-exit-row { display: flex; justify-content: flex-end; padding-bottom: 10px; }
   .portal-frame { max-width: none; height: 100vh; min-height: 100vh; border: none; border-radius: 0; box-shadow: none; }
   .portal-device-top { display: none; }
-  .portal-content { padding-top: calc(56px + env(safe-area-inset-top)); }
+  .portal-content { padding-top: max(12px, env(safe-area-inset-top)); }
   .deportivo-main { padding: 20px 16px; }
   .sports-squad-entry { padding: 16px; }
   .sports-squad-entry-brand { margin-bottom: 48px; }

@@ -10,7 +10,6 @@ import Toast from './components/Toast';
 import ModuleSelector from './components/ModuleSelector';
 import ModuleSwitcher from './components/ModuleSwitcher';
 import ModuleQuickNav from './components/ModuleQuickNav';
-import ExitInicioButton from './components/ExitInicioButton';
 import SportsSquadEntry from './components/SportsSquadEntry';
 import SportsSquadSwitcher from './components/SportsSquadSwitcher';
 import SportsAssistant from './components/SportsAssistant';
@@ -139,7 +138,6 @@ function PortalLayout() {
   return <div className="portal-stage">
     <div className="portal-stage-inner">
       <ModuleQuickNav current="socio" direction="row" wrapperClassName="portal-quick-nav portal-quick-nav-desktop" buttonClassName="portal-quick-nav-btn" homeClassName="portal-quick-nav-btn portal-quick-nav-btn-home" />
-      <ExitInicioButton tone="navy" className="portal-exit" />
       <ScreenContent />
     </div>
     <Toast />

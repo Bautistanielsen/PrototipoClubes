@@ -9,6 +9,7 @@ import type { MedioPago, Comunicado, Torneo, Socio } from '../types';
 import ModalOverlay from '../components/modals/ModalOverlay';
 import HinchaAssistant from '../components/HinchaAssistant';
 import ClubEscudo from '../components/ClubEscudo';
+import ExitInicioButton from '../components/ExitInicioButton';
 
 export default function PortalSocio() {
   const { state, actions } = useApp();
@@ -40,7 +41,10 @@ export default function PortalSocio() {
     return (
       <div className="portal-frame">
         <div className="portal-device-top"><span /></div>
-        <div className="portal-content">{content()}</div>
+        <div className="portal-content">
+          <div className="portal-mobile-exit-row"><ExitInicioButton tone="navy" /></div>
+          {content()}
+        </div>
       </div>
     );
   }
@@ -49,6 +53,7 @@ export default function PortalSocio() {
     <div className="portal-frame">
       <div className="portal-device-top"><span /></div>
       <div className="portal-content" ref={contentRef}>
+        <div className="portal-mobile-exit-row"><ExitInicioButton tone="navy" /></div>
         {content()}
       </div>
       <nav className="portal-nav">
