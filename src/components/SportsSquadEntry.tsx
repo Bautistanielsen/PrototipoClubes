@@ -1,6 +1,7 @@
 import { useApp } from '../state/AppContext';
 import ClubEscudo from './ClubEscudo';
 import ModuleQuickNav from './ModuleQuickNav';
+import ExitInicioButton from './ExitInicioButton';
 
 export default function SportsSquadEntry() {
   const { state, actions } = useApp();
@@ -12,7 +13,9 @@ export default function SportsSquadEntry() {
           <ClubEscudo size={34} />
           <div><strong>Club Atlético Modelo</strong><span>Gestión Deportiva</span></div>
         </div>
-        <ModuleQuickNav current="deportivo" direction="row" gap={8} homeStyle={{ border: '1px solid #087f75', borderRadius: 9, padding: '9px 12px', background: '#087f75', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' }} />
+        {state.isMobile
+          ? <ExitInicioButton tone="teal" />
+          : <ModuleQuickNav current="deportivo" direction="row" gap={8} homeStyle={{ border: '1px solid #087f75', borderRadius: 9, padding: '9px 12px', background: '#087f75', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' }} />}
       </header>
       <section className="sports-squad-entry-card">
         <span>GESTIÓN DEPORTIVA</span>

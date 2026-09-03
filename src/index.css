@@ -286,6 +286,27 @@ a:hover {
   .landing-page *, .landing-page *::before, .landing-page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
   .landing-plan--featured, .landing-demo-card:hover, .landing-button:hover { transform: none; }
 }
+/* Salida móvil a la selección de módulos: botón compacto compartido por las tres demos. */
+.exit-inicio-btn {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .12s ease;
+}
+.exit-inicio-btn:hover { box-shadow: 0 4px 12px rgba(15, 29, 54, .22); }
+.exit-inicio-btn:active { transform: scale(.96); }
+.exit-inicio-btn:focus-visible { outline: 3px solid var(--exit-focus, rgba(255, 255, 255, .85)); outline-offset: 2px; }
+.portal-exit { display: none; z-index: 30; }
+@media (prefers-reduced-motion: reduce) {
+  .exit-inicio-btn { transition: none; }
+  .exit-inicio-btn:active { transform: none; }
+}
 .portal-stage {
   min-height: 100vh;
   padding: 24px 88px;
@@ -533,12 +554,11 @@ a:hover {
 @media (max-width: 760px) {
   .module-grid { grid-template-columns: 1fr; }
   .portal-stage { padding: 0; display: block; }
-  .portal-quick-nav { position: absolute; top: 10px; left: 10px; right: 10px; gap: 6px; align-items: stretch; background: rgba(23, 42, 84, .92); border-radius: 12px; padding: 8px; box-shadow: 0 8px 20px rgba(12, 24, 48, .25); }
-  .portal-quick-nav-btn { padding: 6px 4px; font-size: 10.5px; box-shadow: none; text-align: center; border-color: rgba(255,255,255,.34); background: rgba(255,255,255,.1); color: #fff; }
-  .portal-quick-nav-btn-home { background: #fff; color: #172a54; border-color: #fff; }
+  .portal-quick-nav { display: none; }
+  .portal-exit { display: grid; position: absolute; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); }
   .portal-frame { max-width: none; height: 100vh; min-height: 100vh; border: none; border-radius: 0; box-shadow: none; }
   .portal-device-top { display: none; }
-  .portal-content { padding-top: 56px; }
+  .portal-content { padding-top: calc(56px + env(safe-area-inset-top)); }
   .deportivo-main { padding: 20px 16px; }
   .sports-squad-entry { padding: 16px; }
   .sports-squad-entry-brand { margin-bottom: 48px; }

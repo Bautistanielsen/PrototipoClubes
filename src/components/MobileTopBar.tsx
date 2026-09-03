@@ -1,9 +1,9 @@
 import ClubEscudo from './ClubEscudo';
-import ModuleQuickNav from './ModuleQuickNav';
+import ExitInicioButton from './ExitInicioButton';
 
 export default function MobileTopBar() {
   return (
-    <div className="no-print" style={{ position: 'sticky', top: 0, zIndex: 20, background: '#172a54', padding: '14px 16px 10px' }}>
+    <div className="no-print" style={{ position: 'sticky', top: 0, zIndex: 20, background: '#172a54', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 9 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
         <ClubEscudo size={30} />
         <div>
@@ -11,14 +11,7 @@ export default function MobileTopBar() {
           <div style={{ color: '#fff', fontWeight: 800, fontSize: 16 }}>Club Atlético Modelo</div>
         </div>
       </div>
-      <ModuleQuickNav
-        current="administrativo"
-        direction="row"
-        gap={7}
-        wrapperStyle={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.16)' }}
-        buttonStyle={{ color: '#fff', fontSize: 10.5, border: '1px solid rgba(255,255,255,.4)', borderRadius: 14, padding: '7px 4px', background: 'rgba(255,255,255,.1)', cursor: 'pointer', fontWeight: 700 }}
-        homeStyle={{ color: '#172a54', fontSize: 10.5, border: '1px solid #fff', borderRadius: 14, padding: '7px 4px', background: '#fff', cursor: 'pointer', fontWeight: 800 }}
-      />
+      <ExitInicioButton />
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default function Sidebar() {
       <ClubEscudo size={48} />
       <div style={{ color: '#fff', fontWeight: 800, fontSize: 15 }}>Club Atlético Modelo</div>
     </div>
-    <div style={{ flex: 1 }}>{groups.map((group, index) => <div key={group.title || 'inicio'}>{group.title && <div style={{ color: '#7482ad', fontSize: 10.5, fontWeight: 800, letterSpacing: '.06em', padding: `${index === 1 ? 7 : 16}px 12px 6px` }}>{group.title}</div>}{group.items.map((item) => <SidebarItem key={item.screen} active={state.screen === item.screen} onClick={() => actions.navigate(item.screen)} icon={<NavIcon screen={item.screen} />} label={item.label} />)}</div>)}</div>
+    <div style={{ flex: 1, paddingBottom: 20 }}>{groups.map((group, index) => <div key={group.title || 'inicio'}>{group.title && <div style={{ color: '#7482ad', fontSize: 10.5, fontWeight: 800, letterSpacing: '.06em', padding: `${index === 1 ? 7 : 16}px 12px 6px` }}>{group.title}</div>}{group.items.map((item) => <SidebarItem key={item.screen} active={state.screen === item.screen} onClick={() => actions.navigate(item.screen)} icon={<NavIcon screen={item.screen} />} label={item.label} />)}</div>)}</div>
     <ModuleQuickNav
       current="administrativo"
       buttonStyle={{ border: '1px solid rgba(255,255,255,.18)', background: 'transparent', color: '#c3cbe4', borderRadius: 9, padding: '10px', cursor: 'pointer', fontWeight: 700, fontSize: 12, textAlign: 'left' }}
