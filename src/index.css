@@ -242,6 +242,8 @@ a:hover {
   .landing-plan--featured { transform: none; }
 }
 @media (max-width: 760px) {
+  .landing-header { position: fixed; top: 0; right: 0; left: 0; }
+  .landing-page { padding-top: 68px; }
   .landing-page main { padding-bottom: 40px; }
   .landing-shell { width: min(100% - 32px, 1180px); }
   .landing-nav { min-height: 68px; gap: 14px; }
