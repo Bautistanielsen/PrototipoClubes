@@ -40,7 +40,7 @@ export default function MobileBottomNav() {
         padding: '6px 4px calc(6px + env(safe-area-inset-bottom))',
       }}
     >
-      <div onClick={() => actions.navigate('dashboard')} style={{ flex: 1, cursor: 'pointer' }}>
+      <button type="button" aria-current={is('dashboard') ? 'page' : undefined} onClick={() => actions.navigate('dashboard')} style={{ flex: 1, border: 0, background: 'transparent', padding: 0, cursor: 'pointer' }}>
         <NavIcon active={is('dashboard')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
@@ -50,8 +50,8 @@ export default function MobileBottomNav() {
           </svg>
           <span style={{ fontSize: 10.5, fontWeight: 600 }}>Resumen</span>
         </NavIcon>
-      </div>
-      <div onClick={() => actions.navigate('socios')} style={{ flex: 1, cursor: 'pointer' }}>
+      </button>
+      <button type="button" aria-current={is('socios') ? 'page' : undefined} onClick={() => actions.navigate('socios')} style={{ flex: 1, border: 0, background: 'transparent', padding: 0, cursor: 'pointer' }}>
         <NavIcon active={is('socios')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="9" cy="8" r="3.2"></circle>
@@ -60,8 +60,8 @@ export default function MobileBottomNav() {
           </svg>
           <span style={{ fontSize: 10.5, fontWeight: 600 }}>Socios</span>
         </NavIcon>
-      </div>
-      <div onClick={() => actions.navigate('cobranza')} style={{ flex: 1, cursor: 'pointer' }}>
+      </button>
+      <button type="button" aria-current={is('cobranza') ? 'page' : undefined} onClick={() => actions.navigate('cobranza')} style={{ flex: 1, border: 0, background: 'transparent', padding: 0, cursor: 'pointer' }}>
         <NavIcon active={is('cobranza')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="6" width="18" height="13" rx="2"></rect>
@@ -69,8 +69,8 @@ export default function MobileBottomNav() {
           </svg>
           <span style={{ fontSize: 10.5, fontWeight: 600 }}>Cobranza</span>
         </NavIcon>
-      </div>
-      <div onClick={actions.toggleMore} style={{ flex: 1, cursor: 'pointer' }}>
+      </button>
+      <button type="button" onClick={actions.toggleMore} style={{ flex: 1, border: 0, background: 'transparent', padding: 0, cursor: 'pointer' }}>
         <NavIcon active={false}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"></circle>
@@ -79,7 +79,7 @@ export default function MobileBottomNav() {
           </svg>
           <span style={{ fontSize: 10.5, fontWeight: 600 }}>Más</span>
         </NavIcon>
-      </div>
+      </button>
     </div>
   );
 }

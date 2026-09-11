@@ -5,7 +5,7 @@ import { formatMoney, formatFechaCorta } from '../lib/format';
 import { HOY_ISO, TURNO_HORAS, estadoTorneo, estadoTorneoMeta, tablaPosiciones, proximoVencimientoCuota, ultimoVencimientoCuotaVencido, estadoMeta, estadoSponsor, historialPagosSocio, comunicadosParaSocio, cuotaDeSocio } from '../lib/derive';
 import { readSportsCalendarData, parseFinalizedResult } from '../lib/sportsCalendar';
 import type { SportsCalendarData } from '../lib/sportsCalendar';
-import type { MedioPago, Comunicado, Torneo, Socio } from '../types';
+import type { MedioPago, Comunicado, Torneo, Socio, Screen } from '../types';
 import ModalOverlay from '../components/modals/ModalOverlay';
 import HinchaAssistant from '../components/HinchaAssistant';
 import ClubEscudo from '../components/ClubEscudo';
@@ -21,7 +21,13 @@ export default function PortalSocio() {
   const novedadesNoLeidas = comunicadosSocio.filter((c) => !state.comunicadosLeidos.includes(c.id)).length;
   const nextReservation = useMemo(() => state.reservas.find((r) => r.nombre === memberName), [memberName, state.reservas]);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [portalMoreOpen, setPortalMoreOpen] = useState(false);
   useEffect(() => { contentRef.current?.scrollTo(0, 0); }, [active]);
+
+  const navigateFromMore = (screen: Screen) => {
+    setPortalMoreOpen(false);
+    actions.navigate(screen);
+  };
 
   const content = () => {
     if (active === 'portal_login') return <Login />;
@@ -59,11 +65,11 @@ export default function PortalSocio() {
       <nav className="portal-nav">
         <PortalNav active={active === 'portal_inicio'} label="Inicio" badge={novedadesNoLeidas} onClick={() => actions.navigate('portal_inicio')} />
         <PortalNav active={active === 'portal_cuota' || active === 'portal_hacete_socio'} label={state.portalRol === 'hincha' ? 'Asociate' : 'Mi cuota'} onClick={() => actions.navigate('portal_cuota')} />
-        <PortalNav active={active === 'portal_torneos'} label="Torneos" onClick={() => actions.navigate('portal_torneos')} />
-        <PortalNav active={active === 'portal_reservas'} label="Reservas" onClick={() => actions.navigate('portal_reservas')} />
-        <PortalNav active={active === 'portal_mis_reservas'} label="Mis reservas" onClick={() => actions.navigate('portal_mis_reservas')} />
+        <PortalNav active={active === 'portal_reservas' || active === 'portal_mis_reservas'} label="Reservas" onClick={() => actions.navigate('portal_reservas')} />
         <PortalNav active={active === 'portal_perfil'} label="Mi perfil" avatar={firstSocio.fotoPerfil} onClick={() => actions.navigate('portal_perfil')} />
+        <PortalNav active={portalMoreOpen} label="Más" onClick={() => setPortalMoreOpen(true)} />
       </nav>
+      {portalMoreOpen && <PortalMoreSheet onClose={() => setPortalMoreOpen(false)} onNavigate={navigateFromMore} />}
       <HinchaAssistant />
     </div>
   );
@@ -2225,6 +2231,24 @@ function EditarDatoModal({ campo, valorActual, onClose }: { campo: (typeof CAMPO
   );
 }
 function SectionTitle({ title, action, onClick }: { title: string; action: string; onClick: () => void }) { return <div className="portal-section-title"><strong>{title}</strong><button className="portal-text-button" onClick={onClick}>{action}</button></div>; }
+function PortalMoreSheet({ onClose, onNavigate }: { onClose: () => void; onNavigate: (screen: Screen) => void }) {
+  return (
+    <div className="portal-more-overlay" onClick={onClose}>
+      <section className="portal-more-sheet" role="dialog" aria-modal="true" aria-labelledby="portal-more-title" onClick={(event) => event.stopPropagation()}>
+        <div className="portal-more-handle" aria-hidden="true" />
+        <div className="portal-more-heading">
+          <strong id="portal-more-title">Más opciones</strong>
+          <button type="button" onClick={onClose} aria-label="Cerrar más opciones">×</button>
+        </div>
+        <button type="button" onClick={() => onNavigate('portal_torneos')}>Torneos</button>
+        <button type="button" onClick={() => onNavigate('portal_mis_reservas')}>Mis reservas</button>
+        <button type="button" onClick={() => onNavigate('portal_novedades')}>Novedades</button>
+        <button type="button" onClick={() => onNavigate('portal_tienda')}>Tienda del club</button>
+      </section>
+    </div>
+  );
+}
+
 function PortalNav({ active, label, badge, avatar, onClick }: { active: boolean; label: string; badge?: number; avatar?: string; onClick: () => void }) {
   return (
     <button onClick={onClick} style={{ border: 'none', background: 'transparent', color: active ? '#172a54' : '#8b93a5', fontWeight: active ? 800 : 600, cursor: 'pointer', fontSize: 10.5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: '2px 0' }}>

@@ -308,7 +308,7 @@ export interface AppState {
 }
 
 const initialState: AppState = {
-  isMobile: typeof window !== 'undefined' ? window.innerWidth < 900 : false,
+  isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
   screen: 'dashboard',
   activeModule: null,
   moreOpen: false,
@@ -725,7 +725,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const onResize = () => update({ isMobile: window.innerWidth < 900 });
+    const onResize = () => update({ isMobile: window.innerWidth < 768 });
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [update]);

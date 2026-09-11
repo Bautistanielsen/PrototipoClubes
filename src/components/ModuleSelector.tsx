@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FormEvent, type MouseEvent } from 'react';
+import { useEffect, useState, type CSSProperties, type FormEvent, type MouseEvent } from 'react';
 import { useApp } from '../state/AppContext';
 import type { Modulo } from '../types';
 import administrativoImage from '../../assets/demo_admin.png';
@@ -155,6 +155,15 @@ export default function ModuleSelector() {
   const { actions } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
+  const [showHeroArt, setShowHeroArt] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const updateHeroArt = () => setShowHeroArt(mediaQuery.matches);
+    updateHeroArt();
+    mediaQuery.addEventListener('change', updateHeroArt);
+    return () => mediaQuery.removeEventListener('change', updateHeroArt);
+  }, []);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -237,7 +246,7 @@ export default function ModuleSelector() {
                 <a className="landing-button landing-button--secondary" href="#demos" onClick={(event) => scrollToSection(event, 'demos')}>Ver las demos</a>
               </div>
             </div>
-            <div className="landing-hero-art" aria-hidden="true">
+            {showHeroArt && <div className="landing-hero-art" aria-hidden="true">
               <div className="landing-hero-preview landing-hero-preview--sports">
                 <div className="landing-browser-chrome">
                   <span className="landing-browser-dots"><i /><i /><i /></span>
@@ -259,7 +268,7 @@ export default function ModuleSelector() {
                 <img src={portalHinchaImage} alt="" decoding="async" />
                 <span className="landing-preview-label">{heroPreviewTitle('socio')}</span>
               </div>
-            </div>
+            </div>}
           </div>
         </section>
 

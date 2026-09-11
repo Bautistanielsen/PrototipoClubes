@@ -10,6 +10,11 @@ const itemStyle = {
   fontSize: 15,
   fontWeight: 600 as const,
   color: '#16203a',
+  border: 'none',
+  background: '#fff',
+  width: '100%',
+  textAlign: 'left' as const,
+  fontFamily: 'inherit',
   borderBottom: '1px solid #f0f1f5',
 };
 
@@ -67,10 +72,10 @@ export default function MoreSheet() {
       >
         <div style={{ width: 36, height: 4, background: '#e3e7ef', borderRadius: 4, margin: '0 auto 18px' }}></div>
         {items.map((item) => (
-          <div key={item.screen} style={itemStyle} onClick={go(item.screen)}>
+          <button type="button" key={item.screen} style={itemStyle} onClick={go(item.screen)}>
             <div style={iconBadge}><NavIcon screen={item.screen} /></div>
             {item.label}
-          </div>
+          </button>
         ))}
       </div>
     </div>

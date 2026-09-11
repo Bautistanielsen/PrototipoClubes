@@ -22,6 +22,7 @@ export default function ModalOverlay({ onClose, maxWidth, children, cardStyle, a
   return (
     <div
       onClick={onClose}
+      className="modal-overlay"
       style={{
         position: 'fixed',
         inset: 0,
@@ -35,6 +36,7 @@ export default function ModalOverlay({ onClose, maxWidth, children, cardStyle, a
     >
       <div
         onClick={stop}
+        className="modal-card"
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel || 'Ventana de diálogo'}
